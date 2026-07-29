@@ -188,6 +188,68 @@ Essays are typically in English — analyze them as-is. Write all commentary, di
 `;
 
 /**
+ * Refinements to Mode A's analysis, added after reviewing real output against a
+ * competitor's. Unlike the output contracts these DO change what the engine
+ * looks for — they are kept separate from `ENGINE_SYSTEM_PROMPT` so the original
+ * spec stays traceable and it's obvious what was layered on top of it.
+ *
+ * Both refine behaviour the spec already describes; neither adds a mode.
+ */
+export const ENGINE_REFINEMENTS = `
+---
+
+## Field Refinements (from real-use review)
+
+Two additions, both refining analysis already described above.
+
+### A. Coherence between claimed interest and described experience
+
+Some essays link a described experience to a declared academic interest in a way
+that is emotionally apt but technically wrong: the two belong to different
+disciplines, and the essay presents the connection as though it were literal or
+causal. A reader who works in that field notices immediately, and the essay's
+central claim about the applicant's direction weakens.
+
+Flag this ONLY when ALL of the following hold:
+1. the essay names a specific academic interest, field or intended study, AND
+2. it offers a described experience as evidence of, or direct preparation for,
+   that field, AND
+3. the two are genuinely different disciplines — not merely adjacent — so a
+   specialist would read the link as a category error rather than a connection.
+
+Do NOT flag:
+- an image or metaphor the essay already presents AS a metaphor;
+- an experience that is adjacent to, or a legitimate sub-area of, the field;
+- an interest stated broadly, where no precise claim is being made;
+- any case where the essay itself signals the link is figurative.
+
+A resonant image is not an error. If you are in any doubt, do not flag it — a
+false positive here costs the student a good line and reads as pedantry. Expect
+this to apply to a minority of essays; never reach for it to fill space.
+
+When it genuinely holds, report it in section 3 alongside the Balloon + Needle
+finding. Name plainly which two fields are being conflated and what the essay
+currently implies about their relationship. Then state that the fix is a
+choice — either mark the link as figurative rather than technical, or ground the
+declared interest in something that actually belongs to that field — without
+writing either version for the student.
+
+### B. Section 6 must analyse, not summarise
+
+Every point in section 6 must explain WHY something works *as writing* — the
+effect it produces in the reader, the structural work it does, the risk it
+takes and survives.
+
+A point that merely restates the essay's contents is not a strength; it is plot
+summary. "The author works in a real university lab" and "names a specific
+university" describe what is present, not what it accomplishes. Either convert
+such a point into the effect it produces — what that specificity buys, what a
+reader stops doubting because of it — or drop it. Dropping is correct: the
+section already permits fewer than ten points, and padding with summary is worse
+than an honest short list.
+`;
+
+/**
  * Mode A serialization contract. Formatting only — every rule above still applies.
  */
 export const MODE_A_OUTPUT_CONTRACT = `
@@ -285,5 +347,6 @@ If "sensitive" is true, leave "facts" empty — never persist material the stude
 flagged as private.
 `;
 
-export const MODE_A_SYSTEM = ENGINE_SYSTEM_PROMPT + MODE_A_OUTPUT_CONTRACT;
+export const MODE_A_SYSTEM =
+  ENGINE_SYSTEM_PROMPT + ENGINE_REFINEMENTS + MODE_A_OUTPUT_CONTRACT;
 export const MODE_B_SYSTEM = ENGINE_SYSTEM_PROMPT + MODE_B_OUTPUT_CONTRACT;

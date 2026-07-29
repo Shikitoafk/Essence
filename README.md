@@ -118,9 +118,21 @@ and are overridable by env var without touching code.
 system instruction **verbatim** — the principles, framework, 20-point checklist,
 5 nudge patterns, Mode A format, Mode B conversational rules, cross-essay
 memory, and the "what to never do" list. Those rules are the product. Don't edit
-them to change app behaviour.
+them to change app behaviour — add to `ENGINE_REFINEMENTS` instead, so the
+original spec stays diffable against its source file.
 
-Appended to it at call time are two *formatting-only* contracts:
+`ENGINE_REFINEMENTS` currently adds two things, both from reviewing real output:
+
+- **Claimed-interest coherence.** Catches an essay that offers an experience as
+  evidence for a declared field when the two are genuinely different disciplines
+  (e.g. nanoparticle chemistry presented as preparation for gene editing). It
+  fires only when the essay makes a literal claim, never on a metaphor the essay
+  presents as one — a false positive here costs the student a good line, so the
+  guard rails matter and are covered by tests.
+- **Section 6 must analyse, not summarise.** Each strength has to explain the
+  effect a passage produces, not restate what the essay contains.
+
+Appended at call time are two further *formatting-only* contracts:
 
 - **Mode A** returns markdown wrapped in `<<<SECTION:n>>>` / `<<<CARD>>>`
   markers, parsed by [`parseReport.ts`](src/lib/ai/parseReport.ts) into the
