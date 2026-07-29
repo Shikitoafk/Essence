@@ -107,6 +107,24 @@ export interface ParsedReport {
   queue: number[];
 }
 
+/**
+ * Identity of a flagged spot across feedback runs: same pattern on the same
+ * line is the same finding, even if the model rephrased its explanation or
+ * shifted confidence. Used to carry a resolved/skipped status forward so a
+ * student is never re-asked about something they already worked through.
+ */
+export function spotKey(patternName: string, quotedText: string): string {
+  const normalise = (s: string) =>
+    s
+      .toLowerCase()
+      .replace(/[‘’]/g, "'")
+      .replace(/[“”]/g, '"')
+      .replace(/[–—]/g, "-")
+      .replace(/\s+/g, " ")
+      .trim();
+  return `${normalise(patternName)}::${normalise(quotedText)}`;
+}
+
 export function countWords(text: string): number {
   const trimmed = text.trim();
   if (!trimmed) return 0;

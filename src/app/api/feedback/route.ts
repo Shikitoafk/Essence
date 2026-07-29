@@ -4,7 +4,13 @@ import { MODE_A_SYSTEM } from "@/lib/ai/systemPrompt";
 import { generate, GeminiCallError, GeminiConfigError } from "@/lib/ai/gemini";
 import { locateQuote, parseModeAReport } from "@/lib/ai/parseReport";
 import { checkRateLimit, recordUsage } from "@/lib/rateLimit";
-import { countWords, MIN_DRAFT_WORDS, type Essay } from "@/lib/types";
+import {
+  countWords,
+  spotKey,
+  MIN_DRAFT_WORDS,
+  type Essay,
+  type SpotStatus,
+} from "@/lib/types";
 
 export const runtime = "nodejs";
 export const maxDuration = 120;
@@ -126,16 +132,39 @@ export async function POST(request: Request) {
     strengths: report.strengths,
   });
 
+  // Whatever the student already settled stays settled. Keyed by pattern+line
+  // so a re-read doesn't re-ask a question they've answered or waved off.
+  const { data: settled } = await supabase
+    .from("flagged_spots")
+    .select("pattern_name, quoted_text, status")
+    .eq("essay_id", essay.id)
+    .in("status", ["resolved", "skipped"]);
+
+  const settledStatus = new Map<string, SpotStatus>();
+  for (const prior of settled ?? []) {
+    settledStatus.set(
+      spotKey(prior.pattern_name as string, prior.quoted_text as string),
+      prior.status as SpotStatus,
+    );
+  }
+
   // Re-anchor each quote against the real draft so the editor can highlight it,
   // and drop any card whose quote the model invented outright.
   const ordered = report.queue
     .map((index) => report.spots[index])
     .filter(Boolean);
 
+  const seen = new Set<string>();
   const rows = ordered
-    .map((spot, position) => {
+    .map((spot) => {
       const located = locateQuote(draft, spot.quoted_text);
       if (!located) return null;
+
+      // A single run occasionally emits the same finding twice — keep the first.
+      const key = spotKey(spot.pattern_name, located.text);
+      if (seen.has(key)) return null;
+      seen.add(key);
+
       return {
         essay_id: essay.id,
         version_id: versionId,
@@ -146,32 +175,40 @@ export async function POST(request: Request) {
         what_is_unexplored: spot.what_is_unexplored,
         why_it_matters: spot.why_it_matters,
         question: spot.question,
-        queue_position: position,
-        status: "open" as const,
+        queue_position: 0,
+        status: settledStatus.get(key) ?? ("open" as SpotStatus),
       };
     })
-    .filter((row): row is NonNullable<typeof row> => row !== null);
+    .filter((row): row is NonNullable<typeof row> => row !== null)
+    .map((row, position) => ({ ...row, queue_position: position }));
 
-  let insertedIds: string[] = [];
+  let inserted: { id: string; queue_position: number; status: string }[] = [];
   if (rows.length > 0) {
-    const { data: inserted } = await supabase
+    const { data } = await supabase
       .from("flagged_spots")
       .insert(rows)
-      .select("id, queue_position")
+      .select("id, queue_position, status")
       .order("queue_position");
-    insertedIds = (inserted ?? []).map((r) => r.id as string);
+    inserted = (data ?? []) as typeof inserted;
   }
 
-  // Open the conversation with the first queued question — Mode B is strictly
-  // one question at a time, so only the first one gets posted.
-  if (rows.length > 0 && insertedIds.length > 0) {
-    await supabase.from("conversation_messages").insert({
-      essay_id: essay.id,
-      flagged_spot_id: insertedIds[0],
-      role: "assistant",
-      content: rows[0].question,
-    });
+  // Open the conversation with the first question that's actually open — Mode B
+  // is strictly one question at a time, and a spot carried over as already
+  // resolved must not be asked about again.
+  const firstOpen = inserted.find((row) => row.status === "open");
+  if (firstOpen) {
+    const question = rows[firstOpen.queue_position]?.question;
+    if (question) {
+      await supabase.from("conversation_messages").insert({
+        essay_id: essay.id,
+        flagged_spot_id: firstOpen.id,
+        role: "assistant",
+        content: question,
+      });
+    }
   }
+
+  const carriedOver = rows.filter((row) => row.status !== "open").length;
 
   await supabase
     .from("essays")
@@ -184,6 +221,7 @@ export async function POST(request: Request) {
     versionId,
     spotCount: rows.length,
     droppedCount: ordered.length - rows.length,
+    carriedOver,
   });
 }
 

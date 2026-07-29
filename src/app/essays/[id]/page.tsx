@@ -52,14 +52,31 @@ export default async function EssayPage({
       .maybeSingle<EssayReport>(),
   ]);
 
+  const report = reportResult.data ?? null;
+  const allSpots = (spotsResult.data ?? []) as FlaggedSpot[];
+
+  /*
+   * Only the latest run's spots belong in the workspace. Earlier runs describe
+   * drafts that no longer exist, and showing them stacks near-identical cards
+   * on every re-read. They stay in the database — the history page counts them
+   * per version, and deleting them would cascade away the student's
+   * conversation — they just aren't the current worklist.
+   *
+   * Anything the student resolved or set aside is carried onto the new run's
+   * cards by /api/feedback, so scoping here never loses settled work.
+   */
+  const currentSpots = report?.version_id
+    ? allSpots.filter((spot) => spot.version_id === report.version_id)
+    : allSpots;
+
   return (
     <div className="flex min-h-screen flex-col">
       <AppHeader email={user.email ?? undefined} />
       <Workspace
         essay={essay}
-        initialSpots={(spotsResult.data ?? []) as FlaggedSpot[]}
+        initialSpots={currentSpots}
         initialMessages={(messagesResult.data ?? []) as ConversationMessage[]}
-        report={reportResult.data ?? null}
+        report={report}
       />
     </div>
   );

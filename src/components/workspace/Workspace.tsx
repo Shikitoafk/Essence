@@ -100,13 +100,23 @@ export default function Workspace({
       if (payload.spotCount === 0) {
         setBanner({
           kind: "info",
-          text: "No spots flagged this time — read the full diagnostic on the Report tab.",
+          text: "No spots flagged this time — read the full diagnostic on the Full read tab.",
         });
-      } else if (payload.droppedCount > 0) {
-        setBanner({
-          kind: "info",
-          text: `${payload.spotCount} spots flagged. ${payload.droppedCount} were dropped because their quote didn't match your draft exactly.`,
-        });
+      } else {
+        const notes: string[] = [`${payload.spotCount} spots flagged.`];
+        if (payload.carriedOver > 0) {
+          notes.push(
+            `${payload.carriedOver} you'd already settled stayed closed.`,
+          );
+        }
+        if (payload.droppedCount > 0) {
+          notes.push(
+            `${payload.droppedCount} were dropped because their quote didn't match your draft exactly.`,
+          );
+        }
+        if (notes.length > 1) {
+          setBanner({ kind: "info", text: notes.join(" ") });
+        }
       }
 
       // The server wrote spots, the report and the opening question — pull the
