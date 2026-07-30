@@ -3,6 +3,7 @@ import AppHeader from "@/components/AppHeader";
 import Workspace from "@/components/workspace/Workspace";
 import { createClient } from "@/lib/supabase/server";
 import { dataPolicy } from "@/lib/ai/llm";
+import { selectCurrentSpots } from "@/lib/currentSpots";
 import type {
   ConversationMessage,
   Essay,
@@ -56,19 +57,9 @@ export default async function EssayPage({
   const report = reportResult.data ?? null;
   const allSpots = (spotsResult.data ?? []) as FlaggedSpot[];
 
-  /*
-   * Only the latest run's spots belong in the workspace. Earlier runs describe
-   * drafts that no longer exist, and showing them stacks near-identical cards
-   * on every re-read. They stay in the database — the history page counts them
-   * per version, and deleting them would cascade away the student's
-   * conversation — they just aren't the current worklist.
-   *
-   * Anything the student resolved or set aside is carried onto the new run's
-   * cards by /api/feedback, so scoping here never loses settled work.
-   */
-  const currentSpots = report?.version_id
-    ? allSpots.filter((spot) => spot.version_id === report.version_id)
-    : allSpots;
+  // Older runs stay in the database — the history page counts them per version,
+  // and deleting them would cascade away the student's conversation.
+  const currentSpots = selectCurrentSpots(allSpots);
 
   return (
     <div className="flex min-h-screen flex-col">

@@ -107,9 +107,14 @@ export default function Workspace({
           text: "Essence didn't get to the end of this read, so the flagged spots and questions are missing or incomplete. Try again — if it keeps happening, a shorter draft will get through.",
         });
       } else if (payload.spotCount === 0) {
+        // A barren re-read leaves the previous cards in place, so say that
+        // rather than letting an empty result look like a clean essay.
         setBanner({
           kind: "info",
-          text: "No spots flagged this time — read the full diagnostic on the Full read tab.",
+          text:
+            spots.length > 0
+              ? "This read came back with no new spots, so your existing ones are still here. The full diagnostic is on the Full read tab."
+              : "No spots flagged this time — read the full diagnostic on the Full read tab.",
         });
       } else {
         const notes: string[] = [`${payload.spotCount} spots flagged.`];
@@ -136,7 +141,7 @@ export default function Workspace({
     } finally {
       setAnalysing(false);
     }
-  }, [analysing, tooShort, essay.id, draft, router]);
+  }, [analysing, tooShort, essay.id, draft, router, spots.length]);
 
   // Re-sync when router.refresh() brings new server data down.
   useEffect(() => setSpots(initialSpots), [initialSpots]);
