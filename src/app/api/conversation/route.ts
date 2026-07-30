@@ -200,17 +200,10 @@ export async function POST(request: Request) {
       .limit(1)
       .maybeSingle<{ id: string; question: string }>();
 
-    if (next) {
-      nextSpot = next;
-      // Post the next queued question as its own turn — never bundled into the
-      // reply above, so the student only ever faces one question at a time.
-      await supabase.from("conversation_messages").insert({
-        essay_id: essayId,
-        flagged_spot_id: next.id,
-        role: "assistant",
-        content: next.question,
-      });
-    }
+    // Reported, not posted. The student decides when the next question arrives;
+    // the workspace asks for it explicitly. Answering one question should never
+    // conscript you into the next.
+    if (next) nextSpot = next;
   }
 
   return NextResponse.json({

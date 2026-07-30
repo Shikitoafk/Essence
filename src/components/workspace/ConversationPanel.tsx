@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { askNextQuestion } from "@/app/actions";
 import type { ConversationMessage, FlaggedSpot } from "@/lib/types";
 
 interface Props {
@@ -40,6 +41,7 @@ export default function ConversationPanel({
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showHistory, setShowHistory] = useState(false);
+  const [asking, setAsking] = useState(false);
   // The engine's praise for the spot just closed. Its message now belongs to a
   // finished spot (so it lives in history), but the teaching moment shouldn't
   // vanish the instant the next question loads — keep it pinned until the
@@ -76,6 +78,12 @@ export default function ConversationPanel({
 
   const resolvedCount = spots.filter((s) => s.status !== "open").length;
   const done = !currentSpot && spots.length > 0;
+
+  // A question only counts as live once it's actually in the thread. Until the
+  // student presses the button, the current spot exists but hasn't been asked,
+  // and the input stays shut.
+  const asked = currentThread.some((m) => m.role === "assistant");
+  const canAnswer = Boolean(currentSpot) && asked;
 
   useEffect(() => {
     const el = scrollRef.current;
@@ -142,16 +150,8 @@ export default function ConversationPanel({
           pattern: currentSpot.pattern_name,
           verdict: payload.verdict === "skipped" ? "skipped" : "resolved",
         });
-        if (payload.nextSpot) {
-          next.push({
-            id: `assistant-next-${Date.now()}`,
-            essay_id: essayId,
-            flagged_spot_id: payload.nextSpot.id,
-            role: "assistant",
-            content: payload.nextSpot.question,
-            created_at: new Date().toISOString(),
-          });
-        }
+        // The next question is NOT added here. It arrives only when the student
+        // presses the button below.
       }
 
       onMessagesChange(next);
@@ -160,6 +160,35 @@ export default function ConversationPanel({
     } finally {
       setSending(false);
     }
+  }
+
+  async function requestNextQuestion() {
+    if (!currentSpot || asking) return;
+    setAsking(true);
+    setError(null);
+
+    const result = await askNextQuestion(essayId);
+    if (!result.ok) {
+      setError(result.error);
+      setAsking(false);
+      return;
+    }
+
+    onMessagesChange([
+      ...messages,
+      {
+        id: `question-${result.spotId}-${Date.now()}`,
+        essay_id: essayId,
+        flagged_spot_id: result.spotId,
+        role: "assistant",
+        content: result.question,
+        created_at: new Date().toISOString(),
+      },
+    ]);
+    // Clearing this hands the screen over to the new question.
+    setAffirmation(null);
+    onSelectSpot(result.spotId);
+    setAsking(false);
   }
 
   const spotPattern = (spotId: string | null) =>
@@ -172,7 +201,9 @@ export default function ConversationPanel({
           <h2 className="font-serif text-base">Follow-up</h2>
           <p className="text-xs text-muted">
             {currentSpot
-              ? `One question at a time · ${openSpots.length} left`
+              ? canAnswer
+                ? `One question at a time · ${openSpots.length} left`
+                : `${openSpots.length} question${openSpots.length === 1 ? "" : "s"} waiting · you decide when`
               : done
                 ? "Every spot has been worked through."
                 : "Run a read first."}
@@ -232,7 +263,7 @@ export default function ConversationPanel({
         )}
 
         {/* The live spot: what the input answers, stated plainly. */}
-        {currentSpot && (
+        {currentSpot && asked && (
           <div className="rounded-lg border border-accent/30 bg-accent-soft/30 px-3 py-2">
             <p className="text-xs uppercase tracking-widest text-accent">
               Answering · {currentSpot.pattern_name}
@@ -252,6 +283,25 @@ export default function ConversationPanel({
             onSelectSpot={onSelectSpot}
           />
         ))}
+
+        {/* The only way a question ever reaches the thread. */}
+        {currentSpot && !asked && (
+          <div className="rounded-lg border border-dashed border-accent/40 bg-paper/60 p-4 text-center">
+            <p className="text-sm text-muted">
+              {messages.length === 0
+                ? `${openSpots.length} spot${openSpots.length === 1 ? "" : "s"} to work through. Take the first question when you're ready.`
+                : `Next up: ${currentSpot.pattern_name}. ${openSpots.length} left.`}
+            </p>
+            <button
+              type="button"
+              onClick={() => void requestNextQuestion()}
+              disabled={asking}
+              className="mt-3 rounded-full bg-accent px-5 py-2 text-sm text-paper transition hover:opacity-90 disabled:opacity-40"
+            >
+              {asking ? "Getting it…" : "New question"}
+            </button>
+          </div>
+        )}
 
         {done && (
           <p className="rounded-lg border border-dashed border-line bg-paper/60 p-4 text-sm text-muted">
@@ -282,7 +332,7 @@ export default function ConversationPanel({
       )}
 
       <div className="border-t border-line p-3">
-        {currentSpot && (
+        {canAnswer && currentSpot && (
           <p className="mb-2 text-xs text-muted">
             Answering{" "}
             <span className="font-medium text-accent">
@@ -300,11 +350,13 @@ export default function ConversationPanel({
             }
           }}
           rows={3}
-          disabled={!currentSpot || sending}
+          disabled={!canAnswer || sending}
           placeholder={
-            currentSpot
+            canAnswer
               ? "Answer with one concrete thing — what happened, who was there, when."
-              : "No open questions right now."
+              : currentSpot
+                ? "Press New question when you're ready."
+                : "No open questions right now."
           }
           className="w-full resize-none rounded-lg border border-line px-3 py-2 text-sm outline-none focus:border-accent disabled:bg-paper disabled:text-muted"
         />
@@ -313,7 +365,7 @@ export default function ConversationPanel({
           <button
             type="button"
             onClick={() => void send()}
-            disabled={!currentSpot || sending || !draft.trim()}
+            disabled={!canAnswer || sending || !draft.trim()}
             className="rounded-full bg-accent px-4 py-1.5 text-sm text-paper transition hover:opacity-90 disabled:opacity-40"
           >
             {sending ? "Thinking…" : "Send"}

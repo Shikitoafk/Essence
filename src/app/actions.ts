@@ -126,6 +126,56 @@ export async function saveVersion(essayId: string, label?: string) {
   return { ok: true as const };
 }
 
+/**
+ * Puts the next queued question into the conversation — only ever called from
+ * an explicit click. Nothing posts a question on the student's behalf: they
+ * decide when to take the next one on.
+ *
+ * Returns the spot the question belongs to so the workspace can bind the input
+ * and highlight the right line.
+ */
+export async function askNextQuestion(essayId: string) {
+  const { supabase } = await requireUser();
+
+  const { data: next } = await supabase
+    .from("flagged_spots")
+    .select("id, question, pattern_name")
+    .eq("essay_id", essayId)
+    .eq("status", "open")
+    .order("queue_position", { ascending: true })
+    .limit(1)
+    .maybeSingle<{ id: string; question: string; pattern_name: string }>();
+
+  if (!next) return { ok: false as const, error: "No open questions left." };
+
+  // Asking twice for the same spot would double-post it — if its question is
+  // already in the thread, just hand back the spot.
+  const { data: existing } = await supabase
+    .from("conversation_messages")
+    .select("id")
+    .eq("flagged_spot_id", next.id)
+    .eq("role", "assistant")
+    .limit(1)
+    .maybeSingle<{ id: string }>();
+
+  if (!existing) {
+    const { error } = await supabase.from("conversation_messages").insert({
+      essay_id: essayId,
+      flagged_spot_id: next.id,
+      role: "assistant",
+      content: next.question,
+    });
+    if (error) return { ok: false as const, error: error.message };
+  }
+
+  return {
+    ok: true as const,
+    spotId: next.id,
+    question: next.question,
+    patternName: next.pattern_name,
+  };
+}
+
 export async function setSpotStatus(
   spotId: string,
   status: "open" | "resolved" | "skipped",

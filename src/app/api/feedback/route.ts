@@ -182,31 +182,16 @@ export async function POST(request: Request) {
     .filter((row): row is NonNullable<typeof row> => row !== null)
     .map((row, position) => ({ ...row, queue_position: position }));
 
-  let inserted: { id: string; queue_position: number; status: string }[] = [];
   if (rows.length > 0) {
-    const { data } = await supabase
-      .from("flagged_spots")
-      .insert(rows)
-      .select("id, queue_position, status")
-      .order("queue_position");
-    inserted = (data ?? []) as typeof inserted;
+    await supabase.from("flagged_spots").insert(rows);
   }
 
-  // Open the conversation with the first question that's actually open — Mode B
-  // is strictly one question at a time, and a spot carried over as already
-  // resolved must not be asked about again.
-  const firstOpen = inserted.find((row) => row.status === "open");
-  if (firstOpen) {
-    const question = rows[firstOpen.queue_position]?.question;
-    if (question) {
-      await supabase.from("conversation_messages").insert({
-        essay_id: essay.id,
-        flagged_spot_id: firstOpen.id,
-        role: "assistant",
-        content: question,
-      });
-    }
-  }
+  /*
+   * No question is posted here. The student asks for the first one from the
+   * workspace when they're ready — a read can surface a lot at once, and being
+   * handed a question before you've finished reading the diagnostic is exactly
+   * the pressure this tool is supposed to avoid.
+   */
 
   const carriedOver = rows.filter((row) => row.status !== "open").length;
 
