@@ -4,9 +4,9 @@ import { MODE_B_SYSTEM } from "@/lib/ai/systemPrompt";
 import {
   generate,
   parseJsonBody,
-  GeminiCallError,
-  GeminiConfigError,
-} from "@/lib/ai/gemini";
+  LlmCallError,
+  LlmConfigError,
+} from "@/lib/ai/llm";
 import { checkRateLimit, recordUsage } from "@/lib/rateLimit";
 import type { ConversationMessage, Essay, FlaggedSpot } from "@/lib/types";
 
@@ -128,10 +128,10 @@ export async function POST(request: Request) {
     model = result.model;
     parsed = parseJsonBody<ModeBReply>(result.text);
   } catch (error) {
-    if (error instanceof GeminiConfigError) {
+    if (error instanceof LlmConfigError) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
-    if (error instanceof GeminiCallError) {
+    if (error instanceof LlmCallError) {
       return NextResponse.json(
         { error: error.message },
         { status: error.retryable ? 503 : 502 },

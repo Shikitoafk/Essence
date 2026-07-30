@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { MODE_A_SYSTEM } from "@/lib/ai/systemPrompt";
-import { generate, GeminiCallError, GeminiConfigError } from "@/lib/ai/gemini";
+import { generate, LlmCallError, LlmConfigError } from "@/lib/ai/llm";
 import { locateQuote, parseModeAReport } from "@/lib/ai/parseReport";
 import { checkRateLimit, recordUsage } from "@/lib/rateLimit";
 import {
@@ -91,10 +91,10 @@ export async function POST(request: Request) {
     raw = result.text;
     model = result.model;
   } catch (error) {
-    if (error instanceof GeminiConfigError) {
+    if (error instanceof LlmConfigError) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
-    if (error instanceof GeminiCallError) {
+    if (error instanceof LlmCallError) {
       return NextResponse.json(
         { error: error.message },
         { status: error.retryable ? 503 : 502 },

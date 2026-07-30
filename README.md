@@ -86,6 +86,30 @@ npm run dev
 
 ---
 
+## Choosing a provider — this is a privacy decision
+
+`AI_PROVIDER` selects who generates feedback: `gemini` (default) or `groq`.
+
+It is not just about cost. The two providers' terms differ on the thing that
+matters most for a tool handling personal application essays:
+
+| | Trains on your text? | Human review? |
+| --- | --- | --- |
+| **Groq**, any plan incl. free | No — Services Agreement §4.2 bars it | No; not retained by default |
+| **Gemini**, paid tier | No | No |
+| **Gemini**, free tier | **Yes** | **Yes** |
+
+Google's unpaid-tier terms state: *"Do not submit sensitive, confidential, or
+personal information to the Unpaid Services."* An application essay is personal
+information, so free Groq protects students better than free Gemini. The
+trade-off is model quality — Groq serves open models; compare them on a real
+draft before committing.
+
+Whichever is configured, the app tells students the truth: `dataPolicy()` in
+[`src/lib/ai/llm.ts`](src/lib/ai/llm.ts) drives both the privacy page and a
+banner in the workspace, and warns prominently whenever the active provider may
+train on what they paste. Its branches are covered by tests.
+
 ## Staying inside the Gemini free tier
 
 The two call types have very different costs, so they run on different models:

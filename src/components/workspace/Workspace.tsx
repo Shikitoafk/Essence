@@ -25,7 +25,7 @@ interface Props {
   initialSpots: FlaggedSpot[];
   initialMessages: ConversationMessage[];
   report: EssayReport | null;
-  /** False when the Gemini key is unpaid — see geminiIsPaidTier(). */
+  /** False when the active provider's terms permit training on submitted text. */
   paidTier: boolean;
 }
 
@@ -219,9 +219,8 @@ export default function Workspace({
           </div>
         </div>
 
-        {/* Google's unpaid-tier terms say not to send personal information, and
-            an application essay is exactly that. Say so where drafts get pasted,
-            not only on the privacy page. */}
+        {/* When the provider's terms permit training on submitted text, say so
+            where drafts get pasted — not only on a privacy page nobody opens. */}
         {!paidTier && (
           <p className="border-t border-line bg-flag-high/10 px-6 py-2 text-xs text-flag-high">
             This app runs on Google&apos;s free Gemini tier: Google may use what
