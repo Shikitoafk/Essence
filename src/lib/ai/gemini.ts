@@ -53,6 +53,24 @@ const DEFAULT_CHAINS: Record<ModelTier, string[]> = {
 
 export type ModelTier = "diagnostic" | "conversation";
 
+/**
+ * Whether this deployment's Gemini key is on a billed (paid) account.
+ *
+ * This is not cosmetic. Google's Gemini API terms differ sharply by tier: on
+ * the unpaid tier Google uses submitted content to improve its products, human
+ * reviewers may read it, and the terms say plainly "Do not submit sensitive,
+ * confidential, or personal information to the Unpaid Services." On the paid
+ * tier prompts and responses are not used for product improvement.
+ *
+ * College essays are personal information by any reading, so students have to
+ * be told which of those two worlds they're in. The API can't report its own
+ * billing status, so it's declared here and defaults to the honest, cautious
+ * answer: assume unpaid until told otherwise.
+ */
+export function geminiIsPaidTier(): boolean {
+  return process.env.GEMINI_PAID_TIER === "true";
+}
+
 export function modelChain(tier: ModelTier): string[] {
   const override =
     tier === "diagnostic"

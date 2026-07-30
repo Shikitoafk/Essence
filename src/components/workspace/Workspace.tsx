@@ -25,6 +25,8 @@ interface Props {
   initialSpots: FlaggedSpot[];
   initialMessages: ConversationMessage[];
   report: EssayReport | null;
+  /** False when the Gemini key is unpaid — see geminiIsPaidTier(). */
+  paidTier: boolean;
 }
 
 type Tab = "spots" | "report";
@@ -34,6 +36,7 @@ export default function Workspace({
   initialSpots,
   initialMessages,
   report: initialReport,
+  paidTier,
 }: Props) {
   const router = useRouter();
 
@@ -215,6 +218,19 @@ export default function Workspace({
             </button>
           </div>
         </div>
+
+        {/* Google's unpaid-tier terms say not to send personal information, and
+            an application essay is exactly that. Say so where drafts get pasted,
+            not only on the privacy page. */}
+        {!paidTier && (
+          <p className="border-t border-line bg-flag-high/10 px-6 py-2 text-xs text-flag-high">
+            This app runs on Google&apos;s free Gemini tier: Google may use what
+            you paste to improve its products, and human reviewers may read it.{" "}
+            <Link href="/settings" className="underline underline-offset-2">
+              What this means
+            </Link>
+          </p>
+        )}
 
         {tooShort && (
           <p className="border-t border-line bg-accent-soft/40 px-6 py-2 text-xs text-accent">

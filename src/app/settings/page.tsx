@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import AppHeader from "@/components/AppHeader";
 import FactsManager from "./FactsManager";
 import { createClient } from "@/lib/supabase/server";
-import { modelChain } from "@/lib/ai/gemini";
+import { geminiIsPaidTier, modelChain } from "@/lib/ai/gemini";
 import type { EssayFact } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -14,6 +14,8 @@ export default async function SettingsPage() {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
+
+  const paidTier = geminiIsPaidTier();
 
   const [{ data: facts }, { count: essayCount }] = await Promise.all([
     supabase
@@ -94,6 +96,34 @@ export default async function SettingsPage() {
               </code>{" "}
               for follow-up turns.
             </li>
+            {paidTier ? (
+              <li>
+                This deployment uses a <span className="text-ink">paid</span>{" "}
+                Gemini account. Under Google&apos;s API terms that means your
+                prompts and the responses are{" "}
+                <span className="text-ink">not</span> used to improve Google&apos;s
+                products or models. Google retains them briefly only to detect
+                abuse and to meet legal requirements.
+              </li>
+            ) : (
+              <li className="rounded-md bg-flag-high/10 p-3">
+                <span className="font-medium text-flag-high">
+                  Read this before pasting anything personal.
+                </span>{" "}
+                This deployment uses Google&apos;s{" "}
+                <span className="text-ink">free</span> Gemini tier. Under
+                Google&apos;s API terms for unpaid use, Google uses submitted
+                content to develop and improve its products, and{" "}
+                <span className="text-ink">
+                  human reviewers may read your essay and your answers
+                </span>
+                . Google&apos;s own terms say: &ldquo;Do not submit sensitive,
+                confidential, or personal information to the Unpaid
+                Services.&rdquo; Treat anything you paste here as something you
+                would be willing to have read by a stranger, and leave out
+                material you would not.
+              </li>
+            )}
             <li>
               <span className="text-ink">Vercel Analytics</span> — counts page
               views so we know which pages get used. It records the page

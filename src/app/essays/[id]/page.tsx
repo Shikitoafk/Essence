@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import AppHeader from "@/components/AppHeader";
 import Workspace from "@/components/workspace/Workspace";
 import { createClient } from "@/lib/supabase/server";
+import { geminiIsPaidTier } from "@/lib/ai/gemini";
 import type {
   ConversationMessage,
   Essay,
@@ -77,6 +78,7 @@ export default async function EssayPage({
         initialSpots={currentSpots}
         initialMessages={(messagesResult.data ?? []) as ConversationMessage[]}
         report={report}
+        paidTier={geminiIsPaidTier()}
       />
     </div>
   );
