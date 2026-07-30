@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { countWords, type EssayKind } from "@/lib/types";
+import { countWords, type EssayKind, type SpotStatus } from "@/lib/types";
 
 async function requireUser() {
   const supabase = await createClient();
@@ -176,10 +176,7 @@ export async function askNextQuestion(essayId: string) {
   };
 }
 
-export async function setSpotStatus(
-  spotId: string,
-  status: "open" | "resolved" | "skipped",
-) {
+export async function setSpotStatus(spotId: string, status: SpotStatus) {
   const { supabase } = await requireUser();
   const { error } = await supabase
     .from("flagged_spots")

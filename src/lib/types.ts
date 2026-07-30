@@ -28,7 +28,13 @@ export type Readiness = (typeof READINESS_STAGES)[number];
 export function shouldStopReading(readiness: Readiness | null): boolean {
   return readiness === "polish" || readiness === "done";
 }
-export type SpotStatus = "open" | "resolved" | "skipped";
+/**
+ * `answered` is the stage that keeps the loop honest: the student has produced
+ * real material in conversation, but it hasn't reached the draft. Only an
+ * actual revision earns `resolved` — otherwise the tool congratulates people
+ * for talking about their essay instead of writing it.
+ */
+export type SpotStatus = "open" | "answered" | "resolved" | "skipped";
 export type EssayKind = "personal_statement" | "supplemental";
 export type MessageRole = "assistant" | "user";
 
@@ -71,6 +77,8 @@ export interface FlaggedSpot {
   question: string;
   queue_position: number;
   status: SpotStatus;
+  /** Specifics from the student's own answer that weren't yet in the draft. */
+  new_material: string[];
   created_at: string;
 }
 

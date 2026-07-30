@@ -11,6 +11,7 @@ export const maxDuration = 60;
 interface ModeBReply {
   reply: string;
   verdict: "resolved" | "needs_narrower" | "skipped";
+  new_material?: string[];
   facts?: string[];
   sensitive?: boolean;
 }
@@ -176,10 +177,29 @@ export async function POST(request: Request) {
 
   let nextSpot: { id: string; question: string } | null = null;
 
+  // What the student just surfaced that isn't in the draft yet — their words,
+  // handed back as material to write from.
+  const newMaterial =
+    verdict === "resolved" && Array.isArray(parsed.new_material)
+      ? parsed.new_material
+          .map((item) => String(item).trim())
+          .filter((item) => item.length > 0 && item.length < 400)
+          .slice(0, 8)
+      : [];
+
   if (verdict !== "needs_narrower") {
+    /*
+     * A good answer closes the QUESTION, not the spot. Marking it resolved here
+     * would congratulate the student for talking about their essay while the
+     * essay itself hasn't changed — and leave their own material stranded in a
+     * chat bubble. It becomes resolved once the passage is actually revised.
+     */
     await supabase
       .from("flagged_spots")
-      .update({ status: verdict === "resolved" ? "resolved" : "skipped" })
+      .update({
+        status: verdict === "resolved" ? "answered" : "skipped",
+        ...(newMaterial.length ? { new_material: newMaterial } : {}),
+      })
       .eq("id", spotId);
 
     const { data: next } = await supabase
@@ -202,6 +222,7 @@ export async function POST(request: Request) {
     ok: true,
     reply,
     verdict,
+    newMaterial,
     nextSpot,
   });
 }

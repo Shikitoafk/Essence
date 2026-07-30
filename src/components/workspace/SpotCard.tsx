@@ -10,6 +10,7 @@ const CONFIDENCE_STYLE: Record<string, string> = {
 
 const STATUS_LABEL: Record<SpotStatus, string> = {
   open: "Open",
+  answered: "Material ready — not in the draft yet",
   resolved: "Resolved",
   skipped: "Set aside",
 };
@@ -29,13 +30,19 @@ export default function SpotCard({
   onSelect,
   onStatusChange,
 }: Props) {
-  const dimmed = spot.status !== "open";
+  // `answered` is live work, not settled work — it must not fade out.
+  const dimmed = spot.status === "resolved" || spot.status === "skipped";
+  const awaitingRevision = spot.status === "answered";
 
   return (
     <article
       onClick={onSelect}
       className={`cursor-pointer rounded-lg border bg-white p-4 transition ${
-        active ? "border-accent shadow-sm" : "border-line hover:border-accent/50"
+        awaitingRevision
+          ? "border-flag-medium/60 shadow-sm"
+          : active
+            ? "border-accent shadow-sm"
+            : "border-line hover:border-accent/50"
       } ${dimmed ? "opacity-60" : ""}`}
     >
       <div className="flex flex-wrap items-center gap-2">
@@ -65,6 +72,29 @@ export default function SpotCard({
         </p>
       )}
 
+      {/* The student's own material, handed back so it reads as material rather
+          than as a chat message they have to go dig out. Deliberately a list of
+          raw specifics: no ordering into prose, no suggested phrasing. */}
+      {awaitingRevision && spot.new_material.length > 0 && (
+        <div className="mt-4 rounded-md border border-flag-medium/40 bg-flag-medium/10 p-3">
+          <p className="text-xs uppercase tracking-widest text-flag-medium">
+            What you turned up — not in the draft yet
+          </p>
+          <ul className="mt-2 space-y-1.5 text-sm">
+            {spot.new_material.map((item, i) => (
+              <li key={i} className="flex gap-2">
+                <span className="text-flag-medium">·</span>
+                <span>{item}</span>
+              </li>
+            ))}
+          </ul>
+          <p className="mt-3 text-xs text-muted">
+            Your words, not ours. Work them into the quoted line above however
+            you want — this closes itself once that passage changes.
+          </p>
+        </div>
+      )}
+
       <dl className="mt-4 space-y-2.5 text-sm">
         <div>
           <dt className="text-xs uppercase tracking-widest text-muted">
@@ -87,7 +117,7 @@ export default function SpotCard({
       </dl>
 
       <div className="mt-4 flex flex-wrap gap-2 border-t border-line pt-3 text-xs">
-        {spot.status === "open" ? (
+        {spot.status === "open" || awaitingRevision ? (
           <>
             <button
               type="button"
@@ -97,7 +127,7 @@ export default function SpotCard({
               }}
               className="rounded-full border border-line px-3 py-1 hover:border-flag-low hover:text-flag-low"
             >
-              Mark resolved
+              {awaitingRevision ? "Already handled it" : "Mark resolved"}
             </button>
             <button
               type="button"

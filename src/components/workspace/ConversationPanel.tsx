@@ -18,6 +18,8 @@ interface Affirmation {
   text: string;
   pattern: string;
   verdict: "resolved" | "skipped";
+  /** Specifics the student just surfaced that aren't in the draft yet. */
+  newMaterial: string[];
 }
 
 /**
@@ -149,6 +151,9 @@ export default function ConversationPanel({
           text: payload.reply,
           pattern: currentSpot.pattern_name,
           verdict: payload.verdict === "skipped" ? "skipped" : "resolved",
+          newMaterial: Array.isArray(payload.newMaterial)
+            ? payload.newMaterial
+            : [],
         });
         // The next question is NOT added here. It arrives only when the student
         // presses the button below.
@@ -255,10 +260,32 @@ export default function ConversationPanel({
           <div className="rounded-lg border border-flag-low/40 bg-flag-low/10 p-3 text-sm">
             <p className="text-xs uppercase tracking-widest text-flag-low">
               {affirmation.verdict === "resolved"
-                ? `Locked in · ${affirmation.pattern}`
+                ? `Your material · ${affirmation.pattern}`
                 : `Set aside · ${affirmation.pattern}`}
             </p>
             <p className="mt-1 leading-relaxed">{affirmation.text}</p>
+
+            {/* Handed straight back as raw specifics. This is the ingredient
+                list, never a draft — the writing stays the student's. */}
+            {affirmation.newMaterial.length > 0 && (
+              <div className="mt-3 border-t border-flag-low/30 pt-3">
+                <p className="text-xs uppercase tracking-widest text-flag-low">
+                  What you just turned up
+                </p>
+                <ul className="mt-1.5 space-y-1">
+                  {affirmation.newMaterial.map((item, i) => (
+                    <li key={i} className="flex gap-2">
+                      <span className="text-flag-low">·</span>
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+                <p className="mt-2 text-xs text-muted">
+                  None of it is in your essay yet. The card on the right stays
+                  amber until you&apos;ve worked it into that line.
+                </p>
+              </div>
+            )}
           </div>
         )}
 

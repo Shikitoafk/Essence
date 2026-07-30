@@ -77,7 +77,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const context = await buildSeasonContext(supabase, user.id, essay);
+  const context = await buildSeasonContext(supabase, user.id, essay, draft);
 
   let raw: string;
   try {
@@ -219,6 +219,7 @@ export async function POST(request: Request) {
     droppedCount: ordered.length - rows.length,
     carriedOver,
     truncated,
+    draftUnchanged: context.draftUnchanged,
   });
 }
 
@@ -230,6 +231,8 @@ interface SeasonContext {
   round: number;
   /** The stage the previous read landed on, if there was one. */
   previousReadiness: string | null;
+  /** True when this draft is identical to the one last read. */
+  draftUnchanged: boolean;
 }
 
 /**
@@ -242,9 +245,15 @@ async function buildSeasonContext(
   supabase: Awaited<ReturnType<typeof createClient>>,
   userId: string,
   essay: Essay,
+  draft: string,
 ): Promise<SeasonContext> {
-  const [factsResult, essaysResult, resolvedResult, historyResult] =
-    await Promise.all([
+  const [
+    factsResult,
+    essaysResult,
+    resolvedResult,
+    historyResult,
+    lastVersionResult,
+  ] = await Promise.all([
     supabase
       .from("essay_facts")
       .select("fact")
@@ -270,7 +279,18 @@ async function buildSeasonContext(
       .eq("essay_id", essay.id)
       .order("created_at", { ascending: false })
       .limit(1),
+    // Every read snapshots the draft it read, so the newest snapshot is what
+    // the previous verdict was passed on.
+    supabase
+      .from("essay_versions")
+      .select("draft_text")
+      .eq("essay_id", essay.id)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle<{ draft_text: string }>(),
   ]);
+
+  const lastRead = lastVersionResult.data?.draft_text ?? null;
 
   return {
     facts: (factsResult.data ?? []).map((r) => r.fact as string),
@@ -284,6 +304,7 @@ async function buildSeasonContext(
     round: (historyResult.count ?? 0) + 1,
     previousReadiness:
       (historyResult.data?.[0]?.readiness as string | null) ?? null,
+    draftUnchanged: lastRead !== null && lastRead.trim() === draft.trim(),
   };
 }
 
@@ -343,6 +364,16 @@ function buildModeAPrompt(
   // and is the input to the readiness verdict in section 8.
   if (context.round === 1) {
     parts.push("This is the FIRST read of this essay.");
+  } else if (context.draftUnchanged) {
+    // The sharpest test of circling: an unchanged draft that comes back with a
+    // fresh set of objections proves the findings were never the real ceiling.
+    parts.push(
+      `This is read number ${context.round}, and the draft is IDENTICAL to the one you read last time — not one word has been revised.${
+        context.previousReadiness
+          ? ` That read judged it "${context.previousReadiness}".`
+          : ""
+      } Nothing has been addressed, so nothing has improved and nothing has worsened: your verdict must be the same one, and your findings must be the same findings. Do NOT go looking for different problems in the same text — a new set of objections to an unrevised draft would mean the earlier read was incomplete or this one is invented. Say plainly that the draft is unchanged, restate what is still open, and tell the student that re-reading without revising cannot help them.`,
+    );
   } else {
     parts.push(
       `This is read number ${context.round} of this essay.${

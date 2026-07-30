@@ -43,8 +43,15 @@ create table if not exists public.flagged_spots (
   why_it_matters     text not null default '',
   question           text not null default '',
   queue_position     integer not null default 0,
+  -- 'answered' sits between open and resolved: the student has surfaced the
+  -- material in conversation, but it hasn't reached the draft yet. Answering is
+  -- not revising, and the card shouldn't claim otherwise.
   status             text not null default 'open'
-                       check (status in ('open', 'resolved', 'skipped')),
+                       check (status in ('open', 'answered', 'resolved',
+                                         'skipped')),
+  -- The concrete specifics from the student's own answer that weren't in the
+  -- draft, shown back so the material is visible as material.
+  new_material       text[] not null default '{}',
   created_at         timestamptz not null default now()
 );
 

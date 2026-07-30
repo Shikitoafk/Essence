@@ -18,6 +18,7 @@ function spot(versionId: string | null, createdAt: string): FlaggedSpot {
     question: "What changed?",
     queue_position: 0,
     status: "open",
+    new_material: [],
     created_at: createdAt,
   };
 }

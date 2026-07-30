@@ -108,6 +108,11 @@ export default function Workspace({
           kind: "error",
           text: "Essence didn't get to the end of this read, so the flagged spots and questions are missing or incomplete. Try again — if it keeps happening, a shorter draft will get through.",
         });
+      } else if (payload.draftUnchanged) {
+        setBanner({
+          kind: "info",
+          text: "This draft hasn't changed since the last read, so the findings haven't either. Reading again won't move it — revising will.",
+        });
       } else if (payload.spotCount === 0) {
         // A barren re-read leaves the previous cards in place, so say that
         // rather than letting an empty result look like a clean essay.
@@ -155,6 +160,33 @@ export default function Workspace({
       return initialSpots.find((s) => s.status === "open")?.id ?? null;
     });
   }, [initialSpots]);
+
+  /*
+   * Closes the loop on revision rather than conversation.
+   *
+   * A spot sits at `answered` once the student has produced the material but
+   * the draft still reads as it did. Each card is anchored to an exact line, so
+   * when that line stops appearing in the draft the passage has been rewritten
+   * — that, and not a good chat answer, is what earns `resolved`.
+   */
+  useEffect(() => {
+    const answered = spots.filter((s) => s.status === "answered");
+    if (answered.length === 0) return;
+
+    const timer = setTimeout(() => {
+      for (const spot of answered) {
+        if (locateQuote(draft, spot.quoted_text)) continue;
+        setSpots((prev) =>
+          prev.map((s) =>
+            s.id === spot.id ? { ...s, status: "resolved" as SpotStatus } : s,
+          ),
+        );
+        void setSpotStatus(spot.id, "resolved");
+      }
+    }, 1200);
+
+    return () => clearTimeout(timer);
+  }, [draft, spots]);
 
   async function changeStatus(spotId: string, status: SpotStatus) {
     setSpots((prev) =>
