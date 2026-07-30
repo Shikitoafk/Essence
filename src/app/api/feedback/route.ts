@@ -107,6 +107,15 @@ export async function POST(request: Request) {
 
   const report = parseModeAReport(raw);
 
+  /*
+   * A truncated report is indistinguishable from a clean one that found
+   * nothing: the early sections arrive, the cards and queue fall off the end,
+   * the student is told their essay is fine. The contract ends with <<<END>>>,
+   * so its absence means the model was cut off — say so instead of implying a
+   * verdict the model never reached.
+   */
+  const truncated = !raw.includes("<<<END>>>");
+
   // Snapshot the draft this report describes, so spots stay anchored to the
   // exact text they were found in even after the student edits.
   const { data: version } = await supabase
@@ -207,6 +216,7 @@ export async function POST(request: Request) {
     spotCount: rows.length,
     droppedCount: ordered.length - rows.length,
     carriedOver,
+    truncated,
   });
 }
 

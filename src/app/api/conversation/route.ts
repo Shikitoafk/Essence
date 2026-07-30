@@ -123,7 +123,8 @@ export async function POST(request: Request) {
       prompt,
       json: true,
       temperature: 0.8,
-      maxOutputTokens: 1200,
+      // No explicit ceiling: reasoning models draw thinking tokens from the same
+      // budget, and a cap sized for the visible reply truncates the JSON body.
     });
     model = result.model;
     parsed = parseJsonBody<ModeBReply>(result.text);

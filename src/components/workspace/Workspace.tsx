@@ -100,7 +100,13 @@ export default function Workspace({
         return;
       }
 
-      if (payload.spotCount === 0) {
+      if (payload.truncated) {
+        // Never let a cut-off read masquerade as a clean bill of health.
+        setBanner({
+          kind: "error",
+          text: "The model ran out of room before finishing this read, so the flagged spots and questions are missing or incomplete. Run it again — if it keeps happening, the essay may be too long for the current model.",
+        });
+      } else if (payload.spotCount === 0) {
         setBanner({
           kind: "info",
           text: "No spots flagged this time — read the full diagnostic on the Full read tab.",

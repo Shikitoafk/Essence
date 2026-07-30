@@ -40,6 +40,28 @@ export function groqChain(tier: ModelTier): string[] {
   return resolveChain(override, DEFAULT_CHAINS[tier]);
 }
 
+/**
+ * Groq defaults reasoning models to max_completion_tokens: 1024, and reasoning
+ * tokens are drawn from that same budget. A full Mode A report needs roughly
+ * 2,500 output tokens before any thinking, so the default silently truncates it
+ * — the spot cards and question queue fall off the end and the student gets a
+ * bland summary with nothing flagged. Always send an explicit ceiling.
+ */
+const DEFAULT_MAX_TOKENS: Record<ModelTier, number> = {
+  diagnostic: 16000,
+  conversation: 4000,
+};
+
+/** GPT-OSS models let us buy analysis depth directly; the deep read wants it. */
+const REASONING_EFFORT: Record<ModelTier, "low" | "medium" | "high"> = {
+  diagnostic: "high",
+  conversation: "low",
+};
+
+function supportsReasoningEffort(model: string): boolean {
+  return /gpt-oss/i.test(model);
+}
+
 export async function generateWithGroq({
   tier,
   system,
@@ -70,7 +92,15 @@ export async function generateWithGroq({
           body: JSON.stringify({
             model,
             temperature,
-            ...(maxOutputTokens ? { max_completion_tokens: maxOutputTokens } : {}),
+            max_completion_tokens: maxOutputTokens ?? DEFAULT_MAX_TOKENS[tier],
+            ...(supportsReasoningEffort(model)
+              ? {
+                  reasoning_effort: REASONING_EFFORT[tier],
+                  // Groq requires this to be parsed or hidden in JSON mode; we
+                  // never want the chain of thought in the body either way.
+                  reasoning_format: "hidden",
+                }
+              : {}),
             ...(json ? { response_format: { type: "json_object" } } : {}),
             messages: [
               { role: "system", content: system },
