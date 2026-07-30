@@ -2,7 +2,9 @@ import {
   type Confidence,
   type ParsedReport,
   type ParsedSpot,
+  type Readiness,
   NUDGE_PATTERNS,
+  READINESS_STAGES,
 } from "@/lib/types";
 
 /**
@@ -123,8 +125,29 @@ function parseQueue(section: string, spotCount: number): number[] {
   return order;
 }
 
+/**
+ * Section 8 is the stopping signal. A missing or unrecognised verdict returns
+ * null rather than a guess: inventing "done" would tell a student to stop when
+ * the model never said so, and inventing "structural" would keep them circling.
+ */
+function parseReadiness(section: string): {
+  readiness: Readiness | null;
+  why: string;
+  next: string;
+} {
+  const field = (name: string) =>
+    section.match(new RegExp(`^\\s*${name}\\s*:\\s*(.*)$`, "im"))?.[1]?.trim() ??
+    "";
+
+  const raw = field("verdict").toLowerCase();
+  const readiness = READINESS_STAGES.find((stage) => raw.includes(stage)) ?? null;
+
+  return { readiness, why: field("why"), next: field("next") };
+}
+
 export function parseModeAReport(raw: string): ParsedReport {
   const sections = splitSections(raw);
+  const readiness = parseReadiness(sections["8"] ?? "");
 
   const spots: ParsedSpot[] = [];
   const cardSource = sections["4"] ?? raw;
@@ -143,6 +166,9 @@ export function parseModeAReport(raw: string): ParsedReport {
     strengths: sections["6"] ?? "",
     spots,
     queue: parseQueue(sections["7"] ?? "", spots.length),
+    readiness: readiness.readiness,
+    readiness_why: readiness.why,
+    readiness_next: readiness.next,
   };
 }
 

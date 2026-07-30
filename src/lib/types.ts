@@ -9,6 +9,25 @@ export const NUDGE_PATTERNS = [
 export type NudgePattern = (typeof NUDGE_PATTERNS)[number];
 
 export type Confidence = "high" | "medium" | "low";
+
+/**
+ * How finished the draft is. The point of this is to give the process an
+ * endpoint: without it a tool that hunts for weaknesses finds them forever and
+ * the student edits in circles.
+ */
+export const READINESS_STAGES = [
+  "structural",
+  "developmental",
+  "polish",
+  "done",
+] as const;
+
+export type Readiness = (typeof READINESS_STAGES)[number];
+
+/** True once further feedback rounds are more likely to harm than help. */
+export function shouldStopReading(readiness: Readiness | null): boolean {
+  return readiness === "polish" || readiness === "done";
+}
 export type SpotStatus = "open" | "resolved" | "skipped";
 export type EssayKind = "personal_statement" | "supplemental";
 export type MessageRole = "assistant" | "user";
@@ -73,6 +92,9 @@ export interface EssayReport {
   framework_findings: string;
   priorities: string;
   strengths: string;
+  readiness: Readiness | null;
+  readiness_why: string;
+  readiness_next: string;
   created_at: string;
 }
 
@@ -105,6 +127,9 @@ export interface ParsedReport {
   spots: ParsedSpot[];
   /** Indices into `spots`, most structurally important first. */
   queue: number[];
+  readiness: Readiness | null;
+  readiness_why: string;
+  readiness_next: string;
 }
 
 /**

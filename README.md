@@ -32,7 +32,15 @@ material for *them* to write with.
 4. **Season memory.** Facts the student shares (people, places, ongoing
    projects) persist, so later questions build on them instead of re-asking.
    Anything flagged private is never stored.
-5. **Revision history.** Every feedback run snapshots the draft; a word-level
+5. **A stopping point.** Every read ends with a verdict on where the draft
+   stands — `structural`, `developmental`, `polish` or `done`. This exists
+   because a tool built to find weaknesses will find them forever: without an
+   endpoint students loop between fixes and eventually sand away what made the
+   essay theirs. The engine is told which round it's on, instructed not to
+   invent a new tier of objections to justify a later read, and to flag fewer
+   spots or none once a draft is at rest. At `polish` and `done` the interface
+   stops inviting another round — the button reads "Read again anyway".
+6. **Revision history.** Every feedback run snapshots the draft; a word-level
    diff and a resolved / open / set-aside count per version show real movement.
 
 ## Tech stack
@@ -56,6 +64,9 @@ Create a project at [supabase.com](https://supabase.com), then:
 
 - Open **SQL Editor → New query**, paste all of [`supabase/schema.sql`](supabase/schema.sql), and run it.
   This creates every table, index and row-level-security policy. It's safe to re-run.
+- If your database predates the readiness verdict, also run
+  [`supabase/migrations/002_readiness.sql`](supabase/migrations/002_readiness.sql).
+  New projects get those columns from `schema.sql` already.
 - For Google sign-in: **Authentication → Providers → Google**, enable it, and add
   your OAuth client ID/secret. Set the redirect URL to
   `https://<your-domain>/auth/callback` (and `http://localhost:3000/auth/callback`

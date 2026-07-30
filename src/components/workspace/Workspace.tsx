@@ -12,6 +12,7 @@ import { saveDraft, saveVersion, setSpotStatus } from "@/app/actions";
 import { locateQuote } from "@/lib/ai/parseReport";
 import {
   countWords,
+  shouldStopReading,
   MIN_DRAFT_WORDS,
   type ConversationMessage,
   type Essay,
@@ -58,6 +59,7 @@ export default function Workspace({
 
   const words = countWords(draft);
   const tooShort = words < MIN_DRAFT_WORDS;
+  const atRest = shouldStopReading(report?.readiness ?? null);
   const openCount = spots.filter((s) => s.status === "open").length;
   const resolvedCount = spots.filter((s) => s.status === "resolved").length;
 
@@ -210,6 +212,8 @@ export default function Workspace({
             >
               Save version
             </button>
+            {/* At rest the button stops inviting another round: the loop of
+                re-reading a finished essay is how good drafts get sanded down. */}
             <button
               type="button"
               onClick={runFeedback}
@@ -217,15 +221,23 @@ export default function Workspace({
               title={
                 tooShort
                   ? `Write at least ${MIN_DRAFT_WORDS} words first.`
-                  : undefined
+                  : atRest
+                    ? "This draft is already at rest — another read is unlikely to help."
+                    : undefined
               }
-              className="rounded-full bg-accent px-5 py-2 text-sm text-paper transition hover:opacity-90 disabled:opacity-40"
+              className={`rounded-full px-5 py-2 text-sm transition disabled:opacity-40 ${
+                atRest
+                  ? "border border-line text-muted hover:border-accent hover:text-ink"
+                  : "bg-accent text-paper hover:opacity-90"
+              }`}
             >
               {analysing
                 ? "Reading…"
-                : essay.last_feedback_at
-                  ? "Read again"
-                  : "Get feedback"}
+                : atRest
+                  ? "Read again anyway"
+                  : essay.last_feedback_at
+                    ? "Read again"
+                    : "Get feedback"}
             </button>
           </div>
         </div>
@@ -301,6 +313,8 @@ export default function Workspace({
           </div>
 
           <div className="min-h-0 flex-1 space-y-3 overflow-y-auto pr-1">
+            {report?.readiness && <ReadinessCard report={report} />}
+
             {tab === "spots" ? (
               spots.length === 0 ? (
                 <p className="rounded-lg border border-dashed border-line bg-white p-6 text-sm text-muted">
@@ -367,6 +381,60 @@ export default function Workspace({
         </div>
       </div>
     </div>
+  );
+}
+
+const READINESS_COPY: Record<
+  string,
+  { label: string; blurb: string; tone: string }
+> = {
+  structural: {
+    label: "Structural work left",
+    blurb: "Something fundamental still needs deciding.",
+    tone: "border-flag-high/40 bg-flag-high/10 text-flag-high",
+  },
+  developmental: {
+    label: "Developmental work left",
+    blurb: "The bones are right; specific moments need real material.",
+    tone: "border-flag-medium/40 bg-flag-medium/10 text-flag-medium",
+  },
+  polish: {
+    label: "Only polish left",
+    blurb: "What remains is taste, and it's yours to settle.",
+    tone: "border-flag-low/40 bg-flag-low/10 text-flag-low",
+  },
+  done: {
+    label: "This essay is done",
+    blurb: "More editing is likelier to hurt it than help.",
+    tone: "border-flag-low/50 bg-flag-low/15 text-flag-low",
+  },
+};
+
+/**
+ * The stopping signal, given the most prominent position in the panel.
+ *
+ * Without it the tool has no endpoint — it is built to find weaknesses, so it
+ * finds them forever, and students circle between fixes until the essay loses
+ * whatever made it theirs.
+ */
+function ReadinessCard({ report }: { report: EssayReport }) {
+  const copy = READINESS_COPY[report.readiness ?? ""];
+  if (!copy) return null;
+
+  return (
+    <section className={`rounded-lg border p-4 ${copy.tone}`}>
+      <h2 className="font-serif text-base">{copy.label}</h2>
+      <p className="mt-0.5 text-xs opacity-90">{copy.blurb}</p>
+
+      {report.readiness_why && (
+        <p className="mt-3 text-sm text-ink">{report.readiness_why}</p>
+      )}
+      {report.readiness_next && (
+        <p className="mt-2 text-sm font-medium text-ink">
+          {report.readiness_next}
+        </p>
+      )}
+    </section>
   );
 }
 

@@ -139,6 +139,9 @@ export async function POST(request: Request) {
     framework_findings: report.framework_findings,
     priorities: report.priorities,
     strengths: report.strengths,
+    readiness: report.readiness,
+    readiness_why: report.readiness_why,
+    readiness_next: report.readiness_next,
   });
 
   // Whatever the student already settled stays settled. Keyed by pattern+line
@@ -223,6 +226,10 @@ interface SeasonContext {
   facts: string[];
   otherEssays: { title: string; kind: string }[];
   previouslyResolved: string[];
+  /** Which round of feedback this is — 1 for a first read. */
+  round: number;
+  /** The stage the previous read landed on, if there was one. */
+  previousReadiness: string | null;
 }
 
 /**
@@ -236,7 +243,8 @@ async function buildSeasonContext(
   userId: string,
   essay: Essay,
 ): Promise<SeasonContext> {
-  const [factsResult, essaysResult, resolvedResult] = await Promise.all([
+  const [factsResult, essaysResult, resolvedResult, historyResult] =
+    await Promise.all([
     supabase
       .from("essay_facts")
       .select("fact")
@@ -256,6 +264,12 @@ async function buildSeasonContext(
       .eq("essay_id", essay.id)
       .eq("status", "resolved")
       .limit(15),
+    supabase
+      .from("essay_reports")
+      .select("readiness", { count: "exact" })
+      .eq("essay_id", essay.id)
+      .order("created_at", { ascending: false })
+      .limit(1),
   ]);
 
   return {
@@ -267,6 +281,9 @@ async function buildSeasonContext(
     previouslyResolved: (resolvedResult.data ?? []).map(
       (r) => r.quoted_text as string,
     ),
+    round: (historyResult.count ?? 0) + 1,
+    previousReadiness:
+      (historyResult.data?.[0]?.readiness as string | null) ?? null,
   };
 }
 
@@ -319,6 +336,20 @@ function buildModeAPrompt(
       `Passages already worked through and resolved in earlier rounds — don't re-flag them unless they've genuinely regressed:\n${context.previouslyResolved
         .map((q) => `- "${q}"`)
         .join("\n")}`,
+    );
+  }
+
+  // The round number is what lets the engine tell real progress from circling,
+  // and is the input to the readiness verdict in section 8.
+  if (context.round === 1) {
+    parts.push("This is the FIRST read of this essay.");
+  } else {
+    parts.push(
+      `This is read number ${context.round} of this essay.${
+        context.previousReadiness
+          ? ` The previous read judged it "${context.previousReadiness}".`
+          : ""
+      } If the problems from earlier rounds have genuinely been addressed, say so and move the verdict on. Do not manufacture a new tier of objections to justify this read.`,
     );
   }
 

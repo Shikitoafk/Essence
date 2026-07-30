@@ -67,6 +67,13 @@ create table if not exists public.essay_reports (
   framework_findings text not null default '',
   priorities         text not null default '',
   strengths          text not null default '',
+  -- How finished the draft is. Gives the process an endpoint so students don't
+  -- edit in circles chasing an essay that is already working.
+  readiness          text
+                       check (readiness in ('structural', 'developmental',
+                                            'polish', 'done')),
+  readiness_why      text not null default '',
+  readiness_next     text not null default '',
   created_at         timestamptz not null default now()
 );
 
