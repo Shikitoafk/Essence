@@ -134,19 +134,26 @@ export async function saveVersion(essayId: string, label?: string) {
  * Returns the spot the question belongs to so the workspace can bind the input
  * and highlight the right line.
  */
-export async function askNextQuestion(essayId: string) {
+export async function askNextQuestion(essayId: string, spotId: string) {
   const { supabase } = await requireUser();
 
+  /*
+   * The caller names the spot. Re-deriving "the next open spot" here looked
+   * equivalent but wasn't: the workspace shows only the newest run's spots,
+   * while this query saw every open spot on the essay, so an older run's
+   * leftover could win on queue_position. The question then belonged to a spot
+   * the workspace wasn't showing — it dropped straight into the history and the
+   * input never unlocked.
+   */
   const { data: next } = await supabase
     .from("flagged_spots")
     .select("id, question, pattern_name")
+    .eq("id", spotId)
     .eq("essay_id", essayId)
     .eq("status", "open")
-    .order("queue_position", { ascending: true })
-    .limit(1)
     .maybeSingle<{ id: string; question: string; pattern_name: string }>();
 
-  if (!next) return { ok: false as const, error: "No open questions left." };
+  if (!next) return { ok: false as const, error: "That question is no longer open." };
 
   // Asking twice for the same spot would double-post it — if its question is
   // already in the thread, just hand back the spot.

@@ -172,24 +172,30 @@ export default function ConversationPanel({
     setAsking(true);
     setError(null);
 
-    const result = await askNextQuestion(essayId);
+    const result = await askNextQuestion(essayId, currentSpot.id);
     if (!result.ok) {
       setError(result.error);
       setAsking(false);
       return;
     }
 
-    onMessagesChange([
-      ...messages,
-      {
-        id: `question-${result.spotId}-${Date.now()}`,
-        essay_id: essayId,
-        flagged_spot_id: result.spotId,
-        role: "assistant",
-        content: result.question,
-        created_at: new Date().toISOString(),
-      },
-    ]);
+    // Guard against a double press stacking the same question in the thread.
+    const alreadyThere = messages.some(
+      (m) => m.flagged_spot_id === result.spotId && m.role === "assistant",
+    );
+    if (!alreadyThere) {
+      onMessagesChange([
+        ...messages,
+        {
+          id: `question-${result.spotId}-${Date.now()}`,
+          essay_id: essayId,
+          flagged_spot_id: result.spotId,
+          role: "assistant",
+          content: result.question,
+          created_at: new Date().toISOString(),
+        },
+      ]);
+    }
     // Clearing this hands the screen over to the new question.
     setAffirmation(null);
     onSelectSpot(result.spotId);

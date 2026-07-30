@@ -3,12 +3,28 @@ import { redirect } from "next/navigation";
 import AppHeader from "@/components/AppHeader";
 import NewEssayForm from "./NewEssayForm";
 import { createClient } from "@/lib/supabase/server";
-import { countWords, type Essay } from "@/lib/types";
+import {
+  countWords,
+  deriveReadiness,
+  type Essay,
+  type FlaggedSpot,
+  type Readiness,
+} from "@/lib/types";
+import { selectCurrentSpots } from "@/lib/currentSpots";
 
 export const dynamic = "force-dynamic";
 
+const READINESS_PILL: Record<Readiness, { label: string; tone: string }> = {
+  needs_work: { label: "Needs work", tone: "bg-flag-high/15 text-flag-high" },
+  strong: { label: "Strong", tone: "bg-flag-medium/15 text-flag-medium" },
+  ready_to_submit: {
+    label: "Ready to submit",
+    tone: "bg-flag-low/20 text-flag-low",
+  },
+};
+
 interface EssayRow extends Essay {
-  flagged_spots: { status: string }[];
+  flagged_spots: FlaggedSpot[];
 }
 
 export default async function DashboardPage() {
@@ -20,7 +36,7 @@ export default async function DashboardPage() {
 
   const { data } = await supabase
     .from("essays")
-    .select("*, flagged_spots(status)")
+    .select("*, flagged_spots(*)")
     .eq("user_id", user.id)
     .order("updated_at", { ascending: false });
 
@@ -54,12 +70,19 @@ export default async function DashboardPage() {
             ) : (
               <ul className="space-y-3">
                 {essays.map((essay) => {
-                  const open = essay.flagged_spots.filter(
-                    (s) => s.status === "open",
+                  // Only the newest run counts. Leftovers from earlier runs
+                  // describe drafts that no longer exist, and counting them
+                  // inflates "open" into a number the workspace never shows.
+                  const current = selectCurrentSpots(essay.flagged_spots);
+                  const open = current.filter(
+                    (s) => s.status === "open" || s.status === "answered",
                   ).length;
-                  const resolved = essay.flagged_spots.filter(
+                  const resolved = current.filter(
                     (s) => s.status === "resolved",
                   ).length;
+                  const readiness = essay.last_feedback_at
+                    ? deriveReadiness(current)
+                    : null;
                   const words = countWords(essay.current_draft ?? "");
                   const over =
                     essay.word_limit != null && words > essay.word_limit;
@@ -88,20 +111,39 @@ export default async function DashboardPage() {
                           </span>
                         </div>
 
-                        <div className="mt-4 flex flex-wrap items-center gap-4 text-sm">
-                          {essay.last_feedback_at ? (
-                            <>
-                              <span className="text-flag-high">
-                                {open} open
+                        {readiness ? (
+                          <div className="mt-4">
+                            <div className="flex flex-wrap items-center gap-3 text-sm">
+                              <span
+                                className={`rounded-full px-2.5 py-1 text-xs font-medium ${READINESS_PILL[readiness].tone}`}
+                              >
+                                {READINESS_PILL[readiness].label}
                               </span>
-                              <span className="text-flag-low">
-                                {resolved} resolved
+                              <span className="text-muted">
+                                {resolved} of {resolved + open} worked through
                               </span>
-                            </>
-                          ) : (
-                            <span className="text-muted">Not read yet</span>
-                          )}
-                        </div>
+                            </div>
+
+                            {resolved + open > 0 && (
+                              <div
+                                className="mt-2 h-1 w-full overflow-hidden rounded-full bg-line"
+                                role="progressbar"
+                                aria-valuenow={resolved}
+                                aria-valuemin={0}
+                                aria-valuemax={resolved + open}
+                              >
+                                <div
+                                  className="h-full rounded-full bg-flag-low transition-all"
+                                  style={{
+                                    width: `${(resolved / (resolved + open)) * 100}%`,
+                                  }}
+                                />
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <p className="mt-4 text-sm text-muted">Not read yet</p>
+                        )}
                       </Link>
                     </li>
                   );
