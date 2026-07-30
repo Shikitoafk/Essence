@@ -53,10 +53,12 @@ export async function checkRateLimit(
   // Never let a bookkeeping failure block a student's essay.
   if (error || !data) return { allowed: true };
 
+  // These messages reach students, so they describe their own usage rather than
+  // naming the AI vendor or its quotas.
   if (data.length >= limit.perDay) {
     return {
       allowed: false,
-      message: `You've used today's ${limit.perDay} ${kind === "feedback" ? "full-essay scans" : "follow-up turns"}. This resets on a rolling 24-hour window.`,
+      message: `You've used today's ${limit.perDay} ${kind === "feedback" ? "full-essay reads" : "follow-up turns"}. This resets on a rolling 24-hour window.`,
       retryAfterSeconds: 3600,
     };
   }
@@ -65,7 +67,7 @@ export async function checkRateLimit(
   if (inLastMinute >= limit.perMinute) {
     return {
       allowed: false,
-      message: "You're going a bit fast for the free Gemini tier. Try again in a minute.",
+      message: "That's a lot at once — give it a minute and try again.",
       retryAfterSeconds: 60,
     };
   }

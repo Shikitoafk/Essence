@@ -104,7 +104,7 @@ export default function Workspace({
         // Never let a cut-off read masquerade as a clean bill of health.
         setBanner({
           kind: "error",
-          text: "The model ran out of room before finishing this read, so the flagged spots and questions are missing or incomplete. Run it again — if it keeps happening, the essay may be too long for the current model.",
+          text: "Essence didn't get to the end of this read, so the flagged spots and questions are missing or incomplete. Try again — if it keeps happening, a shorter draft will get through.",
         });
       } else if (payload.spotCount === 0) {
         setBanner({

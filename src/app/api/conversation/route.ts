@@ -1,12 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { MODE_B_SYSTEM } from "@/lib/ai/systemPrompt";
-import {
-  generate,
-  parseJsonBody,
-  LlmCallError,
-  LlmConfigError,
-} from "@/lib/ai/llm";
+import { generate, parseJsonBody, userFacingError } from "@/lib/ai/llm";
 import { checkRateLimit, recordUsage } from "@/lib/rateLimit";
 import type { ConversationMessage, Essay, FlaggedSpot } from "@/lib/types";
 
@@ -115,7 +110,6 @@ export async function POST(request: Request) {
   );
 
   let parsed: ModeBReply;
-  let model: string;
   try {
     const result = await generate({
       tier: "conversation",
@@ -126,23 +120,19 @@ export async function POST(request: Request) {
       // No explicit ceiling: reasoning models draw thinking tokens from the same
       // budget, and a cap sized for the visible reply truncates the JSON body.
     });
-    model = result.model;
+    // A malformed JSON body throws here too; the student's message is already
+    // saved either way, so they can just send again.
     parsed = parseJsonBody<ModeBReply>(result.text);
   } catch (error) {
-    if (error instanceof LlmConfigError) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
-    if (error instanceof LlmCallError) {
-      return NextResponse.json(
-        { error: error.message },
-        { status: error.retryable ? 503 : 502 },
-      );
-    }
-    // A malformed JSON body lands here — the student's message is already
-    // saved, so they can just send again.
+    const safe = userFacingError(error, "conversation turn");
     return NextResponse.json(
-      { error: "The model's reply came back unreadable. Try sending that again." },
-      { status: 502 },
+      { error: safe.message },
+      {
+        status: safe.status,
+        headers: safe.retryAfterSeconds
+          ? { "Retry-After": String(safe.retryAfterSeconds) }
+          : undefined,
+      },
     );
   }
 
@@ -155,8 +145,9 @@ export async function POST(request: Request) {
       : "needs_narrower";
 
   if (!reply) {
+    console.error("[essence] conversation turn produced an empty reply");
     return NextResponse.json(
-      { error: "The model returned an empty reply. Try sending that again." },
+      { error: "That didn't come through. Try sending it again." },
       { status: 502 },
     );
   }
@@ -209,7 +200,6 @@ export async function POST(request: Request) {
 
   return NextResponse.json({
     ok: true,
-    model,
     reply,
     verdict,
     nextSpot,

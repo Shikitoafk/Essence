@@ -4,8 +4,15 @@ export class LlmConfigError extends Error {}
 
 export class LlmCallError extends Error {
   constructor(
+    /** Operator-facing detail. Logged, never shown to a student. */
     message: string,
     readonly retryable: boolean,
+    /**
+     * Optional student-facing sentence, used when the cause is something they
+     * can act on (a draft too long to process). Must name no vendor, model,
+     * quota or account identifier.
+     */
+    readonly userHint?: string,
   ) {
     super(message);
   }

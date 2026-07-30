@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { MODE_A_SYSTEM } from "@/lib/ai/systemPrompt";
-import { generate, LlmCallError, LlmConfigError } from "@/lib/ai/llm";
+import { generate, userFacingError } from "@/lib/ai/llm";
 import { locateQuote, parseModeAReport } from "@/lib/ai/parseReport";
 import { checkRateLimit, recordUsage } from "@/lib/rateLimit";
 import {
@@ -80,7 +80,6 @@ export async function POST(request: Request) {
   const context = await buildSeasonContext(supabase, user.id, essay);
 
   let raw: string;
-  let model: string;
   try {
     const result = await generate({
       tier: "diagnostic",
@@ -89,18 +88,19 @@ export async function POST(request: Request) {
       temperature: 0.6,
     });
     raw = result.text;
-    model = result.model;
+    // Which model answered is operator information, not student information.
+    console.info(`[essence] feedback read served by ${result.model}`);
   } catch (error) {
-    if (error instanceof LlmConfigError) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
-    if (error instanceof LlmCallError) {
-      return NextResponse.json(
-        { error: error.message },
-        { status: error.retryable ? 503 : 502 },
-      );
-    }
-    throw error;
+    const safe = userFacingError(error, "feedback read");
+    return NextResponse.json(
+      { error: safe.message },
+      {
+        status: safe.status,
+        headers: safe.retryAfterSeconds
+          ? { "Retry-After": String(safe.retryAfterSeconds) }
+          : undefined,
+      },
+    );
   }
 
   await recordUsage(supabase, user.id, "feedback");
@@ -211,7 +211,6 @@ export async function POST(request: Request) {
 
   return NextResponse.json({
     ok: true,
-    model,
     versionId,
     spotCount: rows.length,
     droppedCount: ordered.length - rows.length,

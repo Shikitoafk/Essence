@@ -1,5 +1,6 @@
 import { geminiChain, geminiIsPaidTier, generateWithGemini } from "./gemini";
 import { groqChain, generateWithGroq } from "./groq";
+import { LlmCallError, LlmConfigError } from "./llmTypes";
 import type { GenerateRequest, GenerateResult, ModelTier } from "./llmTypes";
 
 export {
@@ -67,6 +68,54 @@ export function dataPolicy(): DataPolicy {
         summary:
           "This deployment uses Google's free Gemini tier. Under Google's terms for unpaid use, Google uses submitted content to develop and improve its products, and human reviewers may read your essay and your answers. Google's own terms say: “Do not submit sensitive, confidential, or personal information to the Unpaid Services.”",
       };
+}
+
+/**
+ * Turns any failure from the feedback engine into something safe to show.
+ *
+ * Raw provider errors are not fit for a student's screen: they name the vendor
+ * and model, quote quota and token budgets, and have been observed carrying
+ * account identifiers (a 413 body included the org id). None of that helps the
+ * person writing the essay, and some of it should not leave the server at all.
+ *
+ * The real error is logged for whoever operates the deployment; the caller gets
+ * a plain message and a status.
+ */
+export function userFacingError(
+  error: unknown,
+  context: string,
+): { message: string; status: number; retryAfterSeconds?: number } {
+  const detail = error instanceof Error ? error.message : String(error);
+  console.error(`[essence] ${context} failed:`, detail);
+
+  if (error instanceof LlmConfigError) {
+    // An operator mistake, not the student's — say nothing about which key.
+    return {
+      message:
+        "Essence isn't set up to give feedback right now. Please let whoever runs this site know.",
+      status: 503,
+    };
+  }
+
+  if (error instanceof LlmCallError) {
+    // A hint is only set where the student can actually do something about it.
+    if (error.userHint) {
+      return { message: error.userHint, status: 400 };
+    }
+    if (error.retryable) {
+      return {
+        message:
+          "Essence couldn't finish that just now. Give it a minute and try again.",
+        status: 503,
+        retryAfterSeconds: 60,
+      };
+    }
+  }
+
+  return {
+    message: "Something went wrong on our side. Try that again in a moment.",
+    status: 502,
+  };
 }
 
 /** Tolerates a model that wraps its JSON in a markdown fence despite instructions. */

@@ -172,15 +172,17 @@ export async function generateWithGroq({
     }
   }
 
+  // These reach the operator's logs via userFacingError, never the student.
   if (/413|too large|context length/i.test(lastError)) {
     throw new LlmCallError(
-      "This draft is too long for the free Groq tier's per-minute token budget — every model in the chain refused it. Shorten the draft, or switch to Gemini or a paid Groq plan.",
+      `Draft exceeds the per-minute token budget of every model in the chain (${chain.join(", ")}). Shorten the draft, raise GROQ_MAX_TOKENS_*, or move to a paid plan.`,
       false,
+      "This draft is longer than Essence can read in one pass right now. Try again with a shorter version.",
     );
   }
   if (/429|quota|rate.?limit/i.test(lastError)) {
     throw new LlmCallError(
-      "Groq's free-tier limit is hit right now. Wait a minute and try again.",
+      "Groq free-tier rate limit reached across the whole chain.",
       true,
     );
   }
