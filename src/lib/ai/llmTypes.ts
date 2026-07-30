@@ -39,7 +39,10 @@ export interface GenerateResult {
 
 /** Quota exhausted, or the key can't see this model — both mean "try the next one". */
 export function shouldFallOver(message: string): boolean {
-  return /429|quota|rate.?limit|resource.?exhausted|404|not found|not supported|permission|decommission|no longer/i.test(
+  // 413 / "request too large" belongs here: providers count the requested
+  // completion ceiling against the per-minute token budget, so a model with a
+  // smaller budget rejects a request another model in the chain can serve.
+  return /429|413|quota|rate.?limit|resource.?exhausted|too large|context length|404|not found|not supported|permission|decommission|no longer/i.test(
     message,
   );
 }

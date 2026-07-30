@@ -25,11 +25,28 @@ import {
 
 const ENDPOINT = "https://api.groq.com/openai/v1/chat/completions";
 
+/*
+ * Ordered by free-tier tokens-per-minute budget, not by raw model strength.
+ *
+ * The engine's system prompt is ~5.5k tokens and rides along on every call, so
+ * TPM — not model quality — is what decides whether a request is servable at
+ * all. Free-tier TPM: llama-3.3-70b 12K, gpt-oss-120b and -20b 8K,
+ * llama-3.1-8b 6K. gpt-oss-120b is the stronger analyst but its 8K budget
+ * leaves under 2k for output once the prompt and essay are in, which is not
+ * enough for a full Mode A report — so it sits behind the model that fits.
+ * On a paid Groq plan the budgets rise and it becomes viable again.
+ */
 const DEFAULT_CHAINS: Record<ModelTier, string[]> = {
-  // Deep read: the most capable open model Groq serves, with reasoning.
-  diagnostic: ["openai/gpt-oss-120b", "llama-3.3-70b-versatile", "openai/gpt-oss-20b"],
-  // Chat turns: fast and cheap, since this fires on every reply.
-  conversation: ["openai/gpt-oss-20b", "llama-3.3-70b-versatile", "llama-3.1-8b-instant"],
+  diagnostic: [
+    "llama-3.3-70b-versatile",
+    "openai/gpt-oss-120b",
+    "openai/gpt-oss-20b",
+  ],
+  conversation: [
+    "llama-3.3-70b-versatile",
+    "openai/gpt-oss-20b",
+    "llama-3.1-8b-instant",
+  ],
 };
 
 export function groqChain(tier: ModelTier): string[] {
@@ -41,16 +58,36 @@ export function groqChain(tier: ModelTier): string[] {
 }
 
 /**
- * Groq defaults reasoning models to max_completion_tokens: 1024, and reasoning
- * tokens are drawn from that same budget. A full Mode A report needs roughly
- * 2,500 output tokens before any thinking, so the default silently truncates it
- * — the spot cards and question queue fall off the end and the student gets a
- * bland summary with nothing flagged. Always send an explicit ceiling.
+ * The completion ceiling has to thread two needles at once.
+ *
+ * Too low and the report truncates: Groq defaults reasoning models to 1024, and
+ * reasoning tokens come out of the same budget, so the spot cards and question
+ * queue fall off the end and the student is handed a bland summary that flags
+ * nothing.
+ *
+ * Too high and the request is refused outright: the ceiling counts against the
+ * per-minute token budget, so asking for 16k on a 12K/min model is a 413 before
+ * a single token is generated.
+ *
+ * These sit under the 12K budget with the ~6.5k of prompt and essay already in
+ * the request, while still leaving comfortably more than the ~2.5k a full
+ * report needs. Raise them via env on a paid Groq plan.
  */
 const DEFAULT_MAX_TOKENS: Record<ModelTier, number> = {
-  diagnostic: 16000,
-  conversation: 4000,
+  diagnostic: 4000,
+  conversation: 2000,
 };
+
+function maxTokensFor(tier: ModelTier): number {
+  const override =
+    tier === "diagnostic"
+      ? process.env.GROQ_MAX_TOKENS_DIAGNOSTIC
+      : process.env.GROQ_MAX_TOKENS_CONVERSATION;
+  const parsed = Number(override);
+  return Number.isFinite(parsed) && parsed > 0
+    ? Math.round(parsed)
+    : DEFAULT_MAX_TOKENS[tier];
+}
 
 /** GPT-OSS models let us buy analysis depth directly; the deep read wants it. */
 const REASONING_EFFORT: Record<ModelTier, "low" | "medium" | "high"> = {
@@ -92,7 +129,7 @@ export async function generateWithGroq({
           body: JSON.stringify({
             model,
             temperature,
-            max_completion_tokens: maxOutputTokens ?? DEFAULT_MAX_TOKENS[tier],
+            max_completion_tokens: maxOutputTokens ?? maxTokensFor(tier),
             ...(supportsReasoningEffort(model)
               ? {
                   reasoning_effort: REASONING_EFFORT[tier],
@@ -135,6 +172,12 @@ export async function generateWithGroq({
     }
   }
 
+  if (/413|too large|context length/i.test(lastError)) {
+    throw new LlmCallError(
+      "This draft is too long for the free Groq tier's per-minute token budget — every model in the chain refused it. Shorten the draft, or switch to Gemini or a paid Groq plan.",
+      false,
+    );
+  }
   if (/429|quota|rate.?limit/i.test(lastError)) {
     throw new LlmCallError(
       "Groq's free-tier limit is hit right now. Wait a minute and try again.",
