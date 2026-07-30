@@ -1,6 +1,19 @@
 "use client";
 
-import type { FlaggedSpot, SpotStatus } from "@/lib/types";
+import {
+  IMPACT_BLURB,
+  IMPACT_LABEL,
+  type FlaggedSpot,
+  type Impact,
+  type SpotStatus,
+} from "@/lib/types";
+
+/** Weight, not alarm: polish must read as safe to ignore, because it is. */
+const IMPACT_STYLE: Record<Impact, string> = {
+  structural: "bg-flag-high/15 text-flag-high",
+  substantive: "bg-flag-medium/15 text-flag-medium",
+  polish: "bg-line/60 text-muted",
+};
 
 const CONFIDENCE_STYLE: Record<string, string> = {
   high: "text-flag-high",
@@ -46,6 +59,12 @@ export default function SpotCard({
       } ${dimmed ? "opacity-60" : ""}`}
     >
       <div className="flex flex-wrap items-center gap-2">
+        <span
+          className={`rounded-full px-2.5 py-1 text-xs font-medium ${IMPACT_STYLE[spot.impact]}`}
+          title={IMPACT_BLURB[spot.impact]}
+        >
+          {IMPACT_LABEL[spot.impact]}
+        </span>
         <span className="rounded-full bg-accent-soft px-2.5 py-1 text-xs font-medium text-accent">
           {spot.pattern_name}
         </span>

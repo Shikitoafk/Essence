@@ -11,6 +11,7 @@ function spot(versionId: string | null, createdAt: string): FlaggedSpot {
     version_id: versionId,
     pattern_name: "Underdeveloped change",
     confidence: "high",
+    impact: "substantive",
     quoted_text: "It made me bolder.",
     what_is_clear: "",
     what_is_unexplored: "",

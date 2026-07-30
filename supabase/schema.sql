@@ -17,6 +17,9 @@ create table if not exists public.essays (
                      check (essay_kind in ('personal_statement', 'supplemental')),
   school           text,
   last_feedback_at timestamptz,
+  -- Full diagnostic runs so far. Past round 3 the interface warns that essays
+  -- usually stop improving and start losing voice.
+  revision_count   integer not null default 0,
   created_at       timestamptz not null default now(),
   updated_at       timestamptz not null default now()
 );
@@ -37,6 +40,10 @@ create table if not exists public.flagged_spots (
   pattern_name       text not null,
   confidence         text not null default 'medium'
                        check (confidence in ('high', 'medium', 'low')),
+  -- How much this finding matters. Lets a student see at a glance whether what
+  -- remains is important or cosmetic, instead of treating every card as urgent.
+  impact             text not null default 'substantive'
+                       check (impact in ('structural', 'substantive', 'polish')),
   quoted_text        text not null,
   what_is_clear      text not null default '',
   what_is_unexplored text not null default '',
@@ -76,9 +83,11 @@ create table if not exists public.essay_reports (
   strengths          text not null default '',
   -- How finished the draft is. Gives the process an endpoint so students don't
   -- edit in circles chasing an essay that is already working.
+  -- Derived from the open spots' impacts, not self-reported, so the verdict and
+  -- the cards can never contradict each other.
   readiness          text
-                       check (readiness in ('structural', 'developmental',
-                                            'polish', 'done')),
+                       check (readiness in ('needs_work', 'strong',
+                                            'ready_to_submit')),
   readiness_why      text not null default '',
   readiness_next     text not null default '',
   created_at         timestamptz not null default now()

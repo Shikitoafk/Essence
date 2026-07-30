@@ -1,68 +1,112 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { parseModeAReport } from "./parseReport";
-import { shouldStopReading } from "@/lib/types";
+import {
+  deriveReadiness,
+  isReadyToSubmit,
+  type FlaggedSpot,
+  type Impact,
+  type SpotStatus,
+} from "@/lib/types";
 
-const withSection8 = (body: string) =>
-  `<<<SECTION:1>>>\nSomething.\n<<<SECTION:8>>>\n${body}\n<<<END>>>`;
+const spot = (impact: Impact, status: SpotStatus = "open") =>
+  ({ impact, status }) as Pick<FlaggedSpot, "impact" | "status">;
 
-test("parses a full verdict", () => {
-  const report = parseModeAReport(
-    withSection8(
-      [
-        "verdict: developmental",
-        "why: The arc holds, but the turn is asserted rather than shown.",
-        "next: Answer the two open questions, then stop and rewrite in your own words.",
-      ].join("\n"),
-    ),
-  );
+/**
+ * Readiness is derived from the flagged spots rather than announced by the
+ * model, so the verdict and the cards can never contradict each other. These
+ * pin the derivation, which is what actually tells a student to stop.
+ */
 
-  assert.equal(report.readiness, "developmental");
-  assert.match(report.readiness_why, /arc holds/);
-  assert.match(report.readiness_next, /rewrite in your own words/);
-});
-
-test("recognises every stage", () => {
-  for (const stage of ["structural", "developmental", "polish", "done"]) {
-    const report = parseModeAReport(withSection8(`verdict: ${stage}`));
-    assert.equal(report.readiness, stage);
-  }
-});
-
-test("a missing verdict is null, never a guess", () => {
-  // Guessing "done" would tell a student to stop when nothing said so;
-  // guessing "structural" would keep them circling. Neither is acceptable.
-  assert.equal(parseModeAReport("<<<SECTION:1>>>\nProse only.").readiness, null);
-  assert.equal(parseModeAReport(withSection8("why: no verdict line")).readiness, null);
-  assert.equal(parseModeAReport(withSection8("verdict: excellent")).readiness, null);
-});
-
-test("tolerates decoration around the verdict word", () => {
+test("a structural finding means the essay needs work", () => {
   assert.equal(
-    parseModeAReport(withSection8("verdict: **done**")).readiness,
-    "done",
+    deriveReadiness([spot("polish"), spot("structural"), spot("substantive")]),
+    "needs_work",
   );
+});
+
+test("substantive findings without structural ones read as strong", () => {
+  assert.equal(deriveReadiness([spot("substantive"), spot("polish")]), "strong");
+});
+
+test("only taste-level notes left means ready to submit", () => {
+  assert.equal(deriveReadiness([spot("polish"), spot("polish")]), "ready_to_submit");
+});
+
+test("nothing flagged at all means ready to submit", () => {
+  assert.equal(deriveReadiness([]), "ready_to_submit");
+});
+
+test("settled findings no longer hold the essay back", () => {
+  // Resolved and set-aside work is done; only live findings should weigh.
   assert.equal(
-    parseModeAReport(withSection8("Verdict:  Polish  ")).readiness,
-    "polish",
+    deriveReadiness([
+      spot("structural", "resolved"),
+      spot("substantive", "skipped"),
+      spot("polish"),
+    ]),
+    "ready_to_submit",
   );
 });
 
-test("the verdict does not disturb the rest of the report", () => {
+test("material gathered but not yet written still counts as open", () => {
+  // Answering is not revising — an answered spot must not release the verdict.
+  assert.equal(deriveReadiness([spot("structural", "answered")]), "needs_work");
+  assert.equal(deriveReadiness([spot("substantive", "answered")]), "strong");
+});
+
+test("only ready_to_submit tells the student to stop", () => {
+  assert.equal(isReadyToSubmit("needs_work"), false);
+  assert.equal(isReadyToSubmit("strong"), false);
+  assert.equal(isReadyToSubmit("ready_to_submit"), true);
+  assert.equal(isReadyToSubmit(null), false);
+});
+
+test("parses the impact rating on a card", () => {
   const report = parseModeAReport(
-    `<<<SECTION:1>>>\nAn impression.\n<<<SECTION:5>>>\n1. Do the thing.\n<<<SECTION:8>>>\nverdict: polish\n<<<END>>>`,
+    `<<<SECTION:4>>>
+<<<CARD>>>
+pattern: Generic closing claim
+confidence: high
+impact: structural
+quote: Who weaves the threads?
+clear: You want to end on a lesson.
+unexplored: Nothing grounds it.
+matters: It is the last line.
+question: What are you still doing weekly because of that summer?
+<<<ENDCARD>>>
+<<<END>>>`,
   );
-  assert.equal(report.overall_impression, "An impression.");
-  assert.match(report.priorities, /Do the thing/);
-  assert.equal(report.readiness, "polish");
-  assert.doesNotMatch(report.priorities, /verdict/);
+  assert.equal(report.spots[0].impact, "structural");
 });
 
-test("only the finished stages tell the student to stop", () => {
-  assert.equal(shouldStopReading("structural"), false);
-  assert.equal(shouldStopReading("developmental"), false);
-  assert.equal(shouldStopReading("polish"), true);
-  assert.equal(shouldStopReading("done"), true);
-  // An unparsed verdict must not be read as permission to stop.
-  assert.equal(shouldStopReading(null), false);
+test("an unreadable impact falls back to substantive, never polish", () => {
+  // Defaulting to polish would quietly declare a draft ready to submit;
+  // defaulting to structural would trap a finished essay in revision.
+  const report = parseModeAReport(
+    `<<<SECTION:4>>>
+<<<CARD>>>
+pattern: Reflection gap
+confidence: low
+impact: quite important really
+quote: Who weaves the threads?
+clear: a
+unexplored: b
+matters: c
+question: d
+<<<ENDCARD>>>
+<<<END>>>`,
+  );
+  assert.equal(report.spots[0].impact, "substantive");
+});
+
+test("section 8 carries reasoning, and no verdict to contradict the cards", () => {
+  const report = parseModeAReport(
+    `<<<SECTION:8>>>
+why: Only taste-level choices remain.
+next: This is ready — further edits risk flattening your voice.
+<<<END>>>`,
+  );
+  assert.match(report.readiness_why, /taste-level/);
+  assert.match(report.readiness_next, /ready/);
 });

@@ -12,12 +12,16 @@ import { saveDraft, saveVersion, setSpotStatus } from "@/app/actions";
 import { locateQuote } from "@/lib/ai/parseReport";
 import {
   countWords,
-  shouldStopReading,
+  deriveReadiness,
+  isReadyToSubmit,
+  DIMINISHING_RETURNS_ROUND,
+  SUPPRESS_POLISH_FROM_ROUND,
   MIN_DRAFT_WORDS,
   type ConversationMessage,
   type Essay,
   type EssayReport,
   type FlaggedSpot,
+  type Readiness,
   type SpotStatus,
 } from "@/lib/types";
 
@@ -49,6 +53,7 @@ export default function Workspace({
     initialSpots.find((s) => s.status === "open")?.id ?? null,
   );
   const [tab, setTab] = useState<Tab>("spots");
+  const [showMinor, setShowMinor] = useState(false);
   const [saving, setSaving] = useState<"idle" | "saving" | "saved" | "error">(
     "idle",
   );
@@ -59,7 +64,11 @@ export default function Workspace({
 
   const words = countWords(draft);
   const tooShort = words < MIN_DRAFT_WORDS;
-  const atRest = shouldStopReading(report?.readiness ?? null);
+  // Recomputed from the live spots rather than read off the stored report, so
+  // resolving the last substantive card updates the verdict immediately.
+  const readiness = deriveReadiness(spots);
+  const atRest = isReadyToSubmit(readiness);
+  const rounds = essay.revision_count ?? 0;
   const openCount = spots.filter((s) => s.status === "open").length;
   const resolvedCount = spots.filter((s) => s.status === "resolved").length;
 
@@ -213,6 +222,18 @@ export default function Workspace({
     return a.queue_position - b.queue_position;
   });
 
+  /*
+   * From round 3 on, taste-level notes are collapsed away. By then a student is
+   * looking for a reason to keep editing, and a list padded with cosmetic notes
+   * supplies one — this keeps the default view to findings that would actually
+   * change a reader's impression.
+   */
+  const hidePolish = rounds >= SUPPRESS_POLISH_FROM_ROUND;
+  const minorSpots = hidePolish
+    ? ordered.filter((s) => s.impact === "polish" && s.status === "open")
+    : [];
+  const primarySpots = ordered.filter((s) => !minorSpots.includes(s));
+
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <div className="border-b border-line bg-white">
@@ -345,7 +366,19 @@ export default function Workspace({
           </div>
 
           <div className="min-h-0 flex-1 space-y-3 overflow-y-auto pr-1">
-            {report?.readiness && <ReadinessCard report={report} />}
+            {essay.last_feedback_at && (
+              <ReadinessCard readiness={readiness} report={report} />
+            )}
+
+            {/* Rounds are never blocked — the cost is just made visible. */}
+            {rounds >= DIMINISHING_RETURNS_ROUND && (
+              <p className="rounded-lg border border-flag-medium/40 bg-flag-medium/10 p-3 text-xs text-ink">
+                You&apos;ve run {rounds} rounds of feedback on this essay. Most
+                essays stop improving after 3–4 rounds and start losing voice.
+                Here&apos;s what&apos;s still open — decide whether it&apos;s
+                worth it.
+              </p>
+            )}
 
             {tab === "spots" ? (
               spots.length === 0 ? (
@@ -356,16 +389,56 @@ export default function Workspace({
                   one question at a time.
                 </p>
               ) : (
-                ordered.map((spot) => (
-                  <SpotCard
-                    key={spot.id}
-                    spot={spot}
-                    active={spot.id === activeSpotId}
-                    missingInDraft={!locateQuote(draft, spot.quoted_text)}
-                    onSelect={() => setActiveSpotId(spot.id)}
-                    onStatusChange={(status) => changeStatus(spot.id, status)}
-                  />
-                ))
+                <>
+                  {primarySpots.map((spot) => (
+                    <SpotCard
+                      key={spot.id}
+                      spot={spot}
+                      active={spot.id === activeSpotId}
+                      missingInDraft={!locateQuote(draft, spot.quoted_text)}
+                      onSelect={() => setActiveSpotId(spot.id)}
+                      onStatusChange={(status) => changeStatus(spot.id, status)}
+                    />
+                  ))}
+
+                  {minorSpots.length > 0 && (
+                    <div className="rounded-lg border border-line bg-white">
+                      <button
+                        type="button"
+                        onClick={() => setShowMinor((v) => !v)}
+                        className="flex w-full items-center justify-between px-4 py-3 text-sm"
+                      >
+                        <span className="text-muted">
+                          Minor notes ({minorSpots.length})
+                        </span>
+                        <span className="text-xs text-muted">
+                          {showMinor ? "Hide" : "Show"}
+                        </span>
+                      </button>
+                      {showMinor && (
+                        <div className="space-y-3 border-t border-line p-3">
+                          <p className="text-xs text-muted">
+                            Taste, not improvement. Safe to ignore entirely.
+                          </p>
+                          {minorSpots.map((spot) => (
+                            <SpotCard
+                              key={spot.id}
+                              spot={spot}
+                              active={spot.id === activeSpotId}
+                              missingInDraft={
+                                !locateQuote(draft, spot.quoted_text)
+                              }
+                              onSelect={() => setActiveSpotId(spot.id)}
+                              onStatusChange={(status) =>
+                                changeStatus(spot.id, status)
+                              }
+                            />
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </>
               )
             ) : report ? (
               <div className="space-y-5 rounded-lg border border-line bg-white p-5">
@@ -417,54 +490,66 @@ export default function Workspace({
 }
 
 const READINESS_COPY: Record<
-  string,
+  Readiness,
   { label: string; blurb: string; tone: string }
 > = {
-  structural: {
-    label: "Structural work left",
-    blurb: "Something fundamental still needs deciding.",
+  needs_work: {
+    label: "Needs work",
+    blurb: "Something structural still affects whether the essay lands.",
     tone: "border-flag-high/40 bg-flag-high/10 text-flag-high",
   },
-  developmental: {
-    label: "Developmental work left",
-    blurb: "The bones are right; specific moments need real material.",
+  strong: {
+    label: "Strong",
+    blurb: "Nothing structural left — some moments still need real material.",
     tone: "border-flag-medium/40 bg-flag-medium/10 text-flag-medium",
   },
-  polish: {
-    label: "Only polish left",
-    blurb: "What remains is taste, and it's yours to settle.",
-    tone: "border-flag-low/40 bg-flag-low/10 text-flag-low",
-  },
-  done: {
-    label: "This essay is done",
-    blurb: "More editing is likelier to hurt it than help.",
+  ready_to_submit: {
+    label: "Ready to submit",
+    blurb: "What's left is taste, not improvement.",
     tone: "border-flag-low/50 bg-flag-low/15 text-flag-low",
   },
 };
 
 /**
- * The stopping signal, given the most prominent position in the panel.
+ * The stopping signal, and the visual focus of the results.
  *
  * Without it the tool has no endpoint — it is built to find weaknesses, so it
  * finds them forever, and students circle between fixes until the essay loses
- * whatever made it theirs.
+ * whatever made it theirs. At `ready_to_submit` this says so in the largest
+ * type on the panel, because "you can stop" is the finding that matters most.
  */
-function ReadinessCard({ report }: { report: EssayReport }) {
-  const copy = READINESS_COPY[report.readiness ?? ""];
-  if (!copy) return null;
+function ReadinessCard({
+  readiness,
+  report,
+}: {
+  readiness: Readiness;
+  report: EssayReport | null;
+}) {
+  const copy = READINESS_COPY[readiness];
+  const ready = readiness === "ready_to_submit";
 
   return (
     <section className={`rounded-lg border p-4 ${copy.tone}`}>
-      <h2 className="font-serif text-base">{copy.label}</h2>
+      <h2 className={ready ? "font-serif text-xl" : "font-serif text-base"}>
+        {copy.label}
+      </h2>
       <p className="mt-0.5 text-xs opacity-90">{copy.blurb}</p>
 
-      {report.readiness_why && (
+      {report?.readiness_why && (
         <p className="mt-3 text-sm text-ink">{report.readiness_why}</p>
       )}
-      {report.readiness_next && (
-        <p className="mt-2 text-sm font-medium text-ink">
-          {report.readiness_next}
+
+      {ready ? (
+        <p className="mt-3 text-sm font-medium text-ink">
+          {report?.readiness_next ||
+            "This is ready. What's left is taste, not improvement — further edits risk flattening your voice more than they help."}
         </p>
+      ) : (
+        report?.readiness_next && (
+          <p className="mt-2 text-sm font-medium text-ink">
+            {report.readiness_next}
+          </p>
+        )
       )}
     </section>
   );

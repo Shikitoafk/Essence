@@ -6,8 +6,10 @@ import { locateQuote, parseModeAReport } from "@/lib/ai/parseReport";
 import { checkRateLimit, recordUsage } from "@/lib/rateLimit";
 import {
   countWords,
+  deriveReadiness,
   spotKey,
   MIN_DRAFT_WORDS,
+  SUPPRESS_POLISH_FROM_ROUND,
   type Essay,
   type SpotStatus,
 } from "@/lib/types";
@@ -131,19 +133,6 @@ export async function POST(request: Request) {
 
   const versionId = version?.id ?? null;
 
-  await supabase.from("essay_reports").insert({
-    essay_id: essay.id,
-    version_id: versionId,
-    overall_impression: report.overall_impression,
-    checklist_findings: report.checklist_findings,
-    framework_findings: report.framework_findings,
-    priorities: report.priorities,
-    strengths: report.strengths,
-    readiness: report.readiness,
-    readiness_why: report.readiness_why,
-    readiness_next: report.readiness_next,
-  });
-
   // Whatever the student already settled stays settled. Keyed by pattern+line
   // so a re-read doesn't re-ask a question they've answered or waved off.
   const { data: settled } = await supabase
@@ -182,6 +171,7 @@ export async function POST(request: Request) {
         version_id: versionId,
         pattern_name: spot.pattern_name,
         confidence: spot.confidence,
+        impact: spot.impact,
         quoted_text: located.text,
         what_is_clear: spot.what_is_clear,
         what_is_unexplored: spot.what_is_unexplored,
@@ -198,6 +188,24 @@ export async function POST(request: Request) {
     await supabase.from("flagged_spots").insert(rows);
   }
 
+  // Written after the cards exist, because the verdict is derived from what was
+  // actually flagged — the report and the cards are one statement, not two
+  // opinions that can drift apart.
+  const readiness = deriveReadiness(rows);
+
+  await supabase.from("essay_reports").insert({
+    essay_id: essay.id,
+    version_id: versionId,
+    overall_impression: report.overall_impression,
+    checklist_findings: report.checklist_findings,
+    framework_findings: report.framework_findings,
+    priorities: report.priorities,
+    strengths: report.strengths,
+    readiness,
+    readiness_why: report.readiness_why,
+    readiness_next: report.readiness_next,
+  });
+
   /*
    * No question is posted here. The student asks for the first one from the
    * workspace when they're ready — a read can surface a lot at once, and being
@@ -209,7 +217,10 @@ export async function POST(request: Request) {
 
   await supabase
     .from("essays")
-    .update({ last_feedback_at: new Date().toISOString() })
+    .update({
+      last_feedback_at: new Date().toISOString(),
+      revision_count: context.round,
+    })
     .eq("id", essay.id);
 
   return NextResponse.json({
@@ -233,6 +244,8 @@ interface SeasonContext {
   previousReadiness: string | null;
   /** True when this draft is identical to the one last read. */
   draftUnchanged: boolean;
+  /** Quotes the student explicitly said had nothing more in them. */
+  setAside: string[];
 }
 
 /**
@@ -269,10 +282,10 @@ async function buildSeasonContext(
       .limit(10),
     supabase
       .from("flagged_spots")
-      .select("quoted_text")
+      .select("quoted_text, status")
       .eq("essay_id", essay.id)
-      .eq("status", "resolved")
-      .limit(15),
+      .in("status", ["resolved", "skipped"])
+      .limit(30),
     supabase
       .from("essay_reports")
       .select("readiness", { count: "exact" })
@@ -298,9 +311,12 @@ async function buildSeasonContext(
       title: r.title as string,
       kind: r.essay_kind as string,
     })),
-    previouslyResolved: (resolvedResult.data ?? []).map(
-      (r) => r.quoted_text as string,
-    ),
+    previouslyResolved: (resolvedResult.data ?? [])
+      .filter((r) => r.status === "resolved")
+      .map((r) => r.quoted_text as string),
+    setAside: (resolvedResult.data ?? [])
+      .filter((r) => r.status === "skipped")
+      .map((r) => r.quoted_text as string),
     round: (historyResult.count ?? 0) + 1,
     previousReadiness:
       (historyResult.data?.[0]?.readiness as string | null) ?? null,
@@ -380,7 +396,21 @@ function buildModeAPrompt(
         context.previousReadiness
           ? ` The previous read judged it "${context.previousReadiness}".`
           : ""
-      } If the problems from earlier rounds have genuinely been addressed, say so and move the verdict on. Do not manufacture a new tier of objections to justify this read.`,
+      } If the problems from earlier rounds have genuinely been addressed, say so and rate what's left honestly. Do not manufacture a new tier of objections to justify this read.`,
+    );
+  }
+
+  if (context.round >= SUPPRESS_POLISH_FROM_ROUND) {
+    parts.push(
+      `Round ${context.round}: raise your bar. Flag only what would genuinely change an admissions reader's impression of this applicant. Nothing you would describe as a matter of taste belongs in this read at all.`,
+    );
+  }
+
+  if (context.setAside.length > 0) {
+    parts.push(
+      `The student already looked at these passages and said there was nothing more there. Do not raise them again under a different pattern name:\n${context.setAside
+        .map((q) => `- "${q}"`)
+        .join("\n")}`,
     );
   }
 

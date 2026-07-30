@@ -1,10 +1,10 @@
 import {
   type Confidence,
+  type Impact,
   type ParsedReport,
   type ParsedSpot,
-  type Readiness,
+  IMPACTS,
   NUDGE_PATTERNS,
-  READINESS_STAGES,
 } from "@/lib/types";
 
 /**
@@ -79,7 +79,7 @@ function parseCard(body: string): ParsedSpot | null {
 
   for (const line of body.split(/\r?\n/)) {
     const match = line.match(
-      /^\s*(pattern|confidence|quote|clear|unexplored|matters|question)\s*:\s*(.*)$/i,
+      /^\s*(pattern|confidence|impact|quote|clear|unexplored|matters|question)\s*:\s*(.*)$/i,
     );
     if (match) {
       currentKey = match[1].toLowerCase();
@@ -98,6 +98,7 @@ function parseCard(body: string): ParsedSpot | null {
   return {
     pattern_name: normalisePattern(fields.pattern ?? ""),
     confidence: normaliseConfidence(fields.confidence ?? ""),
+    impact: normaliseImpact(fields.impact ?? ""),
     quoted_text: quote,
     what_is_clear: (fields.clear ?? "").trim(),
     what_is_unexplored: (fields.unexplored ?? "").trim(),
@@ -126,28 +127,31 @@ function parseQueue(section: string, spotCount: number): number[] {
 }
 
 /**
- * Section 8 is the stopping signal. A missing or unrecognised verdict returns
- * null rather than a guess: inventing "done" would tell a student to stop when
- * the model never said so, and inventing "structural" would keep them circling.
+ * Section 8 carries only the engine's reasoning. The readiness verdict itself
+ * is derived from the spots' impacts, so a model that talks up a draft it just
+ * flagged as broken cannot make the two disagree.
  */
-function parseReadiness(section: string): {
-  readiness: Readiness | null;
-  why: string;
-  next: string;
-} {
+function parseReadinessProse(section: string): { why: string; next: string } {
   const field = (name: string) =>
     section.match(new RegExp(`^\\s*${name}\\s*:\\s*(.*)$`, "im"))?.[1]?.trim() ??
     "";
 
-  const raw = field("verdict").toLowerCase();
-  const readiness = READINESS_STAGES.find((stage) => raw.includes(stage)) ?? null;
+  return { why: field("why"), next: field("next") };
+}
 
-  return { readiness, why: field("why"), next: field("next") };
+/**
+ * An unreadable impact falls back to "substantive" — the middle rating.
+ * Defaulting to "polish" would quietly mark a draft ready to submit, and
+ * defaulting to "structural" would keep a finished essay in revision.
+ */
+function normaliseImpact(value: string): Impact {
+  const cleaned = value.trim().toLowerCase();
+  return IMPACTS.find((impact) => cleaned.includes(impact)) ?? "substantive";
 }
 
 export function parseModeAReport(raw: string): ParsedReport {
   const sections = splitSections(raw);
-  const readiness = parseReadiness(sections["8"] ?? "");
+  const prose = parseReadinessProse(sections["8"] ?? "");
 
   const spots: ParsedSpot[] = [];
   const cardSource = sections["4"] ?? raw;
@@ -166,9 +170,8 @@ export function parseModeAReport(raw: string): ParsedReport {
     strengths: sections["6"] ?? "",
     spots,
     queue: parseQueue(sections["7"] ?? "", spots.length),
-    readiness: readiness.readiness,
-    readiness_why: readiness.why,
-    readiness_next: readiness.next,
+    readiness_why: prose.why,
+    readiness_next: prose.next,
   };
 }
 
