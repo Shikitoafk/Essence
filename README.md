@@ -164,9 +164,17 @@ your Google OAuth client.
 
 Essays live in your own Supabase project. Row-level security scopes every table
 to the signed-in owner. The only outbound path for essay text is the Gemini API
-call that generates feedback — there is no analytics or third-party integration.
-The in-app **Privacy & data** page states this to students and lets them read
-and delete every remembered fact.
+call that generates feedback.
+
+Vercel Analytics is enabled for page-view counts. It receives the URL path and
+nothing else — no essay text, no conversation answers, no user identity — sets
+no cookies and does no cross-site tracking. There is no advertising or ad
+tracking. To remove it, drop `<Analytics />` from
+[`src/app/layout.tsx`](src/app/layout.tsx) and uninstall `@vercel/analytics` —
+and update the privacy page, which describes it to students by name.
+
+The in-app **Privacy & data** page states all of this and lets students read and
+delete every remembered fact.
 
 ## Deliberately not built
 

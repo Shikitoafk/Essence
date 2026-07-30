@@ -17,6 +17,8 @@ export default function RootLayout({
     <html lang="en">
       <body className="min-h-screen antialiased">
         {children}
+        {/* Page-view counts only — no cookies, no cross-site tracking, and no
+            essay content. The privacy page tells students this is here. */}
         <Analytics />
       </body>
     </html>

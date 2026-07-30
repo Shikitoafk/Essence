@@ -1,27 +1,6 @@
 import Link from "next/link";
 import { createClient, supabaseConfigured } from "@/lib/supabase/server";
 
-const TESTIMONIALS = [
-  {
-    quote:
-      "I'd written \"it changed how I see my family\" four times. Essence asked what I did differently the next Sunday. That answer became the whole ending.",
-    name: "Placeholder — replace with a real quote",
-    detail: "Common App personal statement",
-  },
-  {
-    quote:
-      "It never gave me a sentence. Annoying for about ten minutes, then it was the only feedback that actually sounded like me.",
-    name: "Placeholder — replace with a real quote",
-    detail: "Transfer applicant",
-  },
-  {
-    quote:
-      "My counselor said the third draft read like a different writer. It was the same writer — I'd just finally put the real details in.",
-    name: "Placeholder — replace with a real quote",
-    detail: "Why Us supplement",
-  },
-];
-
 export default async function LandingPage() {
   let signedIn = false;
   if (supabaseConfigured()) {
@@ -154,22 +133,6 @@ export default async function LandingPage() {
             deliberate — the answer you type back is raw material for{" "}
             <em>you</em> to write with, not text to paste.
           </p>
-        </section>
-
-        <section className="border-t border-line py-16">
-          <div className="grid gap-8 sm:grid-cols-3">
-            {TESTIMONIALS.map((t) => (
-              <figure key={t.quote} className="text-sm">
-                <blockquote className="font-serif text-base leading-relaxed">
-                  &ldquo;{t.quote}&rdquo;
-                </blockquote>
-                <figcaption className="mt-3 text-muted">
-                  <span className="block">{t.name}</span>
-                  <span className="block text-xs">{t.detail}</span>
-                </figcaption>
-              </figure>
-            ))}
-          </div>
         </section>
 
         <section className="border-t border-line py-16">

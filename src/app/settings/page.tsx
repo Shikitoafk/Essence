@@ -95,8 +95,15 @@ export default async function SettingsPage() {
               for follow-up turns.
             </li>
             <li>
-              There is no analytics, advertising, or data-sharing integration in
-              this app.
+              <span className="text-ink">Vercel Analytics</span> — counts page
+              views so we know which pages get used. It records the page
+              address, and never any part of your essay, your answers, or who
+              you are. It sets no cookies and does not follow you to other
+              sites.
+            </li>
+            <li>
+              There is no advertising, no ad tracking, and no other
+              data-sharing integration in this app.
             </li>
           </ul>
           <p className="mt-4 text-sm text-muted">
