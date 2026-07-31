@@ -20,6 +20,11 @@ create table if not exists public.essays (
   -- Full diagnostic runs so far. Past round 3 the interface warns that essays
   -- usually stop improving and start losing voice.
   revision_count   integer not null default 0,
+  -- Set when a version loses a head-to-head comparison. Archived essays stay
+  -- readable and restorable but leave the main list, because two equally
+  -- visible versions is what keeps students flip-flopping.
+  archived_at      timestamptz,
+  archived_reason  text,
   created_at       timestamptz not null default now(),
   updated_at       timestamptz not null default now()
 );

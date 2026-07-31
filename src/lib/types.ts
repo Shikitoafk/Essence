@@ -95,6 +95,8 @@ export interface Essay {
   school: string | null;
   last_feedback_at: string | null;
   revision_count: number;
+  archived_at: string | null;
+  archived_reason: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -202,6 +204,87 @@ export function spotKey(patternName: string, quotedText: string): string {
       .replace(/\s+/g, " ")
       .trim();
   return `${normalise(patternName)}::${normalise(quotedText)}`;
+}
+
+/**
+ * The five axes a head-to-head comparison scores. Fixed deliberately: these are
+ * what change an admissions reader's decision, and letting the model invent its
+ * own axes turns a verdict back into a balanced overview.
+ */
+export const COMPARISON_AXES = [
+  "core_self",
+  "texture",
+  "voice",
+  "structural_soundness",
+  "risk",
+] as const;
+
+export type ComparisonAxis = (typeof COMPARISON_AXES)[number];
+
+export const AXIS_LABEL: Record<ComparisonAxis, string> = {
+  core_self: "Core self",
+  texture: "Texture",
+  voice: "Voice",
+  structural_soundness: "Structural soundness",
+  risk: "Risk",
+};
+
+export const AXIS_BLURB: Record<ComparisonAxis, string> = {
+  core_self: "How specific and non-generic the person inside the story is.",
+  texture: "Concrete lived detail against declared feeling.",
+  voice: "Whether one identifiable person wrote this.",
+  structural_soundness: "Whether the arc holds without its device.",
+  risk: "What could cost the writer with a tired reader.",
+};
+
+/** Core self, voice and risk decide; the other two only break ties. */
+export const DOMINANT_AXES: ComparisonAxis[] = ["core_self", "voice", "risk"];
+
+export type Margin = "clear" | "narrow";
+
+export interface AxisScore {
+  axis: ComparisonAxis;
+  winner_id: string;
+  justification: string;
+}
+
+export interface TransferableElement {
+  quote: string;
+  from_version_id: string;
+  destination_hint: string;
+  why: string;
+}
+
+/** Never more than three: a hybrid of two coherent essays is coherent in neither. */
+export const MAX_TRANSFERABLE = 3;
+
+export interface EssayComparison {
+  id: string;
+  user_id: string;
+  version_a_id: string;
+  version_b_id: string;
+  winner_id: string;
+  margin: Margin;
+  verdict_summary: string;
+  axis_scores: AxisScore[];
+  transferable_elements: TransferableElement[];
+  accepted_at: string | null;
+  created_at: string;
+}
+
+/**
+ * `clear` only when the winner takes all three dominant axes. Derived here
+ * rather than taken from the model, so the margin always matches the axis rows
+ * the student can see for themselves.
+ */
+export function deriveMargin(
+  axisScores: AxisScore[],
+  winnerId: string,
+): Margin {
+  const dominant = DOMINANT_AXES.every((axis) =>
+    axisScores.some((s) => s.axis === axis && s.winner_id === winnerId),
+  );
+  return dominant ? "clear" : "narrow";
 }
 
 export function countWords(text: string): number {

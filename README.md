@@ -40,7 +40,17 @@ material for *them* to write with.
    invent a new tier of objections to justify a later read, and to flag fewer
    spots or none once a draft is at rest. At `polish` and `done` the interface
    stops inviting another round — the button reads "Read again anyway".
-6. **Revision history.** Every feedback run snapshots the draft; a word-level
+6. **Head-to-head comparison.** For students who end up with two genuinely
+   different versions — one built on a metaphor, one stripped of it — and can't
+   choose. It scores both on five fixed axes (core self, texture, voice,
+   structural soundness, risk), weights core self / voice / risk above the rest,
+   and **always picks one**: "both are strong in different ways" is the failure
+   state, not a valid answer. At most three borrowings from the loser, each an
+   exact quote from the student's own draft with a destination but never a
+   phrasing. Accepting archives the losing version, because two equally visible
+   versions is what keeps students oscillating. Near-identical drafts are caught
+   before the call — there's nothing to choose between two copies.
+7. **Revision history.** Every feedback run snapshots the draft; a word-level
    diff and a resolved / open / set-aside count per version show real movement.
 
 ## Tech stack

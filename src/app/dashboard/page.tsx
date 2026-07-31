@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import AppHeader from "@/components/AppHeader";
 import NewEssayForm from "./NewEssayForm";
+import ArchivedList from "./ArchivedList";
 import { createClient } from "@/lib/supabase/server";
 import {
   countWords,
@@ -40,7 +41,11 @@ export default async function DashboardPage() {
     .eq("user_id", user.id)
     .order("updated_at", { ascending: false });
 
-  const essays = (data ?? []) as EssayRow[];
+  const all = (data ?? []) as EssayRow[];
+  // Archived versions stay readable but leave the main list: two equally
+  // visible versions of one essay is what keeps students flip-flopping.
+  const essays = all.filter((e) => !e.archived_at);
+  const archived = all.filter((e) => e.archived_at);
 
   return (
     <div className="min-h-screen">
@@ -55,6 +60,22 @@ export default async function DashboardPage() {
               stay together across the season.
             </p>
           </div>
+
+          {essays.length >= 2 ? (
+            <Link
+              href="/compare"
+              className="rounded-full border border-line bg-white px-4 py-2 text-sm hover:border-accent"
+            >
+              Compare versions
+            </Link>
+          ) : (
+            <span
+              title="You need two essays before there's anything to compare."
+              className="cursor-not-allowed rounded-full border border-line px-4 py-2 text-sm text-muted opacity-60"
+            >
+              Compare versions
+            </span>
+          )}
         </div>
 
         <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_20rem]">
@@ -150,6 +171,8 @@ export default async function DashboardPage() {
                 })}
               </ul>
             )}
+
+            {archived.length > 0 && <ArchivedList essays={archived} />}
           </div>
 
           <NewEssayForm />

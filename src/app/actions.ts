@@ -194,6 +194,75 @@ export async function setSpotStatus(spotId: string, status: SpotStatus) {
   return { ok: true as const };
 }
 
+/**
+ * Locks in a verdict: the losing version is archived so it leaves the main list.
+ *
+ * Archiving is the point, not a side effect. Two equally visible versions is
+ * exactly what keeps a student flip-flopping, which is the problem comparison
+ * exists to end. The loser stays readable and restorable — just out of the way.
+ */
+export async function acceptComparison(comparisonId: string) {
+  const { supabase, user } = await requireUser();
+
+  const { data: comparison } = await supabase
+    .from("essay_comparisons")
+    .select("id, winner_id, version_a_id, version_b_id")
+    .eq("id", comparisonId)
+    .eq("user_id", user.id)
+    .maybeSingle<{
+      id: string;
+      winner_id: string;
+      version_a_id: string;
+      version_b_id: string;
+    }>();
+
+  if (!comparison) {
+    return { ok: false as const, error: "That comparison no longer exists." };
+  }
+
+  const loserId =
+    comparison.winner_id === comparison.version_a_id
+      ? comparison.version_b_id
+      : comparison.version_a_id;
+
+  const { error: archiveError } = await supabase
+    .from("essays")
+    .update({
+      archived_at: new Date().toISOString(),
+      archived_reason: "lost_comparison",
+    })
+    .eq("id", loserId);
+
+  if (archiveError) return { ok: false as const, error: archiveError.message };
+
+  // The winner keeps its own revision_count and history: a decision between
+  // versions is not a fresh start, and the diminishing-returns warnings on the
+  // surviving essay must still apply.
+  const { error } = await supabase
+    .from("essay_comparisons")
+    .update({ accepted_at: new Date().toISOString() })
+    .eq("id", comparisonId);
+
+  if (error) return { ok: false as const, error: error.message };
+
+  revalidatePath("/dashboard");
+  revalidatePath(`/essays/${comparison.winner_id}`);
+  return { ok: true as const, winnerId: comparison.winner_id };
+}
+
+export async function restoreEssay(formData: FormData) {
+  const { supabase } = await requireUser();
+  const id = String(formData.get("essayId") ?? "");
+  if (!id) return;
+
+  await supabase
+    .from("essays")
+    .update({ archived_at: null, archived_reason: null })
+    .eq("id", id);
+
+  revalidatePath("/dashboard");
+}
+
 export async function signOut() {
   const supabase = await createClient();
   await supabase.auth.signOut();
