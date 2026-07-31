@@ -95,6 +95,9 @@ create table if not exists public.essay_reports (
                                             'ready_to_submit')),
   readiness_why      text not null default '',
   readiness_next     text not null default '',
+  -- Up to three passages the read says to leave alone. Without these the Spots
+  -- tab is pure criticism, and students edit away what already works.
+  working_well       jsonb not null default '[]'::jsonb,
   created_at         timestamptz not null default now()
 );
 

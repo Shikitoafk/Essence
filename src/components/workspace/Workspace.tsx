@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import DraftEditor from "./DraftEditor";
 import SpotCard from "./SpotCard";
+import KeepCard from "./KeepCard";
 import ConversationPanel from "./ConversationPanel";
 import EssaySettings from "./EssaySettings";
 import Markdown from "@/components/Markdown";
@@ -228,6 +229,12 @@ export default function Workspace({
    * supplies one — this keeps the default view to findings that would actually
    * change a reader's impression.
    */
+  // Only shown while they still match the draft — a passage the student has
+  // since rewritten is no longer the passage that was working.
+  const keepList = (report?.working_well ?? []).filter((item) =>
+    locateQuote(draft, item.quote),
+  );
+
   const hidePolish = rounds >= SUPPRESS_POLISH_FROM_ROUND;
   const minorSpots = hidePolish
     ? ordered.filter((s) => s.impact === "polish" && s.status === "open")
@@ -399,6 +406,13 @@ export default function Workspace({
                       onSelect={() => setActiveSpotId(spot.id)}
                       onStatusChange={(status) => changeStatus(spot.id, status)}
                     />
+                  ))}
+
+                  {/* Sits among the spots, not in a separate tab: this is the
+                      only thing on the screen saying what NOT to change, and it
+                      has to be where the changing gets decided. */}
+                  {keepList.map((item, i) => (
+                    <KeepCard key={`keep-${i}`} item={item} />
                   ))}
 
                   {minorSpots.length > 0 && (

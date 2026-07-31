@@ -138,6 +138,20 @@ export interface ConversationMessage {
   created_at: string;
 }
 
+/**
+ * A passage the read judged effective and advises leaving alone.
+ *
+ * A list of pure criticism gives a student no way to tell which lines are
+ * load-bearing, so they edit away the ones already doing the work.
+ */
+export interface WorkingWell {
+  quote: string;
+  why: string;
+}
+
+/** More than three would dilute the actionable spots — the opposite of the point. */
+export const MAX_WORKING_WELL = 3;
+
 export interface EssayReport {
   id: string;
   essay_id: string;
@@ -150,6 +164,7 @@ export interface EssayReport {
   readiness: Readiness | null;
   readiness_why: string;
   readiness_next: string;
+  working_well: WorkingWell[];
   created_at: string;
 }
 
@@ -186,6 +201,7 @@ export interface ParsedReport {
   /** Readiness itself is derived from the spots' impacts, not parsed. */
   readiness_why: string;
   readiness_next: string;
+  working_well: WorkingWell[];
 }
 
 /**

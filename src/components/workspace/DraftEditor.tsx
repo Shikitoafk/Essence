@@ -57,22 +57,63 @@ export default function DraftEditor({
     return found.sort((a, b) => a.start - b.start);
   }, [value, spots]);
 
+  /*
+   * The paragraph the active spot sits in.
+   *
+   * The quote alone tells a student which line is flagged but not where the
+   * material they surface belongs. Softly marking the surrounding paragraph
+   * answers "where does this go" without proposing a single word of it.
+   */
+  const activeParagraph = useMemo(() => {
+    const active = ranges.find((r) => r.spotId === activeSpotId);
+    if (!active) return null;
+
+    const before = value.lastIndexOf("\n\n", active.start);
+    const after = value.indexOf("\n\n", active.end);
+    return {
+      start: before === -1 ? 0 : before + 2,
+      end: after === -1 ? value.length : after,
+    };
+  }, [ranges, activeSpotId, value]);
+
   const segments = useMemo(() => {
-    const out: { text: string; spotId: string | null }[] = [];
-    let cursor = 0;
+    // Split on every boundary — quote edges and paragraph edges alike — so each
+    // run carries a single, unambiguous pair of marks.
+    const bounds = new Set<number>([0, value.length]);
     for (const range of ranges) {
-      if (range.start > cursor) {
-        out.push({ text: value.slice(cursor, range.start), spotId: null });
-      }
-      out.push({
-        text: value.slice(range.start, range.end),
-        spotId: range.spotId,
-      });
-      cursor = range.end;
+      bounds.add(range.start);
+      bounds.add(range.end);
     }
-    out.push({ text: value.slice(cursor), spotId: null });
+    if (activeParagraph) {
+      bounds.add(activeParagraph.start);
+      bounds.add(activeParagraph.end);
+    }
+
+    const points = [...bounds].sort((a, b) => a - b);
+    const out: {
+      text: string;
+      spotId: string | null;
+      inParagraph: boolean;
+    }[] = [];
+
+    for (let i = 0; i < points.length - 1; i++) {
+      const start = points[i];
+      const end = points[i + 1];
+      if (end <= start) continue;
+
+      out.push({
+        text: value.slice(start, end),
+        spotId: ranges.find((r) => start >= r.start && end <= r.end)?.spotId ?? null,
+        inParagraph: Boolean(
+          activeParagraph &&
+            start >= activeParagraph.start &&
+            end <= activeParagraph.end,
+        ),
+      });
+    }
+
     return out;
-  }, [ranges, value]);
+  }, [ranges, value, activeParagraph]);
 
   // Keep the painted layer locked to the textarea's scroll position.
   useEffect(() => {
@@ -139,20 +180,25 @@ export default function DraftEditor({
           aria-hidden="true"
           className="draft-shared-metrics pointer-events-none absolute inset-0 overflow-hidden text-transparent"
         >
-          {segments.map((segment, i) =>
-            segment.spotId ? (
-              <span
-                key={i}
-                className="quote-mark"
-                data-spot-id={segment.spotId}
-                data-active={segment.spotId === activeSpotId}
-              >
-                {segment.text}
-              </span>
-            ) : (
-              <span key={i}>{segment.text}</span>
-            ),
-          )}
+          {segments.map((segment, i) => (
+            <span
+              key={i}
+              className={[
+                segment.spotId ? "quote-mark" : "",
+                segment.inParagraph && !segment.spotId ? "paragraph-mark" : "",
+              ]
+                .filter(Boolean)
+                .join(" ")}
+              {...(segment.spotId
+                ? {
+                    "data-spot-id": segment.spotId,
+                    "data-active": segment.spotId === activeSpotId,
+                  }
+                : {})}
+            >
+              {segment.text}
+            </span>
+          ))}
           {/* Trailing newline keeps the last line's height in sync. */}
           {"\n"}
         </div>

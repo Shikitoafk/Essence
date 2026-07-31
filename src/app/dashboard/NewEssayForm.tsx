@@ -17,17 +17,46 @@ function SubmitButton() {
   );
 }
 
+/**
+ * Collapsed until asked for. As a permanent sidebar it left a column of dead
+ * space under it and squeezed the essay list, while the thing it creates is
+ * needed a handful of times a season.
+ */
 export default function NewEssayForm() {
   const [kind, setKind] = useState("personal_statement");
+  const [open, setOpen] = useState(false);
+
+  if (!open) {
+    return (
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="w-full rounded-lg border border-dashed border-line bg-white px-5 py-3 text-sm text-muted transition hover:border-accent hover:text-ink"
+      >
+        + New essay
+      </button>
+    );
+  }
 
   return (
-    <aside className="h-fit rounded-lg border border-line bg-white p-5">
-      <h2 className="font-serif text-lg">New essay</h2>
-      <p className="mt-1 text-sm text-muted">
-        You can leave everything but the title blank and fill it in later.
-      </p>
+    <section className="rounded-lg border border-line bg-white p-5">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h2 className="font-serif text-lg">New essay</h2>
+          <p className="mt-1 text-sm text-muted">
+            You can leave everything but the title blank and fill it in later.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => setOpen(false)}
+          className="shrink-0 text-sm text-muted hover:text-ink"
+        >
+          Cancel
+        </button>
+      </div>
 
-      <form action={createEssay} className="mt-5 space-y-4">
+      <form action={createEssay} className="mt-5 grid gap-4 sm:grid-cols-2">
         <label className="block">
           <span className="text-sm font-medium">Title</span>
           <input
@@ -62,7 +91,7 @@ export default function NewEssayForm() {
           </label>
         )}
 
-        <label className="block">
+        <label className="block sm:col-span-2">
           <span className="text-sm font-medium">
             Prompt <span className="font-normal text-muted">(optional)</span>
           </span>
@@ -87,8 +116,10 @@ export default function NewEssayForm() {
           />
         </label>
 
-        <SubmitButton />
+        <div className="sm:col-span-2">
+          <SubmitButton />
+        </div>
       </form>
-    </aside>
+    </section>
   );
 }

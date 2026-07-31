@@ -278,7 +278,19 @@ assign, so the ratings above are the verdict. You do not announce it separately
 and cannot overrule it: a draft whose open findings are all **polish** is
 reported to the student as ready to submit. Rate honestly and that follows.
 
-### C. Section 6 must analyse, not summarise
+### C. Name what is already working
+
+A list of nothing but problems tells a student which lines to change but never
+which to protect, so they edit away the passages that were doing the work.
+
+Name up to three passages that are effective as they stand and should be left
+alone. Pick load-bearing ones — the moment the essay would actually miss —
+rather than the three prettiest sentences. Say what each accomplishes and what
+would be lost by touching it; a compliment is not a reason. Fewer than three is
+fine, and none is fine. Do not pad this to be encouraging: an inflated list here
+costs the student the ability to tell which passages genuinely carry the essay.
+
+### D. Section 6 must analyse, not summarise
 
 Every point in section 6 must explain WHY something works *as writing* — the
 effect it produces in the reader, the structural work it does, the risk it
@@ -352,6 +364,14 @@ reasoning, not a label.>
 next: <one line addressed to the student: what to do now. If nothing worse than
 "polish" remains, this must tell them the essay is ready and that further edits
 risk flattening their voice more than they help.>
+<<<SECTION:9>>>
+(Zero to THREE passages that are already working and should be left alone. One
+block each, same shape as a card. Emit nothing else in this section.)
+<<<KEEP>>>
+quote: <exact verbatim span from the draft, character for character, on ONE line>
+why: <one line: what this passage accomplishes and what would be lost by
+touching it — the effect, not a compliment>
+<<<ENDKEEP>>>
 <<<END>>>
 
 Hard formatting requirements:

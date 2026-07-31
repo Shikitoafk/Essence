@@ -15,6 +15,26 @@ import { selectCurrentSpots } from "@/lib/currentSpots";
 
 export const dynamic = "force-dynamic";
 
+/**
+ * Word count as a signal rather than a fact: comfortably under reads neutral,
+ * close to the ceiling warns, over is a problem to fix before submitting.
+ */
+function wordCountTone(words: number, limit: number | null): string {
+  if (!limit) return "text-muted";
+  if (words > limit) return "font-medium text-flag-high";
+  if (words >= limit * 0.95) return "text-flag-medium";
+  return "text-muted";
+}
+
+function formatWhen(iso: string): string {
+  const then = new Date(iso).getTime();
+  const days = Math.floor((Date.now() - then) / 86_400_000);
+  if (days <= 0) return "today";
+  if (days === 1) return "yesterday";
+  if (days < 7) return `${days} days ago`;
+  return new Date(iso).toLocaleDateString();
+}
+
 const READINESS_PILL: Record<Readiness, { label: string; tone: string }> = {
   needs_work: { label: "Needs work", tone: "bg-flag-high/15 text-flag-high" },
   strong: { label: "Strong", tone: "bg-flag-medium/15 text-flag-medium" },
@@ -78,7 +98,11 @@ export default async function DashboardPage() {
           )}
         </div>
 
-        <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_20rem]">
+        <div className="mt-8">
+          <div className="mb-4">
+            <NewEssayForm />
+          </div>
+
           <div>
             {essays.length === 0 ? (
               <div className="rounded-lg border border-dashed border-line bg-white p-10 text-center">
@@ -105,8 +129,25 @@ export default async function DashboardPage() {
                     ? deriveReadiness(current)
                     : null;
                   const words = countWords(essay.current_draft ?? "");
-                  const over =
-                    essay.word_limit != null && words > essay.word_limit;
+                  const wordTone = wordCountTone(words, essay.word_limit);
+
+                  /*
+                   * The type label repeated what the title already said on most
+                   * cards ("Personal Statement — Common App" tagged "Personal
+                   * statement"). Shown only when it adds something; otherwise
+                   * the space goes to when the essay was last touched.
+                   */
+                  const kindLabel =
+                    essay.essay_kind === "supplemental"
+                      ? `Supplemental${essay.school ? ` · ${essay.school}` : ""}`
+                      : "Personal statement";
+                  const kindIsRedundant = essay.title
+                    .toLowerCase()
+                    .includes(
+                      essay.essay_kind === "supplemental"
+                        ? "supplement"
+                        : "personal statement",
+                    );
 
                   return (
                     <li key={essay.id}>
@@ -118,15 +159,12 @@ export default async function DashboardPage() {
                           <div>
                             <h2 className="font-serif text-lg">{essay.title}</h2>
                             <p className="mt-0.5 text-xs uppercase tracking-widest text-muted">
-                              {essay.essay_kind === "supplemental"
-                                ? "Supplemental"
-                                : "Personal statement"}
-                              {essay.school ? ` · ${essay.school}` : ""}
+                              {kindIsRedundant
+                                ? `Edited ${formatWhen(essay.updated_at)}`
+                                : kindLabel}
                             </p>
                           </div>
-                          <span
-                            className={`text-sm ${over ? "text-flag-high" : "text-muted"}`}
-                          >
+                          <span className={`text-sm ${wordTone}`}>
                             {words} word{words === 1 ? "" : "s"}
                             {essay.word_limit ? ` / ${essay.word_limit}` : ""}
                           </span>
@@ -174,8 +212,6 @@ export default async function DashboardPage() {
 
             {archived.length > 0 && <ArchivedList essays={archived} />}
           </div>
-
-          <NewEssayForm />
         </div>
       </main>
     </div>

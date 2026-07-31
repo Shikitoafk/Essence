@@ -4,6 +4,7 @@ import { MODE_A_SYSTEM } from "@/lib/ai/systemPrompt";
 import { generate, userFacingError } from "@/lib/ai/llm";
 import { locateQuote, parseModeAReport } from "@/lib/ai/parseReport";
 import { checkRateLimit, recordUsage } from "@/lib/rateLimit";
+import { selectCurrentSpots } from "@/lib/currentSpots";
 import {
   countWords,
   deriveReadiness,
@@ -11,6 +12,7 @@ import {
   MIN_DRAFT_WORDS,
   SUPPRESS_POLISH_FROM_ROUND,
   type Essay,
+  type FlaggedSpot,
   type SpotStatus,
 } from "@/lib/types";
 
@@ -188,6 +190,33 @@ export async function POST(request: Request) {
     await supabase.from("flagged_spots").insert(rows);
   }
 
+  /*
+   * Stability check. On an unchanged draft the findings should be the same
+   * findings — a structural spot that appears in one run and vanishes in the
+   * next on identical input means the read is partly noise, and the diagnostic
+   * temperature wants lowering. Logged rather than surfaced: it is a signal for
+   * whoever runs the deployment, not something the student can act on.
+   */
+  if (context.draftUnchanged && context.previousSpotKeys.length > 0) {
+    const nowKeys = rows.map((r) => spotKey(r.pattern_name, r.quoted_text));
+    const appeared = rows.filter(
+      (r) =>
+        r.impact === "structural" &&
+        !context.previousSpotKeys.includes(
+          spotKey(r.pattern_name, r.quoted_text),
+        ),
+    );
+    const vanished = context.previousSpotKeys.filter(
+      (key) => !nowKeys.includes(key),
+    );
+
+    if (appeared.length > 0 || vanished.length > 0) {
+      console.warn(
+        `[essence] unstable read on unchanged draft ${essay.id}: ${appeared.length} new structural finding(s), ${vanished.length} finding(s) gone. Consider lowering the diagnostic temperature.`,
+      );
+    }
+  }
+
   // Written after the cards exist, because the verdict is derived from what was
   // actually flagged — the report and the cards are one statement, not two
   // opinions that can drift apart.
@@ -204,6 +233,14 @@ export async function POST(request: Request) {
     readiness,
     readiness_why: report.readiness_why,
     readiness_next: report.readiness_next,
+    // Same anchoring rule as the spot cards: a passage the student is told to
+    // protect has to actually be in their draft.
+    working_well: report.working_well
+      .map((item) => {
+        const located = locateQuote(draft, item.quote);
+        return located ? { quote: located.text, why: item.why } : null;
+      })
+      .filter((item): item is NonNullable<typeof item> => item !== null),
   });
 
   /*
@@ -246,6 +283,8 @@ interface SeasonContext {
   draftUnchanged: boolean;
   /** Quotes the student explicitly said had nothing more in them. */
   setAside: string[];
+  /** Identity of the previous run's findings, for the stability check. */
+  previousSpotKeys: string[];
 }
 
 /**
@@ -266,6 +305,7 @@ async function buildSeasonContext(
     resolvedResult,
     historyResult,
     lastVersionResult,
+    priorSpotsResult,
   ] = await Promise.all([
     supabase
       .from("essay_facts")
@@ -301,6 +341,7 @@ async function buildSeasonContext(
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle<{ draft_text: string }>(),
+    supabase.from("flagged_spots").select("*").eq("essay_id", essay.id),
   ]);
 
   const lastRead = lastVersionResult.data?.draft_text ?? null;
@@ -321,6 +362,9 @@ async function buildSeasonContext(
     previousReadiness:
       (historyResult.data?.[0]?.readiness as string | null) ?? null,
     draftUnchanged: lastRead !== null && lastRead.trim() === draft.trim(),
+    previousSpotKeys: selectCurrentSpots(
+      (priorSpotsResult.data ?? []) as FlaggedSpot[],
+    ).map((s) => spotKey(s.pattern_name, s.quoted_text)),
   };
 }
 

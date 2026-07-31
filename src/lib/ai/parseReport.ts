@@ -3,7 +3,9 @@ import {
   type Impact,
   type ParsedReport,
   type ParsedSpot,
+  type WorkingWell,
   IMPACTS,
+  MAX_WORKING_WELL,
   NUDGE_PATTERNS,
 } from "@/lib/types";
 
@@ -15,6 +17,7 @@ import {
 
 const SECTION_RE = /<<<SECTION:(\d)>>>/g;
 const CARD_RE = /<<<CARD>>>([\s\S]*?)<<<ENDCARD>>>/g;
+const KEEP_RE = /<<<KEEP>>>([\s\S]*?)<<<ENDKEEP>>>/g;
 
 function splitSections(raw: string): Record<string, string> {
   const text = raw.replace(/<<<END>>>[\s\S]*$/, "");
@@ -149,6 +152,26 @@ function normaliseImpact(value: string): Impact {
   return IMPACTS.find((impact) => cleaned.includes(impact)) ?? "substantive";
 }
 
+/** Passages the read says to leave alone. Same field shape as a card. */
+function parseWorkingWell(section: string): WorkingWell[] {
+  const found: WorkingWell[] = [];
+  KEEP_RE.lastIndex = 0;
+  let match: RegExpExecArray | null;
+
+  while ((match = KEEP_RE.exec(section)) !== null) {
+    const fields: Record<string, string> = {};
+    for (const line of match[1].split(/\r?\n/)) {
+      const field = line.match(/^\s*(quote|why)\s*:\s*(.*)$/i);
+      if (field) fields[field[1].toLowerCase()] = field[2];
+    }
+    const quote = cleanQuote(fields.quote ?? "");
+    // Without an anchor there is no passage to protect, only a compliment.
+    if (quote) found.push({ quote, why: (fields.why ?? "").trim() });
+  }
+
+  return found.slice(0, MAX_WORKING_WELL);
+}
+
 export function parseModeAReport(raw: string): ParsedReport {
   const sections = splitSections(raw);
   const prose = parseReadinessProse(sections["8"] ?? "");
@@ -172,6 +195,7 @@ export function parseModeAReport(raw: string): ParsedReport {
     queue: parseQueue(sections["7"] ?? "", spots.length),
     readiness_why: prose.why,
     readiness_next: prose.next,
+    working_well: parseWorkingWell(sections["9"] ?? ""),
   };
 }
 
