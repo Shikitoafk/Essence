@@ -406,10 +406,18 @@ function buildModeAPrompt(
   );
 
   if (context.facts.length > 0) {
+    /*
+     * These come from every essay the student has worked on, not just this one.
+     * Left unqualified, the engine read them as facts about THIS draft's author
+     * and faulted the essay for "dropping" a laboratory interest that belonged
+     * to a different essay entirely — inventing a deficiency out of season
+     * memory. The framing has to be explicit about what these are for.
+     */
     parts.push(
-      `Facts this student has already shared in earlier sessions (use them so questions build on what you know — never re-ask what's already answered):\n${context.facts
-        .map((f) => `- ${f}`)
-        .join("\n")}`,
+      `Things this student has told you while working on their essays THIS SEASON — possibly on a different essay than this one:
+${context.facts.map((f) => `- ${f}`).join("\n")}
+
+Use these only to ask better questions and to avoid re-asking what you already know. They are NOT requirements for this draft. This essay is under no obligation to mention any of them, and an omission here is not a finding: never write that the draft "drops", "omits" or "fails to mention" something that appears only in this list. Judge the draft on what it is trying to do, not on material from another essay.`,
     );
   }
 

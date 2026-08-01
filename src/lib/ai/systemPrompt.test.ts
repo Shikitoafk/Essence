@@ -40,6 +40,37 @@ test("the engine must deduplicate its own findings", () => {
   assert.ok(ENGINE_REFINEMENTS.includes("would two or more of these cards close at"));
 });
 
+test("cross-essay memory can never become a criticism", () => {
+  /*
+   * Observed on a real admitted essay: season memory from a different essay
+   * leaked in, and the read faulted this draft for "dropping" a laboratory
+   * interest that had never been in it. That breaks the spec's own rule against
+   * inventing facts about the student, via a feature built to help them.
+   */
+  assert.ok(
+    ENGINE_REFINEMENTS.includes("Never fault a draft for material that isn't in it"),
+  );
+  // Matched clear of the hard wrap in the prompt text.
+  assert.ok(ENGINE_REFINEMENTS.includes("specification this draft has to satisfy"));
+  for (const verb of ['"drops"', '"omits"', '"fails to mention"']) {
+    assert.ok(
+      ENGINE_REFINEMENTS.includes(verb),
+      `${verb} is the exact phrasing the failure took`,
+    );
+  }
+  // Point 11 comparisons stay legal — those are about what the essays contain.
+  assert.ok(ENGINE_REFINEMENTS.includes("checklist point 11"));
+});
+
+test("each refinement section has a unique letter", () => {
+  // Two sections both labelled F once slipped through while renumbering.
+  const letters = [...ENGINE_REFINEMENTS.matchAll(/^### ([A-Z])\./gm)].map(
+    (m) => m[1],
+  );
+  assert.ok(letters.length > 0);
+  assert.equal(new Set(letters).size, letters.length, letters.join(","));
+});
+
 test("confidence is defined at every level, not just high", () => {
   for (const level of ["**high**", "**medium**", "**low**"]) {
     assert.ok(
