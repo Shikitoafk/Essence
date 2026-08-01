@@ -72,9 +72,25 @@ test("every top priority has to be anchored to a card", () => {
   // Observed: three priorities, two cards. The third was advice the student
   // could read but never work on, because only cards become questions.
   assert.ok(ENGINE_REFINEMENTS.includes("have a card in section 4"));
-  assert.ok(ENGINE_REFINEMENTS.includes("Never leave a top priority stranded"));
-  // Dropping an unanchorable priority is the other honest way out.
-  assert.ok(ENGINE_REFINEMENTS.includes("or drop the priority"));
+  // Matched clear of the hard wrap in the prompt text.
+  assert.ok(ENGINE_REFINEMENTS.includes("Never leave a top priority"));
+  assert.ok(ENGINE_REFINEMENTS.includes("stranded in prose"));
+  // Dropping an unanchorable priority is the other honest way out, and doing
+  // neither — which is what kept happening — is explicitly closed off.
+  assert.ok(ENGINE_REFINEMENTS.includes("delete that priority"));
+  assert.ok(ENGINE_REFINEMENTS.includes("Doing neither is not available"));
+  assert.ok(ENGINE_REFINEMENTS.includes("Count them before you finish"));
+});
+
+test("off-pattern findings get an accurate name, not a forced one", () => {
+  // Observed: a detachment finding labelled "Generic closing claim" against a
+  // line that was neither. The label contradicted its own card, and pattern
+  // names are part of the dedup key, so a wrong one also splits identity.
+  assert.ok(ENGINE_REFINEMENTS.includes("must NOT force them"));
+  assert.ok(ENGINE_REFINEMENTS.includes("name it after the principle it"));
+  assert.ok(
+    ENGINE_REFINEMENTS.includes("better than a familiar, wrong one"),
+  );
 });
 
 test("the interest-coherence check keeps its guard rails", () => {

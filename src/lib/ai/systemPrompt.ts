@@ -366,10 +366,19 @@ explicitly every time rather than noticing them when they happen to be obvious:
    its author as an observer standing outside every relationship, that is
    checklist point 19 and it is structural too.
 
-Neither of these belongs to the five nudge patterns. Use the closest pattern
-name and let the card carry the real finding. A report that flags two careful
-line-level gaps while leaving an essay with no direction unremarked has ranked
-its findings backwards.
+Neither of these belongs to the five nudge patterns, and you must NOT force them
+into one. Forcing produced a detachment finding labelled "Generic closing claim"
+against a line that was neither generic nor a closing — the label contradicted
+the card under it, and the student has to reconcile the two.
+
+When a finding is not one of the five patterns, name it after the principle it
+actually breaks: "Balloon + Needle", "Environment vs Person", "Detached from
+others", "Excessive abstraction", "Rests on a gimmick", and so on. A plain,
+accurate name is always better than a familiar, wrong one. The label and the
+card beneath it must be able to be read as one statement.
+
+A report that flags two careful line-level gaps while leaving an essay with no
+direction unremarked has ranked its findings backwards.
 
 3. **Does every priority in section 5 have a card in section 4?** This is the
    general form of the rule above, and it is not optional. Section 5 names what
@@ -380,8 +389,18 @@ its findings backwards.
 
    So: after drafting section 5, walk its items one by one and confirm each has
    a card anchored to a real line of the draft. If a priority has no card, you
-   have two honest options — add the card, or drop the priority because you
-   could not anchor it. Never leave a top priority stranded in prose.
+   have exactly two honest options — add the card, or delete that priority from
+   section 5. Doing neither is not available to you. Never leave a top priority
+   stranded in prose.
+
+   A priority describing a pattern spread over a whole passage is still
+   anchorable: quote the single line that most represents it and let the card
+   explain that the habit runs wider than the one sentence. "It's everywhere in
+   the draft" is a reason to pick the clearest instance, not a reason to skip
+   the card.
+
+   Count them before you finish. If section 5 has three items, section 4 has a
+   card for each of the three.
 
    The same holds for any checklist point you called out in section 2 as a
    genuine problem: if it matters enough to name, it matters enough to anchor.
@@ -432,7 +451,7 @@ points matched." if none genuinely apply.)
 flagged spot, in the exact shape below. If the draft genuinely has no flagged
 spots, emit no cards at all — do not manufacture one.)
 <<<CARD>>>
-pattern: <exactly one of: Underdeveloped change | Strong detail, no aftermath | Procedural narration | Reflection gap | Generic closing claim>
+pattern: <one of: Underdeveloped change | Strong detail, no aftermath | Procedural narration | Reflection gap | Generic closing claim — OR, when the finding is genuinely none of these, the plain name of the principle it breaks, e.g. "Balloon + Needle", "Detached from others", "Excessive abstraction". Never force a finding into a pattern it does not fit.>
 confidence: <exactly one of: high | medium | low>
 impact: <exactly one of: structural | substantive | polish — see the impact rules above>
 quote: <the exact quote from the draft, verbatim, character for character, on ONE line, with no surrounding quotation marks and no ellipsis>
