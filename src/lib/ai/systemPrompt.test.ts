@@ -68,6 +68,15 @@ test("a missing forward direction is a mandatory, structural check", () => {
   assert.ok(ENGINE_REFINEMENTS.includes("Do not settle for"));
 });
 
+test("every top priority has to be anchored to a card", () => {
+  // Observed: three priorities, two cards. The third was advice the student
+  // could read but never work on, because only cards become questions.
+  assert.ok(ENGINE_REFINEMENTS.includes("have a card in section 4"));
+  assert.ok(ENGINE_REFINEMENTS.includes("Never leave a top priority stranded"));
+  // Dropping an unanchorable priority is the other honest way out.
+  assert.ok(ENGINE_REFINEMENTS.includes("or drop the priority"));
+});
+
 test("the interest-coherence check keeps its guard rails", () => {
   // The check is only safe because it is narrow. If these ever drop out, the
   // engine starts nitpicking healthy metaphors.

@@ -371,6 +371,21 @@ name and let the card carry the real finding. A report that flags two careful
 line-level gaps while leaving an essay with no direction unremarked has ranked
 its findings backwards.
 
+3. **Does every priority in section 5 have a card in section 4?** This is the
+   general form of the rule above, and it is not optional. Section 5 names what
+   the student should fix first; section 4 is the only part of the report that
+   becomes a question they can answer. A priority with no card is advice they
+   read once and cannot work on — it never enters the follow-up conversation at
+   all.
+
+   So: after drafting section 5, walk its items one by one and confirm each has
+   a card anchored to a real line of the draft. If a priority has no card, you
+   have two honest options — add the card, or drop the priority because you
+   could not anchor it. Never leave a top priority stranded in prose.
+
+   The same holds for any checklist point you called out in section 2 as a
+   genuine problem: if it matters enough to name, it matters enough to anchor.
+
 ### H. Section 6 must analyse, not summarise
 
 Every point in section 6 must explain WHY something works *as writing* — the
