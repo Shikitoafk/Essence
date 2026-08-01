@@ -25,6 +25,39 @@ test("Mode A carries the field refinements, Mode B does not", () => {
   assert.ok(!MODE_B_SYSTEM.includes("Field Refinements"));
 });
 
+test("a deliberate, explained absence is protected from being flagged", () => {
+  // The failure this prevents: a draft that says why a scene cannot be given
+  // gets a card demanding that scene. Sophisticated drafts suffer most.
+  assert.ok(ENGINE_REFINEMENTS.includes("An absence the draft explains is not a gap"));
+  assert.ok(ENGINE_REFINEMENTS.includes("do not flag it"));
+  assert.ok(ENGINE_REFINEMENTS.includes("never the"));
+});
+
+test("the engine must deduplicate its own findings", () => {
+  // Checklist point 11 turned on the report itself: three labels for one gap
+  // read as three problems and stall the follow-up conversation.
+  assert.ok(ENGINE_REFINEMENTS.includes("One card per distinct gap"));
+  assert.ok(ENGINE_REFINEMENTS.includes("would two or more of these cards close at"));
+});
+
+test("confidence is defined at every level, not just high", () => {
+  for (const level of ["**high**", "**medium**", "**low**"]) {
+    assert.ok(
+      ENGINE_REFINEMENTS.includes(level),
+      `${level} needs a definition or the scale collapses to decoration`,
+    );
+  }
+});
+
+test("the prose diagnosis is required to become a card", () => {
+  // The sharpest observation must not die in the summary while lesser findings
+  // get cards the student can actually act on.
+  // Matched without spanning a line wrap, since the prompt is hard-wrapped.
+  assert.ok(ENGINE_REFINEMENTS.includes("to appear as a spot card"));
+  assert.ok(ENGINE_REFINEMENTS.includes("Balloon + Needle"));
+  assert.ok(ENGINE_REFINEMENTS.includes("die in the summary"));
+});
+
 test("the interest-coherence check keeps its guard rails", () => {
   // The check is only safe because it is narrow. If these ever drop out, the
   // engine starts nitpicking healthy metaphors.

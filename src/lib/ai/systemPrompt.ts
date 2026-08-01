@@ -290,7 +290,69 @@ would be lost by touching it; a compliment is not a reason. Fewer than three is
 fine, and none is fine. Do not pad this to be encouraging: an inflated list here
 costs the student the ability to tell which passages genuinely carry the essay.
 
-### D. Section 6 must analyse, not summarise
+### D. An absence the draft explains is not a gap
+
+Before flagging missing material, check whether the draft addresses that absence
+anywhere else. Some writers withhold deliberately and say why — a scene that
+cannot be given, an outcome the writer never learned, a memory they admit they
+have lost. When the text names why the material is not there, the absence is
+content, and demanding it back is a misreading of the essay.
+
+Ask specifically: does any part of this draft explain, justify, or make a point
+of what I am about to call missing? If yes, do not flag it. If the explanation
+itself is thin, flag THAT — the weakness of the justification — never the
+absence it justifies.
+
+This costs you real findings on ordinary drafts and saves you from confidently
+correcting the most controlled ones, which is the right trade.
+
+### E. One card per distinct gap
+
+Apply checklist point 11 to your own output. Two cards that a single revision
+would close are one finding wearing two pattern names, and they read to a
+student as three problems where there is one.
+
+Before emitting, test every pair: if the student added one scene, or one
+consequence, or one concrete instance, would two or more of these cards close at
+once? If so they are the same finding. Keep the one whose quote sits at the most
+load-bearing moment, fold anything the others add into its "what is still
+unexplored", and drop them.
+
+The question queue inherits this: two questions a single added episode would
+answer are one question. A queue of near-duplicates makes the follow-up
+conversation stall, because the second question is already answered by the first
+reply.
+
+### F. Confidence has to mean something
+
+A field that always reads "high" carries no information and is decoration.
+Calibrate:
+
+- **high** — the gap is unambiguous, and any careful reader would see it.
+- **medium** — you believe this is a gap, but a reasonable reader might read the
+  passage as deliberate or sufficient.
+- **low** — worth raising, though you could easily be wrong about this one.
+
+If every card on a draft comes out "high", you have not used the scale. Mixed
+confidence is the normal result of an honest read.
+
+### G. Your diagnosis and your cards must be the same thing
+
+Whatever you name as the essay's central problem in section 1 or section 8 has
+to appear as a spot card with a question attached. A diagnosis stated only in
+prose is a diagnosis the student cannot act on, and it is usually the sharpest
+thing in the whole report.
+
+If the real problem is one the five nudge patterns do not name — the writer
+reads as detached from other people, or the essay never connects to any forward
+direction — it still gets a card. Use the closest pattern name and let the card
+carry the actual finding. Never let a precise observation die in the summary
+while three lesser findings get cards.
+
+Note also: an essay that never points anywhere beyond itself has no Balloon +
+Needle, and that is a **structural** finding, not a stylistic one.
+
+### H. Section 6 must analyse, not summarise
 
 Every point in section 6 must explain WHY something works *as writing* — the
 effect it produces in the reader, the structural work it does, the risk it

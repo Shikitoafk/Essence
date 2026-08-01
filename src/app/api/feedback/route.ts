@@ -191,6 +191,17 @@ export async function POST(request: Request) {
   }
 
   /*
+   * Confidence calibration. A field that always reads "high" carries no
+   * information, so the distribution is logged: if reads keep coming back
+   * unanimous, the scale isn't being used and the prompt needs tightening.
+   */
+  if (rows.length >= 3 && rows.every((r) => r.confidence === "high")) {
+    console.warn(
+      `[essence] all ${rows.length} findings on essay ${essay.id} came back "high" confidence — the scale may not be in use.`,
+    );
+  }
+
+  /*
    * Stability check. On an unchanged draft the findings should be the same
    * findings — a structural spot that appears in one run and vanishes in the
    * next on identical input means the read is partly noise, and the diagnostic

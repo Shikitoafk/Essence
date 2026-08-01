@@ -6,6 +6,7 @@ import Link from "next/link";
 import DraftEditor from "./DraftEditor";
 import SpotCard from "./SpotCard";
 import KeepCard from "./KeepCard";
+import FirstRunGuide from "./FirstRunGuide";
 import ConversationPanel from "./ConversationPanel";
 import EssaySettings from "./EssaySettings";
 import Markdown from "@/components/Markdown";
@@ -302,6 +303,8 @@ export default function Workspace({
           </div>
         </div>
 
+        <FirstRunGuide />
+
         {/* When the provider's terms permit training on submitted text, say so
             where drafts get pasted — not only on a privacy page nobody opens. */}
         {!paidTier && (
@@ -352,22 +355,37 @@ export default function Workspace({
         </div>
 
         <div className="flex min-h-0 flex-col gap-4">
+          {/* "Full read" said nothing about what was inside it, so testers kept
+              assuming the framework and priorities had gone missing. The labels
+              now name their contents. */}
           <div className="flex gap-1 rounded-full border border-line bg-white p-1 text-sm">
             {(
               [
-                ["spots", `Spots${spots.length ? ` (${spots.length})` : ""}`],
-                ["report", "Full read"],
-              ] as [Tab, string][]
-            ).map(([value, label]) => (
+                [
+                  "spots",
+                  `Spots${spots.length ? ` (${spots.length})` : ""}`,
+                  "Specific lines to work on",
+                ],
+                ["report", "Full read", "Structure, priorities, strengths"],
+              ] as [Tab, string, string][]
+            ).map(([value, label, hint]) => (
               <button
                 key={value}
                 type="button"
                 onClick={() => setTab(value)}
-                className={`flex-1 rounded-full px-3 py-1.5 transition ${
+                title={hint}
+                className={`flex-1 rounded-full px-3 py-1.5 leading-tight transition ${
                   tab === value ? "bg-ink text-paper" : "text-muted hover:text-ink"
                 }`}
               >
-                {label}
+                <span className="block">{label}</span>
+                <span
+                  className={`block text-[0.65rem] ${
+                    tab === value ? "text-paper/70" : "text-muted"
+                  }`}
+                >
+                  {hint}
+                </span>
               </button>
             ))}
           </div>
