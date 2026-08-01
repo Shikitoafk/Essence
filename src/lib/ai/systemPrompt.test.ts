@@ -58,6 +58,16 @@ test("the prose diagnosis is required to become a card", () => {
   assert.ok(ENGINE_REFINEMENTS.includes("die in the summary"));
 });
 
+test("a missing forward direction is a mandatory, structural check", () => {
+  // Missed twice on the same draft while lesser findings got cards, so it is a
+  // required verification rather than a note the engine can pass over.
+  assert.ok(ENGINE_REFINEMENTS.includes("Mandatory final check"));
+  assert.ok(ENGINE_REFINEMENTS.includes("a card saying so is mandatory"));
+  assert.ok(ENGINE_REFINEMENTS.includes("ranked"));
+  // It must not be satisfiable by a mention in the prose sections.
+  assert.ok(ENGINE_REFINEMENTS.includes("Do not settle for"));
+});
+
 test("the interest-coherence check keeps its guard rails", () => {
   // The check is only safe because it is narrow. If these ever drop out, the
   // engine starts nitpicking healthy metaphors.

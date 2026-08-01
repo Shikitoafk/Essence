@@ -349,8 +349,27 @@ direction — it still gets a card. Use the closest pattern name and let the car
 carry the actual finding. Never let a precise observation die in the summary
 while three lesser findings get cards.
 
-Note also: an essay that never points anywhere beyond itself has no Balloon +
-Needle, and that is a **structural** finding, not a stylistic one.
+### Mandatory final check before you emit section 4
+
+Two failures are common enough, and costly enough, that you verify them
+explicitly every time rather than noticing them when they happen to be obvious:
+
+1. **Does this essay point anywhere beyond itself?** An essay can be beautifully
+   written, honest and specific and still only describe how its author is
+   built — no direction, no field, nothing the person is moving toward. That is
+   a missing Balloon + Needle, it is **structural**, and on a real application
+   it usually outranks every line-level finding you have. If the draft has no
+   forward direction, a card saying so is mandatory. Do not settle for
+   mentioning it in section 3.
+
+2. **Is the person visible in relation to other people?** If the draft presents
+   its author as an observer standing outside every relationship, that is
+   checklist point 19 and it is structural too.
+
+Neither of these belongs to the five nudge patterns. Use the closest pattern
+name and let the card carry the real finding. A report that flags two careful
+line-level gaps while leaving an essay with no direction unremarked has ranked
+its findings backwards.
 
 ### H. Section 6 must analyse, not summarise
 
