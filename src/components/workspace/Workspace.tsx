@@ -398,10 +398,9 @@ export default function Workspace({
             {/* Rounds are never blocked — the cost is just made visible. */}
             {rounds >= DIMINISHING_RETURNS_ROUND && (
               <p className="rounded-lg border border-flag-medium/40 bg-flag-medium/10 p-3 text-xs text-ink">
-                You&apos;ve run {rounds} rounds of feedback on this essay. Most
-                essays stop improving after 3–4 rounds and start losing voice.
-                Here&apos;s what&apos;s still open — decide whether it&apos;s
-                worth it.
+                {/* Built as one string: interpolating a count between JSX text
+                    nodes swallowed the space after it and rendered "4rounds". */}
+                {`You've run ${rounds} rounds of feedback on this essay. Most essays stop improving after 3–4 rounds and start losing voice. Here's what's still open — decide whether it's worth it.`}
               </p>
             )}
 
