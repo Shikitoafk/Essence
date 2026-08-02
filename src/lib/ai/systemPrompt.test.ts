@@ -4,6 +4,7 @@ import {
   ENGINE_REFINEMENTS,
   ENGINE_SYSTEM_PROMPT,
   MODE_A_SYSTEM,
+  MODE_B_ASK_SYSTEM,
   MODE_B_SYSTEM,
 } from "./systemPrompt";
 
@@ -60,6 +61,25 @@ test("cross-essay memory can never become a criticism", () => {
   }
   // Point 11 comparisons stay legal — those are about what the essays contain.
   assert.ok(ENGINE_REFINEMENTS.includes("checklist point 11"));
+});
+
+test("the question mode still refuses to write the essay", () => {
+  // Added because the loop was one-way and students couldn't ask anything.
+  // The risk in opening that channel is "just show me how to phrase it", so
+  // the line between method and content has to survive in this mode too.
+  assert.ok(MODE_B_ASK_SYSTEM.includes("Method, not content."));
+  assert.ok(MODE_B_ASK_SYSTEM.includes("Write, draft, rephrase"));
+  assert.ok(MODE_B_ASK_SYSTEM.includes("say plainly that you won't write it"));
+  // It carries the whole engine spec, not just the question rules.
+  assert.ok(MODE_B_ASK_SYSTEM.includes("Never rewrite the student's essay."));
+  assert.ok(MODE_B_ASK_SYSTEM.includes("Never invent facts"));
+});
+
+test("asking is not answering, and must not be judged as one", () => {
+  assert.ok(MODE_B_ASK_SYSTEM.includes("Do not treat their message as an answer"));
+  // Plain prose: the verdict machinery belongs to answers only.
+  assert.ok(MODE_B_ASK_SYSTEM.includes("Reply with plain prose"));
+  assert.ok(!MODE_B_ASK_SYSTEM.includes("needs_narrower"));
 });
 
 test("each refinement section has a unique letter", () => {

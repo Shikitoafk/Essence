@@ -36,7 +36,7 @@ interface Props {
   paidTier: boolean;
 }
 
-type Tab = "spots" | "report";
+type Tab = "spots" | "report" | "followup";
 
 export default function Workspace({
   essay,
@@ -357,7 +357,9 @@ export default function Workspace({
         <div className="flex min-h-0 flex-col gap-4">
           {/* "Full read" said nothing about what was inside it, so testers kept
               assuming the framework and priorities had gone missing. The labels
-              now name their contents. */}
+              now name their contents. Follow-up is a third tab rather than a
+              panel below the cards: testers had to scroll past every card to
+              reach the conversation, and gave up before finding it. */}
           <div className="flex gap-1 rounded-full border border-line bg-white p-1 text-sm">
             {(
               [
@@ -367,6 +369,11 @@ export default function Workspace({
                   "Specific lines to work on",
                 ],
                 ["report", "Full read", "Structure, priorities, strengths"],
+                [
+                  "followup",
+                  `Follow-up${openCount ? ` (${openCount})` : ""}`,
+                  "Questions and your answers",
+                ],
               ] as [Tab, string, string][]
             ).map(([value, label, hint]) => (
               <button
@@ -390,6 +397,23 @@ export default function Workspace({
             ))}
           </div>
 
+          {tab === "followup" ? (
+            <div className="flex min-h-0 flex-1 flex-col">
+              <ConversationPanel
+                essayId={essay.id}
+                messages={messages}
+                spots={spots}
+                activeSpotId={activeSpotId}
+                onMessagesChange={setMessages}
+                onSpotResolved={(spotId, status) =>
+                  setSpots((prev) =>
+                    prev.map((s) => (s.id === spotId ? { ...s, status } : s)),
+                  )
+                }
+                onSelectSpot={setActiveSpotId}
+              />
+            </div>
+          ) : (
           <div className="min-h-0 flex-1 space-y-3 overflow-y-auto pr-1">
             {essay.last_feedback_at && (
               <ReadinessCard readiness={readiness} report={report} />
@@ -498,22 +522,7 @@ export default function Workspace({
               </p>
             )}
           </div>
-
-          <div className="flex min-h-[22rem] flex-col">
-            <ConversationPanel
-              essayId={essay.id}
-              messages={messages}
-              spots={spots}
-              activeSpotId={activeSpotId}
-              onMessagesChange={setMessages}
-              onSpotResolved={(spotId, status) =>
-                setSpots((prev) =>
-                  prev.map((s) => (s.id === spotId ? { ...s, status } : s)),
-                )
-              }
-              onSelectSpot={setActiveSpotId}
-            />
-          </div>
+          )}
         </div>
       </div>
     </div>

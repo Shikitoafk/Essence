@@ -10,8 +10,12 @@ const STEPS = [
     body: "Your draft stays yours the whole time. Nothing Essence produces can be pasted into it — there's no insert button anywhere, on purpose.",
   },
   {
-    title: "Spots vs Full read",
-    body: "Spots are the specific lines to work on. Full read is the whole structural diagnostic — the framework, the priorities, and what's already working. Two tabs, same read.",
+    title: "Three tabs, one read",
+    body: "Spots are the specific lines to work on. Full read is the structural diagnostic — framework, priorities, what already works. Follow-up is where the questions live.",
+  },
+  {
+    title: "You can ask, not just answer",
+    body: "Stuck on a card, or don't see what it wants? Type it and press Ask instead. Nothing gets marked or judged — you just get an answer.",
   },
   {
     title: "Questions come one at a time",

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { MODE_B_SYSTEM } from "@/lib/ai/systemPrompt";
+import { MODE_B_ASK_SYSTEM, MODE_B_SYSTEM } from "@/lib/ai/systemPrompt";
 import { generate, parseJsonBody, userFacingError } from "@/lib/ai/llm";
 import { checkRateLimit, recordUsage } from "@/lib/rateLimit";
 import type { ConversationMessage, Essay, FlaggedSpot } from "@/lib/types";
@@ -31,7 +31,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Not signed in." }, { status: 401 });
   }
 
-  let body: { essayId?: string; spotId?: string; message?: string };
+  let body: {
+    essayId?: string;
+    spotId?: string;
+    message?: string;
+    intent?: "answer" | "ask";
+  };
   try {
     body = await request.json();
   } catch {
@@ -40,6 +45,9 @@ export async function POST(request: Request) {
 
   const { essayId, spotId } = body;
   const message = (body.message ?? "").trim();
+  // Asking is not answering. Testers found a loop where every message counted
+  // as an answer infuriating — there was no way to say "I don't understand".
+  const intent = body.intent === "ask" ? "ask" : "answer";
 
   if (!essayId || !spotId || !message) {
     return NextResponse.json(
@@ -108,7 +116,40 @@ export async function POST(request: Request) {
     (history ?? []) as Pick<ConversationMessage, "role" | "content">[],
     (facts ?? []).map((f) => f.fact as string),
     essay.word_limit,
+    intent,
   );
+
+  /*
+   * A question is answered and nothing else happens: the spot keeps its status,
+   * the queue doesn't advance, no material is banked. Being stuck is not
+   * progress through the queue, and treating it as progress is what made the
+   * loop feel like an interrogation.
+   */
+  if (intent === "ask") {
+    try {
+      const result = await generate({
+        tier: "conversation",
+        system: MODE_B_ASK_SYSTEM,
+        prompt,
+        temperature: 0.7,
+      });
+      const answer = result.text.trim();
+      if (!answer) throw new Error("empty answer to student question");
+
+      await supabase.from("conversation_messages").insert({
+        essay_id: essayId,
+        flagged_spot_id: spotId,
+        role: "assistant",
+        content: answer,
+      });
+
+      await recordUsage(supabase, user.id, "conversation");
+      return NextResponse.json({ ok: true, reply: answer, intent: "ask" });
+    } catch (error) {
+      const safe = userFacingError(error, "student question");
+      return NextResponse.json({ error: safe.message }, { status: safe.status });
+    }
+  }
 
   let parsed: ModeBReply;
   try {
@@ -232,6 +273,7 @@ function buildModeBPrompt(
   history: Pick<ConversationMessage, "role" | "content">[],
   facts: string[],
   wordLimit: number | null,
+  intent: "answer" | "ask",
 ): string {
   const parts: string[] = [];
 
@@ -266,7 +308,9 @@ The question you asked about it: ${spot.question}`,
   );
 
   parts.push(
-    "Judge the student's most recent message against the Mode B rules and reply using the Mode B output contract. Remember: never write any part of the essay for them.",
+    intent === "ask"
+      ? "The student's most recent message is a QUESTION for you, not an answer to yours. Answer it directly and usefully, and remember: explaining what kind of material a passage needs is help; supplying the words is not."
+      : "Judge the student's most recent message against the Mode B rules and reply using the Mode B output contract. Remember: never write any part of the essay for them.",
   );
 
   return parts.join("\n\n");

@@ -98,13 +98,19 @@ export default function ConversationPanel({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentSpot?.id]);
 
-  async function send() {
+  /**
+   * `ask` sends the message as a question to the engine instead of an answer:
+   * nothing is judged, the queue doesn't advance, the spot keeps its status.
+   * Without it every message counted as an answer and there was no way to say
+   * "I don't understand what you're asking me for".
+   */
+  async function send(intent: "answer" | "ask" = "answer") {
     const text = draft.trim();
     if (!text || !currentSpot || sending) return;
 
     setSending(true);
     setError(null);
-    setAffirmation(null);
+    if (intent === "answer") setAffirmation(null);
 
     const spotId = currentSpot.id;
     const optimistic: ConversationMessage = {
@@ -123,7 +129,7 @@ export default function ConversationPanel({
       const response = await fetch("/api/conversation", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ essayId, spotId, message: text }),
+        body: JSON.stringify({ essayId, spotId, message: text, intent }),
       });
       const payload = await response.json();
 
@@ -144,6 +150,12 @@ export default function ConversationPanel({
           created_at: new Date().toISOString(),
         },
       ];
+
+      // A question changes nothing about the spot — it just gets answered.
+      if (intent === "ask") {
+        onMessagesChange(next);
+        return;
+      }
 
       if (payload.verdict !== "needs_narrower") {
         onSpotResolved(spotId, payload.verdict);
@@ -386,23 +398,37 @@ export default function ConversationPanel({
           disabled={!canAnswer || sending}
           placeholder={
             canAnswer
-              ? "Answer with one concrete thing — what happened, who was there, when."
+              ? "Answer with one concrete thing — or ask Essence something instead."
               : currentSpot
                 ? "Press New question when you're ready."
                 : "No open questions right now."
           }
           className="w-full resize-none rounded-lg border border-line px-3 py-2 text-sm outline-none focus:border-accent disabled:bg-paper disabled:text-muted"
         />
-        <div className="mt-2 flex items-center justify-between">
-          <span className="text-xs text-muted">⌘/Ctrl + Enter to send</span>
-          <button
-            type="button"
-            onClick={() => void send()}
-            disabled={!canAnswer || sending || !draft.trim()}
-            className="rounded-full bg-accent px-4 py-1.5 text-sm text-paper transition hover:opacity-90 disabled:opacity-40"
-          >
-            {sending ? "Thinking…" : "Send"}
-          </button>
+        <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+          <span className="text-xs text-muted">⌘/Ctrl + Enter to answer</span>
+          <div className="flex items-center gap-2">
+            {/* The conversation used to run one way: everything a student typed
+                counted as an answer, so "I don't understand this" was
+                unsendable. Asking is now its own action. */}
+            <button
+              type="button"
+              onClick={() => void send("ask")}
+              disabled={!canAnswer || sending || !draft.trim()}
+              title="Ask about this spot instead of answering — nothing gets marked either way."
+              className="rounded-full border border-line px-4 py-1.5 text-sm transition hover:border-accent disabled:opacity-40"
+            >
+              Ask instead
+            </button>
+            <button
+              type="button"
+              onClick={() => void send("answer")}
+              disabled={!canAnswer || sending || !draft.trim()}
+              className="rounded-full bg-accent px-4 py-1.5 text-sm text-paper transition hover:opacity-90 disabled:opacity-40"
+            >
+              {sending ? "Thinking…" : "Send answer"}
+            </button>
+          </div>
         </div>
       </div>
     </section>
