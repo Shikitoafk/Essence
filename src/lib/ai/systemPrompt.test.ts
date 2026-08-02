@@ -63,6 +63,18 @@ test("cross-essay memory can never become a criticism", () => {
   assert.ok(ENGINE_REFINEMENTS.includes("checklist point 11"));
 });
 
+test("a closing reply cannot leave a question hanging", () => {
+  /*
+   * Observed: a "resolved" reply ended with a follow-up question. The interface
+   * closes the exchange on that verdict and binds the input to the next spot,
+   * so the student was left looking at a question they could not answer.
+   * Wanting more from the passage is what needs_narrower is for.
+   */
+  assert.ok(MODE_B_SYSTEM.includes("MUST NOT end with a question"));
+  assert.ok(MODE_B_SYSTEM.includes("cannot answer"));
+  assert.ok(MODE_B_SYSTEM.includes("keep the exchange open"));
+});
+
 test("the question mode still refuses to write the essay", () => {
   // Added because the loop was one-way and students couldn't ask anything.
   // The risk in opening that channel is "just show me how to phrase it", so

@@ -86,6 +86,13 @@ export default function ConversationPanel({
   // and the input stays shut.
   const asked = currentThread.some((m) => m.role === "assistant");
   const canAnswer = Boolean(currentSpot) && asked;
+  /*
+   * Asking needs only a spot to hang the question on — never a live question.
+   * A student can be stuck before taking a question on, and a closing reply
+   * that ends with a question (which the engine is told not to do, but might)
+   * would otherwise leave them staring at something unanswerable.
+   */
+  const canAsk = Boolean(currentSpot);
 
   useEffect(() => {
     const el = scrollRef.current;
@@ -395,26 +402,29 @@ export default function ConversationPanel({
             }
           }}
           rows={3}
-          disabled={!canAnswer || sending}
+          disabled={!canAsk || sending}
           placeholder={
             canAnswer
               ? "Answer with one concrete thing — or ask Essence something instead."
-              : currentSpot
-                ? "Press New question when you're ready."
+              : canAsk
+                ? "Ask Essence anything about this spot, or press New question to take it on."
                 : "No open questions right now."
           }
           className="w-full resize-none rounded-lg border border-line px-3 py-2 text-sm outline-none focus:border-accent disabled:bg-paper disabled:text-muted"
         />
         <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
-          <span className="text-xs text-muted">⌘/Ctrl + Enter to answer</span>
+          <span className="text-xs text-muted">
+            {canAnswer ? "⌘/Ctrl + Enter to answer" : "Asking changes nothing"}
+          </span>
           <div className="flex items-center gap-2">
-            {/* The conversation used to run one way: everything a student typed
-                counted as an answer, so "I don't understand this" was
-                unsendable. Asking is now its own action. */}
+            {/* Asking stays available whenever a spot exists, not only once its
+                question has been posted. It is the escape hatch for every state
+                the queue can get into — including a closing reply that slipped a
+                question past the rule against it. */}
             <button
               type="button"
               onClick={() => void send("ask")}
-              disabled={!canAnswer || sending || !draft.trim()}
+              disabled={!canAsk || sending || !draft.trim()}
               title="Ask about this spot instead of answering — nothing gets marked either way."
               className="rounded-full border border-line px-4 py-1.5 text-sm transition hover:border-accent disabled:opacity-40"
             >

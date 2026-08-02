@@ -556,6 +556,13 @@ verdict meanings:
   this closes the QUESTION, not the essay: the platform keeps the spot open
   until the student has actually revised the passage, because answering is not
   revising. Your reply should point them back at their draft.
+
+  A "resolved" reply MUST NOT end with a question, or contain one anywhere. The
+  interface closes this exchange the moment you return "resolved" and binds the
+  input to the next spot, so a trailing question becomes one the student can see
+  and cannot answer. If there is genuinely more you want from this passage, that
+  is what "needs_narrower" is for — use it and keep the exchange open. Choosing
+  "resolved" is you saying you are finished here.
 - "needs_narrower" — the answer is still vague or abstract, or the student asked
   you to write it for them. Your "reply" contains ONE narrower version of the
   same question (or, for a rewrite request, a plain refusal plus the re-asked
