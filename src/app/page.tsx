@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Logo, { LogoMark } from "@/components/Logo";
 import { createClient, supabaseConfigured } from "@/lib/supabase/server";
 
 export default async function LandingPage() {
@@ -14,7 +15,7 @@ export default async function LandingPage() {
   return (
     <div className="min-h-screen">
       <header className="mx-auto flex max-w-5xl items-center justify-between px-6 py-6">
-        <span className="font-serif text-xl tracking-tight">Essence</span>
+        <Logo size="sm" />
         <nav className="flex items-center gap-5 text-sm">
           <Link href="/settings" className="text-muted hover:text-ink">
             Privacy
@@ -156,7 +157,10 @@ export default async function LandingPage() {
 
       <footer className="border-t border-line">
         <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 px-6 py-8 text-sm text-muted">
-          <span>Essence — your words, sharper questions.</span>
+          <span className="flex items-center gap-2.5">
+            <LogoMark className="h-5 w-5" />
+            Your words, sharper questions.
+          </span>
           <Link href="/settings" className="hover:text-ink">
             What we store
           </Link>

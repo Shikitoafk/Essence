@@ -1,6 +1,18 @@
 import type { Metadata } from "next";
+import { Instrument_Serif } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
+
+/**
+ * The wordmark's typeface. Self-hosted by next/font rather than fetched from
+ * Google at runtime, so there's no third-party request on page load.
+ */
+const wordmark = Instrument_Serif({
+  weight: "400",
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-instrument",
+});
 
 export const metadata: Metadata = {
   title: "Essence — sharper questions, not rewritten sentences",
@@ -14,7 +26,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" className={wordmark.variable}>
       <body className="min-h-screen antialiased">
         {children}
         {/* Page-view counts only — no cookies, no cross-site tracking, and no

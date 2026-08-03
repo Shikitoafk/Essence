@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Suspense } from "react";
+import Logo from "@/components/Logo";
 import { supabaseConfigured } from "@/lib/supabase/server";
 import LoginForm from "./LoginForm";
 
@@ -8,8 +9,8 @@ export default function LoginPage() {
 
   return (
     <div className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-6 py-12">
-      <Link href="/" className="font-serif text-xl tracking-tight">
-        Essence
+      <Link href="/" aria-label="Essence — home">
+        <Logo size="md" tagline />
       </Link>
       <h1 className="mt-8 font-serif text-3xl">Your essays, your words.</h1>
       <p className="mt-2 text-sm text-muted">

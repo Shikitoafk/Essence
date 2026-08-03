@@ -8,11 +8,17 @@
   --color-accent: #7a5c3e;
   --color-accent-soft: #f0e9df;
 
+  /* Brand highlighter. The only saturated colour in the palette, reserved for
+     the mark — it reads as a pen stroke, which is what the product does. */
+  --color-mark: #c8e45c;
+
   --color-flag-high: #b4552f;
   --color-flag-medium: #9a7b3a;
   --color-flag-low: #6a7a5c;
 
   --font-serif: Georgia, "Iowan Old Style", "Times New Roman", serif;
+  /* Loaded by next/font in the root layout; falls back to the body serif. */
+  --font-wordmark: var(--font-instrument), Georgia, serif;
 }
 
 :root {
