@@ -108,77 +108,100 @@ body {
    product can. Everything below is scoped to it — the workspace stays quiet.
    --------------------------------------------------------------------------- */
 
-/* Scroll-in. Elements start displaced and settle when they enter the viewport;
-   Reveal.tsx flips data-shown. Anyone who has asked their OS for less motion
-   gets the finished state immediately and never sees a transition.
+/* Entrances come in two kinds, and the split is a safety property.
  *
- * Everything that starts hidden is gated on `.js`, which the inline script in
- * the root layout sets before first paint. Without it nothing is ever hidden.
- * That matters more than it looks: the entrance state is opacity 0, so a
- * scripting failure of any kind — blocked bundle, dead observer, a browser that
- * doesn't composite — would otherwise serve a blank page rather than a plain
- * one. The content is the product; the motion is decoration. */
-.reveal {
-  opacity: 1;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .js .reveal {
+ * Nothing here may leave content permanently invisible. An opacity-0 resting
+ * state that waits on JavaScript turns any scripting failure — blocked bundle,
+ * failed hydration, an observer that never fires — into a blank page instead of
+ * a plain one. So neither mechanism has one:
+ *
+ *   .rise    above the fold. A CSS animation, which always runs to completion
+ *            once started and needs no script at all.
+ *   .reveal  below the fold. Visible by default; Reveal.tsx sets data-armed on
+ *            mount to hide it, which is invisible to the reader because the
+ *            element is off-screen when it happens.
+ */
+@keyframes rise {
+  from {
     opacity: 0;
     transform: translateY(20px);
-    transition:
-      opacity 0.75s cubic-bezier(0.22, 0.61, 0.24, 1),
-      transform 0.75s cubic-bezier(0.22, 0.61, 0.24, 1);
   }
-
-  .js .reveal[data-shown="true"] {
+  to {
     opacity: 1;
     transform: none;
   }
 }
 
-/* The highlighter stroke, drawn rather than filled: a background image grown
-   from zero width, so it sweeps left-to-right the way a real marker does.
-   `box-decoration-break` keeps the stroke intact when the phrase wraps. */
+@media (prefers-reduced-motion: no-preference) {
+  .rise {
+    animation: rise 0.75s cubic-bezier(0.22, 0.61, 0.24, 1) both;
+  }
+}
+
+.reveal[data-armed="true"] {
+  opacity: 0;
+  transform: translateY(20px);
+  transition:
+    opacity 0.75s cubic-bezier(0.22, 0.61, 0.24, 1),
+    transform 0.75s cubic-bezier(0.22, 0.61, 0.24, 1);
+}
+
+.reveal[data-armed="true"][data-shown="true"] {
+  opacity: 1;
+  transform: none;
+}
+
+/* The hero performs the product: a highlighter finds the sentence doing no
+   work, then a question arrives beside it. Both are keyframe animations on a
+   delay rather than JS-staged state, so the sequence needs no client component
+   and its resting state — struck through, note in place — is what renders when
+   animation is off. Nothing here can strand content out of sight. */
+
+/* Drawn rather than filled: a background image grown from zero width, so it
+   sweeps left-to-right the way a real marker does. `box-decoration-break`
+   keeps the stroke intact when the phrase wraps. */
+@keyframes sweep-in {
+  from {
+    background-size: 0% 0.95em;
+  }
+  to {
+    background-size: 100% 0.95em;
+  }
+}
+
 .sweep {
   background-image: linear-gradient(var(--color-mark), var(--color-mark));
   background-repeat: no-repeat;
   background-position: 0 0.12em;
-  background-size: 0% 0.95em;
+  background-size: 100% 0.95em;
   box-decoration-break: clone;
   -webkit-box-decoration-break: clone;
   padding: 0 0.05em;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .sweep {
-    transition: background-size 900ms cubic-bezier(0.65, 0, 0.35, 1);
-  }
-}
-
-.sweep[data-on="true"] {
-  background-size: 100% 0.95em;
-}
-
-/* The margin note: how a reader's comment actually arrives — clipped to the
-   edge of the page, then swinging in beside the line it belongs to. */
-.margin-note {
-  opacity: 1;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .js .margin-note {
+/* How a reader's comment actually arrives — from the edge of the page, landing
+   beside the line it belongs to. */
+@keyframes note-in {
+  from {
     opacity: 0;
     transform: translateX(14px);
   }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
-.margin-note[data-shown="true"] {
-  opacity: 1;
-  transform: none;
-  transition:
-    opacity 0.6s ease-out 0.1s,
-    transform 0.6s cubic-bezier(0.22, 0.61, 0.24, 1) 0.1s;
+@media (prefers-reduced-motion: no-preference) {
+  /* The delays are the beat that makes this read as someone noticing
+     something, rather than two elements animating in. */
+  .sweep {
+    animation: sweep-in 0.9s cubic-bezier(0.65, 0, 0.35, 1) 0.9s both;
+  }
+
+  .margin-note {
+    animation: note-in 0.6s cubic-bezier(0.22, 0.61, 0.24, 1) 1.9s both;
+  }
 }
 
 /* Ruled paper, drawn at the exact line-height of the draft type so the text

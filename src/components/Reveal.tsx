@@ -5,37 +5,20 @@ import { useEffect, useRef, type ElementType, type ReactNode } from "react";
 /**
  * Settles its children into place when they scroll into view.
  *
- * The animation lives in CSS (`.reveal` in globals.css); this only decides
- * *when* by flipping `data-shown`. Keeping it that way means a reader who has
- * asked their system for reduced motion gets the finished state from the first
- * paint — the media query wins and there is no transition to suppress.
+ * The rule this is built around: content must never depend on JavaScript to
+ * become visible. So it renders *visible*, and only hides itself once mounted,
+ * on the client, after confirming the element is below the fold — where the
+ * reader cannot see it happen. A blocked bundle or a failed hydration then
+ * costs the page its animation and nothing else.
+ *
+ * Anything above the fold should use the CSS-only `.rise` class instead. It
+ * cannot be hidden this way without a visible flash, and a keyframe animation
+ * needs no script to finish.
  *
  * The observer disconnects after firing. These are decorative entrances, and an
  * element that re-animates every time it re-enters the viewport reads as a page
  * that will not sit still.
  */
-/**
- * Calls off the layout's dead-man's switch.
- *
- * The inline script hides the page and arms a timer to un-hide it. Reaching
- * here proves React mounted, so the timer is cancelled and the entrances run.
- * If hydration had failed instead — a blocked bundle, a throwing effect — the
- * timer would fire and the reader would get an unanimated page rather than an
- * empty one.
- */
-let switchDisarmed = false;
-
-function disarmUnhideTimer() {
-  if (switchDisarmed) return;
-  switchDisarmed = true;
-
-  const w = window as Window & { __essenceUnhide?: ReturnType<typeof setTimeout> };
-  if (w.__essenceUnhide !== undefined) {
-    clearTimeout(w.__essenceUnhide);
-    delete w.__essenceUnhide;
-  }
-}
-
 export default function Reveal({
   children,
   as: Tag = "div",
@@ -54,14 +37,14 @@ export default function Reveal({
     const node = ref.current;
     if (!node) return;
 
-    disarmUnhideTimer();
+    const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (still || typeof IntersectionObserver === "undefined") return;
 
-    // No observer means no way to know when this scrolls in, so it simply
-    // stays put. An un-animated element beats an invisible one.
-    if (typeof IntersectionObserver === "undefined") {
-      node.dataset.shown = "true";
-      return;
-    }
+    // Already on screen, or close enough that hiding it now would read as a
+    // flicker rather than an entrance. Leave it exactly as it rendered.
+    if (node.getBoundingClientRect().top < window.innerHeight * 0.92) return;
+
+    node.dataset.armed = "true";
 
     // Fires slightly before the element is fully on screen, so the motion has
     // finished by the time it is where the eye lands.

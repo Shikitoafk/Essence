@@ -1,6 +1,4 @@
-"use client";
-
-import { useEffect, useState } from "react";
+import { LogoMark } from "@/components/Logo";
 
 /**
  * The product, performed once, in about two seconds.
@@ -10,27 +8,12 @@ import { useEffect, useState } from "react";
  * paragraph sits there looking perfectly fine, a highlighter finds the sentence
  * that is doing no work, and a question arrives in the margin.
  *
- * It runs once. A looping animation would keep pulling the eye back to a thing
- * the reader has already understood, and this page wants them further down it.
+ * The staging is entirely in CSS (`.sweep`, `.margin-note` in globals.css), so
+ * this stays a server component and the sequence survives a dead bundle: with
+ * animation off it renders in its finished state, marked and annotated, which
+ * is the state that carries the meaning anyway.
  */
-
-/** Milliseconds from mount. The gap between them is the beat that makes it read
- *  as someone noticing something, rather than a card animating in. */
-const SWEEP_AT = 900;
-const NOTE_AT = 1900;
-
 export default function HeroAnnotation() {
-  const [stage, setStage] = useState<0 | 1 | 2>(0);
-
-  useEffect(() => {
-    const sweep = setTimeout(() => setStage(1), SWEEP_AT);
-    const note = setTimeout(() => setStage(2), NOTE_AT);
-    return () => {
-      clearTimeout(sweep);
-      clearTimeout(note);
-    };
-  }, []);
-
   return (
     <div className="grid gap-5 lg:grid-cols-[minmax(0,1.55fr)_minmax(0,1fr)] lg:items-center lg:gap-8">
       <figure className="overflow-hidden rounded-2xl border border-line bg-white shadow-[0_1px_2px_rgba(28,26,23,0.04),0_12px_40px_-12px_rgba(28,26,23,0.14)]">
@@ -48,7 +31,7 @@ export default function HeroAnnotation() {
         <blockquote className="ruled draft-shared-metrics px-5 py-4 text-ink sm:px-7 sm:py-6">
           I spent that summer cataloguing beetles in my grandfather&apos;s
           garage.{" "}
-          <span className="sweep" data-on={stage >= 1}>
+          <span className="sweep">
             The work taught me patience, and I became someone who finishes what
             he starts.
           </span>{" "}
@@ -56,11 +39,7 @@ export default function HeroAnnotation() {
         </blockquote>
       </figure>
 
-      <aside
-        className="margin-note rounded-2xl border border-line bg-paper p-5 shadow-[0_10px_30px_-16px_rgba(28,26,23,0.3)] sm:p-6"
-        data-shown={stage >= 2}
-        aria-live="polite"
-      >
+      <aside className="margin-note rounded-2xl border border-line bg-paper p-5 shadow-[0_10px_30px_-16px_rgba(28,26,23,0.3)] sm:p-6">
         <div className="flex flex-wrap items-center gap-2">
           <span className="rounded-full bg-accent-soft px-2.5 py-1 text-xs font-medium text-accent">
             Underdeveloped change
@@ -74,7 +53,8 @@ export default function HeroAnnotation() {
           What was the next thing you nearly quit — and didn&apos;t?
         </p>
 
-        <p className="mt-3 text-sm leading-relaxed text-muted">
+        <p className="mt-3 flex items-center gap-2 text-sm leading-relaxed text-muted">
+          <LogoMark className="h-3.5 w-3.5" />
           Could be that same week, that autumn, or much later.
         </p>
       </aside>

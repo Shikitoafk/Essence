@@ -99,30 +99,32 @@ export default async function LandingPage() {
       <main className="mx-auto max-w-6xl px-6">
         {/* Hero ------------------------------------------------------------ */}
         <section className="pt-16 pb-14 sm:pt-24 sm:pb-20">
-          <Reveal className="flex items-center gap-3">
+          {/* Above the fold, so these use the CSS-only `.rise` entrance —
+              nothing here waits on a bundle to become visible. */}
+          <div className="rise flex items-center gap-3">
             <span className="h-px w-8 bg-line" aria-hidden="true" />
             <span className="font-mono text-[0.65rem] uppercase tracking-[0.22em] text-muted">
               For college application essays
             </span>
-          </Reveal>
+          </div>
 
-          <Reveal delay={0.08}>
+          <div className="rise" style={{ animationDelay: "0.08s" }}>
             <h1 className="mt-7 max-w-4xl font-wordmark text-[2.75rem] leading-[1.02] tracking-tight text-ink sm:text-6xl lg:text-7xl">
               The honest read
               <br />
               your essay <em className="italic">hasn&apos;t had</em>.
             </h1>
-          </Reveal>
+          </div>
 
-          <Reveal delay={0.16}>
+          <div className="rise" style={{ animationDelay: "0.16s" }}>
             <p className="mt-7 max-w-xl text-lg leading-relaxed text-muted">
               Essence finds the lines where you told the reader something
               instead of showing it, then asks one precise question at a time
               until the real material comes out.
             </p>
-          </Reveal>
+          </div>
 
-          <Reveal delay={0.24}>
+          <div className="rise" style={{ animationDelay: "0.24s" }}>
             <div className="mt-9 flex flex-wrap items-center gap-x-5 gap-y-4">
               <Link
                 href={primaryHref}
@@ -140,11 +142,14 @@ export default async function LandingPage() {
                 Free. No card. No AI-written sentences, ever.
               </span>
             </div>
-          </Reveal>
+          </div>
 
-          <Reveal delay={0.3} className="mt-14 sm:mt-20">
+          <div
+            className="rise mt-14 sm:mt-20"
+            style={{ animationDelay: "0.32s" }}
+          >
             <HeroAnnotation />
-          </Reveal>
+          </div>
         </section>
 
         {/* The refusal ----------------------------------------------------- */}
