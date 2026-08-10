@@ -12,11 +12,10 @@ import { test, beforeEach } from "node:test";
 const load = async () => import("./llm");
 
 beforeEach(() => {
-  delete process.env.AI_PROVIDER;
   delete process.env.GEMINI_PAID_TIER;
 });
 
-test("defaults to Gemini so existing deployments are unchanged", async () => {
+test("Gemini is the provider serving feedback", async () => {
   const { activeProvider } = await load();
   assert.equal(activeProvider(), "gemini");
 });
@@ -53,28 +52,12 @@ test("only the exact string 'true' counts as paid — no accidental opt-in", asy
   }
 });
 
-test("Groq is safe on every plan, regardless of the Gemini billing flag", async () => {
-  process.env.AI_PROVIDER = "groq";
-  const { dataPolicy, activeProvider } = await load();
-
-  assert.equal(activeProvider(), "groq");
-  const policy = dataPolicy();
-  assert.equal(policy.providerLabel, "Groq");
-  // The whole reason Groq is offered: no training, free plan included.
-  assert.equal(policy.safeForPersonalContent, true);
-  assert.match(policy.summary, /train or fine-tune/);
-  assert.match(policy.summary, /free one/);
-});
-
-test("each provider's model chains are distinct and non-empty", async () => {
+test("both model chains carry a fallback, so one dead model isn't an outage", async () => {
   const { modelChain } = await load();
 
-  const geminiDiagnostic = modelChain("diagnostic");
-  assert.ok(geminiDiagnostic.length > 1, "chains need a fallback");
-  assert.match(geminiDiagnostic[0], /gemini/);
-
-  process.env.AI_PROVIDER = "groq";
-  const groqDiagnostic = modelChain("diagnostic");
-  assert.ok(groqDiagnostic.length > 1);
-  assert.doesNotMatch(groqDiagnostic[0], /gemini/);
+  for (const tier of ["diagnostic", "conversation"] as const) {
+    const chain = modelChain(tier);
+    assert.ok(chain.length > 1, `${tier} chain needs a fallback`);
+    assert.match(chain[0], /gemini/);
+  }
 });

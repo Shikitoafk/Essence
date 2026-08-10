@@ -4,9 +4,12 @@ import { userFacingError } from "./llm";
 import { LlmCallError, LlmConfigError } from "./llmTypes";
 
 /**
- * Raw provider errors must never reach a student's screen. A real 413 from Groq
+ * Raw provider errors must never reach a student's screen. An observed 413
  * carried the account's organization id; others quote vendor names, model ids
  * and quota figures. These pin the sanitiser.
+ *
+ * The fixtures below deliberately outlive any one provider — whoever serves
+ * feedback next will leak the same shapes.
  */
 
 // Keep the suite's output clean — userFacingError logs the real cause by design.
@@ -28,16 +31,13 @@ function sanitised(error: unknown) {
 }
 
 const LEAKY = [
-  'Request too large for model `openai/gpt-oss-120b` in organization `org_01kv641gxkeqv8h3kpdr5xw9cd` service tier `on_demand` on tokens per minute (TPM): Limit 8000, Requested 21528',
+  'Request too large for model `gemini-3.6-flash` in organization `org_01kv641gxkeqv8h3kpdr5xw9cd` service tier `on_demand` on tokens per minute (TPM): Limit 8000, Requested 21528',
   "Every Gemini model in this tier is out of free-tier quota right now.",
   "429 RESOURCE_EXHAUSTED: gemini-3.6-flash quota exceeded for project 12345",
 ];
 
 const FORBIDDEN = [
   /gemini/i,
-  /groq/i,
-  /gpt-oss/i,
-  /llama/i,
   /org_/i,
   /quota/i,
   /\bTPM\b/,
@@ -79,13 +79,13 @@ test("retryable failures invite a retry and set Retry-After", () => {
 test("an actionable hint reaches the student, its technical cause does not", () => {
   const { message, status } = sanitised(
     new LlmCallError(
-      "Draft exceeds the per-minute token budget of llama-3.3-70b-versatile",
+      "Draft exceeds the per-minute token budget of gemini-3.6-flash",
       false,
       "This draft is longer than Essence can read in one pass right now. Try again with a shorter version.",
     ),
   );
   assert.match(message, /shorter version/);
-  assert.doesNotMatch(message, /llama|token|budget/i);
+  assert.doesNotMatch(message, /gemini|token|budget/i);
   // The student caused it and can fix it, so it isn't a server error.
   assert.equal(status, 400);
 });

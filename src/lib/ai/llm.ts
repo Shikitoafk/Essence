@@ -1,5 +1,4 @@
 import { geminiChain, geminiIsPaidTier, generateWithGemini } from "./gemini";
-import { groqChain, generateWithGroq } from "./groq";
 import { LlmCallError, LlmConfigError } from "./llmTypes";
 import type { GenerateRequest, GenerateResult, ModelTier } from "./llmTypes";
 
@@ -10,26 +9,27 @@ export {
   type GenerateResult,
 } from "./llmTypes";
 
-export type Provider = "gemini" | "groq";
-
 /**
- * Which provider serves feedback. Defaults to Gemini so existing deployments
- * keep working untouched; set AI_PROVIDER=groq to switch.
+ * Providers this deployment can serve feedback from.
+ *
+ * The dispatch below looks redundant with a single entry, and it is — it stays
+ * because the seam is what makes a provider swap a contained change, and
+ * because `dataPolicy()` must keep answering per-provider whatever is added.
  */
+export type Provider = "gemini";
+
 export function activeProvider(): Provider {
-  return process.env.AI_PROVIDER === "groq" ? "groq" : "gemini";
+  return "gemini";
 }
 
 export function modelChain(tier: ModelTier): string[] {
-  return activeProvider() === "groq" ? groqChain(tier) : geminiChain(tier);
+  return geminiChain(tier);
 }
 
 export async function generate(
   request: GenerateRequest,
 ): Promise<GenerateResult> {
-  return activeProvider() === "groq"
-    ? generateWithGroq(request)
-    : generateWithGemini(request);
+  return generateWithGemini(request);
 }
 
 /**
@@ -45,16 +45,6 @@ export interface DataPolicy {
 }
 
 export function dataPolicy(): DataPolicy {
-  if (activeProvider() === "groq") {
-    return {
-      providerLabel: "Groq",
-      safeForPersonalContent: true,
-      // Services Agreement §4.2, and not split between free and paid plans.
-      summary:
-        "Groq's terms bar it from using your inputs or outputs to train or fine-tune any model, and this applies on every plan including the free one. Inference requests are not retained by default; Groq may log briefly only to investigate errors or abuse.",
-    };
-  }
-
   return geminiIsPaidTier()
     ? {
         providerLabel: "Google (Gemini API)",
