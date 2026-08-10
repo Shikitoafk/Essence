@@ -101,6 +101,125 @@ body {
   font-weight: 600;
 }
 
+/* ---------------------------------------------------------------------------
+   Landing page
+
+   The marketing page is the one surface that has to earn attention before the
+   product can. Everything below is scoped to it — the workspace stays quiet.
+   --------------------------------------------------------------------------- */
+
+/* Scroll-in. Elements start displaced and settle when they enter the viewport;
+   Reveal.tsx flips data-shown. Anyone who has asked their OS for less motion
+   gets the finished state immediately and never sees a transition.
+ *
+ * Everything that starts hidden is gated on `.js`, which the inline script in
+ * the root layout sets before first paint. Without it nothing is ever hidden.
+ * That matters more than it looks: the entrance state is opacity 0, so a
+ * scripting failure of any kind — blocked bundle, dead observer, a browser that
+ * doesn't composite — would otherwise serve a blank page rather than a plain
+ * one. The content is the product; the motion is decoration. */
+.reveal {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .js .reveal {
+    opacity: 0;
+    transform: translateY(20px);
+    transition:
+      opacity 0.75s cubic-bezier(0.22, 0.61, 0.24, 1),
+      transform 0.75s cubic-bezier(0.22, 0.61, 0.24, 1);
+  }
+
+  .js .reveal[data-shown="true"] {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* The highlighter stroke, drawn rather than filled: a background image grown
+   from zero width, so it sweeps left-to-right the way a real marker does.
+   `box-decoration-break` keeps the stroke intact when the phrase wraps. */
+.sweep {
+  background-image: linear-gradient(var(--color-mark), var(--color-mark));
+  background-repeat: no-repeat;
+  background-position: 0 0.12em;
+  background-size: 0% 0.95em;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  padding: 0 0.05em;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .sweep {
+    transition: background-size 900ms cubic-bezier(0.65, 0, 0.35, 1);
+  }
+}
+
+.sweep[data-on="true"] {
+  background-size: 100% 0.95em;
+}
+
+/* The margin note: how a reader's comment actually arrives — clipped to the
+   edge of the page, then swinging in beside the line it belongs to. */
+.margin-note {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .js .margin-note {
+    opacity: 0;
+    transform: translateX(14px);
+  }
+}
+
+.margin-note[data-shown="true"] {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 0.6s ease-out 0.1s,
+    transform 0.6s cubic-bezier(0.22, 0.61, 0.24, 1) 0.1s;
+}
+
+/* Ruled paper, drawn at the exact line-height of the draft type so the text
+   sits on the rules instead of floating between them. */
+.ruled {
+  background-image: linear-gradient(
+    to bottom,
+    transparent calc(1.85rem - 1px),
+    color-mix(in srgb, var(--color-line) 55%, transparent) calc(1.85rem - 1px),
+    transparent 1.85rem
+  );
+  background-size: 100% 1.85rem;
+}
+
+/* Sticky chrome. Translucent rather than solid so the page reads as one sheet
+   passing underneath, not two stacked panes. */
+.nav-blur {
+  background: color-mix(in srgb, var(--color-paper) 82%, transparent);
+  backdrop-filter: saturate(1.4) blur(12px);
+  -webkit-backdrop-filter: saturate(1.4) blur(12px);
+}
+
+/* Disclosure rows. `details` gives keyboard and screen-reader behaviour for
+   free; only the marker and the plus/minus need styling. */
+.faq summary::-webkit-details-marker {
+  display: none;
+}
+
+.faq summary {
+  list-style: none;
+  cursor: pointer;
+}
+
+.faq .faq-sign {
+  transition: transform 0.25s ease;
+}
+
+.faq[open] .faq-sign {
+  transform: rotate(45deg);
+}
+
 @keyframes pulse-dot {
   0%,
   80%,

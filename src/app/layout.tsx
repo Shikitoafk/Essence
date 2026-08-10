@@ -27,6 +27,20 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={wordmark.variable}>
+      <head>
+        {/*
+         * Marks the document as scripted before first paint, so the landing
+         * page's entrance animations can start from opacity 0 without risking a
+         * blank page: every hidden state is scoped to `.js`, and this is the
+         * only thing that sets it. Inline and synchronous on purpose — deferred
+         * to a bundle it would land after paint and flash the finished layout.
+         */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `document.documentElement.classList.add('js');window.__essenceUnhide=setTimeout(function(){document.documentElement.classList.remove('js')},4000)`,
+          }}
+        />
+      </head>
       <body className="min-h-screen antialiased">
         {children}
         {/* Page-view counts only — no cookies, no cross-site tracking, and no
