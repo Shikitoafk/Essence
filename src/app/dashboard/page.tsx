@@ -44,6 +44,14 @@ const READINESS_PILL: Record<Readiness, { label: string; tone: string }> = {
   },
 };
 
+/** The same three states as ink rather than as a pill — a mark in the margin
+ *  of an index, not a badge. */
+const READINESS_TONE: Record<Readiness, string> = {
+  needs_work: "text-flag-high",
+  strong: "text-flag-medium",
+  ready_to_submit: "text-flag-low",
+};
+
 interface EssayRow extends Essay {
   flagged_spots: FlaggedSpot[];
 }
@@ -71,10 +79,10 @@ export default async function DashboardPage() {
     <div className="min-h-screen">
       <AppHeader email={user.email ?? undefined} />
 
-      <main className="mx-auto max-w-6xl px-6 py-10">
+      <main className="mx-auto max-w-[68rem] px-6 py-10">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <h1 className="font-serif text-3xl">Your essays</h1>
+            <h1 className="display text-3xl">Your essays</h1>
             <p className="mt-1 text-sm text-muted">
               One document per essay. Drafts, flagged spots and conversations
               stay together across the season.
@@ -113,7 +121,7 @@ export default async function DashboardPage() {
                 </p>
               </div>
             ) : (
-              <ul className="space-y-3">
+              <ul className="border-t border-line">
                 {essays.map((essay) => {
                   // Only the newest run counts. Leftovers from earlier runs
                   // describe drafts that no longer exist, and counting them
@@ -150,58 +158,67 @@ export default async function DashboardPage() {
                     );
 
                   return (
-                    <li key={essay.id}>
+                    <li key={essay.id} className="border-b border-line">
                       <Link
                         href={`/essays/${essay.id}`}
-                        className="block rounded-lg border border-line bg-white p-5 transition hover:border-accent"
+                        className="group flex flex-wrap items-baseline gap-x-6 gap-y-2 py-5 transition-colors"
                       >
-                        <div className="flex flex-wrap items-start justify-between gap-3">
-                          <div>
-                            <h2 className="display text-lg">{essay.title}</h2>
-                            <p className="mt-0.5 text-xs uppercase tracking-widest text-muted">
-                              {kindIsRedundant
-                                ? `Edited ${formatWhen(essay.updated_at)}`
-                                : kindLabel}
-                            </p>
-                          </div>
-                          <span className={`text-sm ${wordTone}`}>
-                            {words} word{words === 1 ? "" : "s"}
-                            {essay.word_limit ? ` / ${essay.word_limit}` : ""}
-                          </span>
+                        <div className="min-w-0 flex-1">
+                          <h2 className="display text-xl text-ink transition-colors group-hover:text-accent">
+                            {essay.title}
+                          </h2>
+                          <p className="mt-1 font-mono text-[0.62rem] uppercase tracking-[0.16em] text-muted">
+                            {kindIsRedundant
+                              ? `Edited ${formatWhen(essay.updated_at)}`
+                              : kindLabel}
+                          </p>
                         </div>
 
-                        {readiness ? (
-                          <div className="mt-4">
-                            <div className="flex flex-wrap items-center gap-3 text-sm">
+                        {/* The season's status, kept to the right where a
+                            reader's eye already goes for a page number. */}
+                        <div className="shrink-0 text-right">
+                          {readiness ? (
+                            <>
                               <span
-                                className={`rounded-full px-2.5 py-1 text-xs font-medium ${READINESS_PILL[readiness].tone}`}
+                                className={`font-mono text-[0.62rem] uppercase tracking-[0.16em] ${READINESS_TONE[readiness]}`}
                               >
                                 {READINESS_PILL[readiness].label}
                               </span>
-                              <span className="text-muted">
+                              <p className="mt-1 text-xs text-muted">
                                 {resolved} of {resolved + open} worked through
-                              </span>
-                            </div>
+                              </p>
+                            </>
+                          ) : (
+                            <span className="font-mono text-[0.62rem] uppercase tracking-[0.16em] text-muted">
+                              Not read yet
+                            </span>
+                          )}
+                          <p className={`mt-1 text-xs ${wordTone}`}>
+                            {words}
+                            {essay.word_limit
+                              ? ` / ${essay.word_limit}`
+                              : ""}{" "}
+                            words
+                          </p>
+                        </div>
 
-                            {resolved + open > 0 && (
-                              <div
-                                className="mt-2 h-1 w-full overflow-hidden rounded-full bg-line"
-                                role="progressbar"
-                                aria-valuenow={resolved}
-                                aria-valuemin={0}
-                                aria-valuemax={resolved + open}
-                              >
-                                <div
-                                  className="h-full rounded-full bg-flag-low transition-all"
-                                  style={{
-                                    width: `${(resolved / (resolved + open)) * 100}%`,
-                                  }}
-                                />
-                              </div>
-                            )}
+                        {/* A hairline the width of the work already done. Full
+                            width would read as a container; this is a measure. */}
+                        {readiness && resolved + open > 0 && (
+                          <div
+                            className="h-px w-full bg-line"
+                            role="progressbar"
+                            aria-valuenow={resolved}
+                            aria-valuemin={0}
+                            aria-valuemax={resolved + open}
+                          >
+                            <div
+                              className="h-px bg-flag-low transition-all"
+                              style={{
+                                width: `${(resolved / (resolved + open)) * 100}%`,
+                              }}
+                            />
                           </div>
-                        ) : (
-                          <p className="mt-4 text-sm text-muted">Not read yet</p>
                         )}
                       </Link>
                     </li>
