@@ -29,7 +29,9 @@ test("Mode A carries the field refinements, Mode B does not", () => {
 test("a deliberate, explained absence is protected from being flagged", () => {
   // The failure this prevents: a draft that says why a scene cannot be given
   // gets a card demanding that scene. Sophisticated drafts suffer most.
-  assert.ok(ENGINE_REFINEMENTS.includes("An absence the draft explains is not a gap"));
+  assert.ok(
+    ENGINE_REFINEMENTS.includes("An absence the draft explains is not a gap"),
+  );
   assert.ok(ENGINE_REFINEMENTS.includes("do not flag it"));
   assert.ok(ENGINE_REFINEMENTS.includes("never the"));
 });
@@ -38,7 +40,9 @@ test("the engine must deduplicate its own findings", () => {
   // Checklist point 11 turned on the report itself: three labels for one gap
   // read as three problems and stall the follow-up conversation.
   assert.ok(ENGINE_REFINEMENTS.includes("One card per distinct gap"));
-  assert.ok(ENGINE_REFINEMENTS.includes("would two or more of these cards close at"));
+  assert.ok(
+    ENGINE_REFINEMENTS.includes("would two or more of these cards close at"),
+  );
 });
 
 test("cross-essay memory can never become a criticism", () => {
@@ -49,10 +53,14 @@ test("cross-essay memory can never become a criticism", () => {
    * inventing facts about the student, via a feature built to help them.
    */
   assert.ok(
-    ENGINE_REFINEMENTS.includes("Never fault a draft for material that isn't in it"),
+    ENGINE_REFINEMENTS.includes(
+      "Never fault a draft for material that isn't in it",
+    ),
   );
   // Matched clear of the hard wrap in the prompt text.
-  assert.ok(ENGINE_REFINEMENTS.includes("specification this draft has to satisfy"));
+  assert.ok(
+    ENGINE_REFINEMENTS.includes("specification this draft has to satisfy"),
+  );
   for (const verb of ['"drops"', '"omits"', '"fails to mention"']) {
     assert.ok(
       ENGINE_REFINEMENTS.includes(verb),
@@ -88,7 +96,9 @@ test("the question mode still refuses to write the essay", () => {
 });
 
 test("asking is not answering, and must not be judged as one", () => {
-  assert.ok(MODE_B_ASK_SYSTEM.includes("Do not treat their message as an answer"));
+  assert.ok(
+    MODE_B_ASK_SYSTEM.includes("Do not treat their message as an answer"),
+  );
   // Plain prose: the verdict machinery belongs to answers only.
   assert.ok(MODE_B_ASK_SYSTEM.includes("Reply with plain prose"));
   assert.ok(!MODE_B_ASK_SYSTEM.includes("needs_narrower"));
@@ -145,15 +155,72 @@ test("every top priority has to be anchored to a card", () => {
   assert.ok(ENGINE_REFINEMENTS.includes("Count them before you finish"));
 });
 
+test("a flat draft is caught even when nothing is missing from it", () => {
+  /*
+   * Reported by a reader trying the tool: keep the structure and it calls a
+   * robotic essay strong — "живности не видит". Correct, and the cause was
+   * structural. Every pattern in this prompt hunts for absent material, so a
+   * draft with no gaps passed every check and got told it was finished.
+   *
+   * The test pins the escape hatch shut: the voice check has to be a mandatory
+   * verification rated structural, with a concrete test rather than an appeal
+   * to taste, and it has to keep its guard against flagging plain writing.
+   */
+  assert.ok(ENGINE_REFINEMENTS.includes("Is anyone in here?"));
+  assert.ok(ENGINE_REFINEMENTS.includes("No one in the room"));
+
+  // Concrete and anchorable, not "add more personality". Whitespace-tolerant:
+  // the phrase spans a hard wrap in the prompt, and in both places it appears.
+  assert.match(
+    ENGINE_REFINEMENTS,
+    /one sentence only this writer\s+could have written/,
+  );
+
+  // Structural, or the readiness verdict never sees it.
+  assert.match(
+    ENGINE_REFINEMENTS,
+    /cannot find one, that is the finding, it is \*\*structural\*\*/,
+  );
+
+  // Named in the mandatory checks, not left as advice further up the prompt.
+  const checks = ENGINE_REFINEMENTS.slice(
+    ENGINE_REFINEMENTS.indexOf("Mandatory final check"),
+  );
+  assert.ok(checks.includes("Is anyone in here?"));
+
+  // The guard rail matters as much as the rule: a quiet voice is still a voice.
+  assert.ok(ENGINE_REFINEMENTS.includes("Do NOT flag plain writing"));
+  assert.ok(ENGINE_REFINEMENTS.includes("competence is not the crime"));
+});
+
+test("the enumerated checklist is a floor the engine may exceed", () => {
+  /*
+   * Same report, wider form: the engine graded only against what was written
+   * down, and an essay can fail in ways nobody enumerated. The permission has
+   * to be explicit — with the invention guard still attached, or "name what you
+   * see" becomes licence to pad.
+   */
+  assert.ok(ENGINE_REFINEMENTS.includes("floor, not a ceiling"));
+  assert.ok(ENGINE_REFINEMENTS.includes("You are not a checklist runner"));
+  assert.match(ENGINE_REFINEMENTS, /that is a finding and you must report it/);
+
+  // The examples must be offered as illustrations, never as a new closed set.
+  assert.ok(ENGINE_REFINEMENTS.includes("also not exhaustive"));
+
+  // Guard rails survive the loosening.
+  assert.ok(ENGINE_REFINEMENTS.includes("The guard rails do not loosen"));
+  assert.match(ENGINE_REFINEMENTS, /not freedom to manufacture/);
+  // Silence stays the right answer on an ordinary draft.
+  assert.ok(ENGINE_REFINEMENTS.includes("say nothing"));
+});
+
 test("off-pattern findings get an accurate name, not a forced one", () => {
   // Observed: a detachment finding labelled "Generic closing claim" against a
   // line that was neither. The label contradicted its own card, and pattern
   // names are part of the dedup key, so a wrong one also splits identity.
   assert.ok(ENGINE_REFINEMENTS.includes("must NOT force them"));
   assert.ok(ENGINE_REFINEMENTS.includes("name it after the principle it"));
-  assert.ok(
-    ENGINE_REFINEMENTS.includes("better than a familiar, wrong one"),
-  );
+  assert.ok(ENGINE_REFINEMENTS.includes("better than a familiar, wrong one"));
 });
 
 test("the interest-coherence check keeps its guard rails", () => {
