@@ -172,10 +172,16 @@ export default async function LandingPage() {
               Free. No card. No AI-written sentences, ever.
             </p>
           </div>
-        </section>
 
-        <section className="rise pb-16 sm:pb-24" style={{ animationDelay: "0.34s" }}>
-          <HeroAnnotation />
+          {/* Third slot, so it starts on the measure's left edge and runs out
+              into the note margin — the demo has to sit on the same line the
+              headline does or the grid is a claim the page doesn't keep. */}
+          <div
+            className="spread rise mt-14 sm:mt-16"
+            style={{ animationDelay: "0.34s" }}
+          >
+            <HeroAnnotation />
+          </div>
         </section>
 
         {/* The refusal ----------------------------------------------------- */}

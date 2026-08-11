@@ -14,8 +14,10 @@ import { LogoMark } from "@/components/Logo";
  * is the state that carries the meaning anyway.
  */
 export default function HeroAnnotation() {
+  // Splits at the same width the manuscript grid does, so the draft and its
+  // note stop sharing a row at exactly the moment the page loses its margins.
   return (
-    <div className="grid gap-5 lg:grid-cols-[minmax(0,1.55fr)_minmax(0,1fr)] lg:items-center lg:gap-8">
+    <div className="grid gap-5 min-[1080px]:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] min-[1080px]:items-center min-[1080px]:gap-7">
       <figure className="overflow-hidden rounded-2xl border border-line bg-white shadow-[0_1px_2px_rgba(28,26,23,0.04),0_12px_40px_-12px_rgba(28,26,23,0.14)]">
         <figcaption className="flex items-center gap-2.5 border-b border-line px-5 py-3">
           <span className="flex gap-1.5" aria-hidden="true">

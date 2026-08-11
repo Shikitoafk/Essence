@@ -133,8 +133,13 @@ body {
 }
 
 @media (min-width: 1080px) {
+  /* The margins are equal so the measure sits on the page's centre line. That
+     is not symmetry for its own sake: most sections have a gloss and no note,
+     and with a narrower left margin the whole page hung to the left of centre
+     with the empty note track reading as a hole rather than as a margin. Equal
+     margins make an unused one look like paper, which is what it is. */
   .sheet {
-    grid-template-columns: 9rem minmax(0, 40rem) minmax(0, 15rem);
+    grid-template-columns: 15rem minmax(0, 40rem) 15rem;
     column-gap: 2.5rem;
     align-items: start;
   }
@@ -144,6 +149,12 @@ body {
   .gloss {
     text-align: right;
     padding-top: 0.4rem;
+  }
+
+  /* Wide figures start at the measure and run out into the note margin, so
+     they share the text's left edge instead of floating off it. */
+  .spread {
+    grid-column: 2 / -1;
   }
 }
 
