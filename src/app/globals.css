@@ -45,14 +45,16 @@ body {
   font-family: var(--font-sans);
 }
 
-/* Display type: the same grotesque, run heavy and pulled tight. Large sizes
-   need negative tracking or the words drift apart and stop reading as one
-   object — which is the whole effect a headline is for. */
+/* Display type: the same face as the interface, a step heavier and pulled in a
+   little. Medium rather than bold, and only lightly tracked — a headline set
+   hard and tight shouts, and nothing about telling someone their essay needs
+   work is improved by shouting. Enough weight to lead the page, not enough to
+   raise its voice. */
 .display {
   font-family: var(--font-display);
-  font-weight: 600;
-  letter-spacing: -0.035em;
-  line-height: 1.05;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: 1.08;
 }
 
 /* The draft editor and its highlight layer must paint identically, character

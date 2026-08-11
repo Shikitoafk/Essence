@@ -249,7 +249,7 @@ export default function Workspace({
           way, so "Get feedback" and the word count have to stay reachable
           without a trip back to the top. */}
       <div className="nav-blur sticky top-0 z-30 border-b border-line">
-        <div className="mx-auto flex max-w-[82rem] flex-wrap items-center justify-between gap-3 px-6 py-3">
+        <div className="mx-auto flex max-w-[68rem] flex-wrap items-center justify-between gap-3 px-6 py-3">
           <div className="min-w-0">
             <h1 className="display truncate text-xl">{essay.title}</h1>
             <p className="text-xs uppercase tracking-widest text-muted">
@@ -345,7 +345,7 @@ export default function Workspace({
       {/* The draft sits on a sheet in the measure; the margin runs beside it.
           Neither scrolls internally — the page does — because a note can only
           stay level with its line if the line and the note move together. */}
-      <div className="mx-auto grid w-full max-w-[82rem] gap-8 px-6 py-8 min-[1180px]:grid-cols-[minmax(0,40rem)_minmax(0,23rem)]">
+      <div className="mx-auto grid w-full max-w-[68rem] gap-8 px-6 py-8 min-[1180px]:grid-cols-[minmax(0,40rem)_23rem]">
         <div className="flex flex-col gap-4">
           <div className="rounded-lg border border-line bg-white px-6 py-4 sm:px-8 sm:py-6">
             <DraftEditor

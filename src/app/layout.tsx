@@ -1,14 +1,15 @@
 import type { Metadata } from "next";
-import { Geist, Instrument_Serif, Newsreader } from "next/font/google";
+import { DM_Sans, Instrument_Serif, Newsreader } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
 /**
  * Three typefaces, and the division of labour is the whole argument.
  *
- * Geist is the interface: headings, buttons, labels, everything the product
- * says in its own voice. A grotesque with weight behind it, set tight — the
- * point is that it looks built rather than written.
+ * DM Sans is the interface: headings, buttons, labels, everything the product
+ * says in its own voice. Geometric, but with the corners softened and the
+ * terminals rounded — the audience is seventeen and already anxious, and a
+ * hard mechanical grotesque reads as a form to be filled in.
  *
  * Newsreader is the student's writing, and only that. A draft is prose and has
  * to read like prose; typeset in the interface's sans it invites skimming,
@@ -20,7 +21,7 @@ import "./globals.css";
  * All self-hosted by next/font rather than fetched from Google at runtime, so
  * no third party sees a request when a student opens their essay.
  */
-const ui = Geist({
+const ui = DM_Sans({
   subsets: ["latin"],
   display: "swap",
   variable: "--font-ui",
