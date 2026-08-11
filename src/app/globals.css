@@ -22,6 +22,12 @@
      off the text it marks during the swap. */
   --font-serif: var(--font-reading), Georgia, "Iowan Old Style", serif;
   --font-wordmark: var(--font-instrument), Georgia, serif;
+
+  /* The interface's own voice. `display` is the same face — the difference is
+     weight and tracking, not another typeface, which is what keeps a heading
+     and the button under it looking like one system. */
+  --font-sans: var(--font-ui), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-ui), ui-sans-serif, system-ui, sans-serif;
 }
 
 :root {
@@ -36,8 +42,17 @@ body {
 }
 
 body {
-  font-family:
-    ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-family: var(--font-sans);
+}
+
+/* Display type: the same grotesque, run heavy and pulled tight. Large sizes
+   need negative tracking or the words drift apart and stop reading as one
+   object — which is the whole effect a headline is for. */
+.display {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  line-height: 1.05;
 }
 
 /* The draft editor and its highlight layer must paint identically, character
@@ -58,35 +73,6 @@ body {
   background: color-mix(in srgb, var(--color-accent) 16%, transparent);
   border-bottom: 2px solid color-mix(in srgb, var(--color-accent) 45%, transparent);
   border-radius: 2px;
-}
-
-/* The leader line.
- *
- * A note slid down to meet its quote leaves the margin above it empty, and an
- * empty margin next to a card reads as something failing to load rather than as
- * a margin. The hairline reaching back toward the text says what the gap is
- * for: this note belongs to that line, and the distance is the point.
- *
- * Only drawn where there is a margin to draw it in. Below the breakpoint the
- * notes sit under the draft and there is nothing to reach back to. */
-@media (min-width: 1180px) {
-  [data-note-for] {
-    position: relative;
-  }
-
-  [data-note-for]::before {
-    content: "";
-    position: absolute;
-    right: 100%;
-    top: 1.35rem;
-    width: 1.5rem;
-    border-top: 1px solid var(--color-line);
-  }
-
-  /* The live note earns its line in the accent; the rest stay quiet. */
-  [data-note-for][data-active="true"]::before {
-    border-top-color: var(--color-accent);
-  }
 }
 
 /* The paragraph the active spot lives in: where surfaced material belongs.

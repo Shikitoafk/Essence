@@ -27,7 +27,7 @@ import { createClient, supabaseConfigured } from "@/lib/supabase/server";
 function Gloss({ n, label }: { n: string; label: string }) {
   return (
     <>
-      <div className="font-wordmark text-3xl leading-none text-accent">{n}</div>
+      <div className="display text-3xl leading-none text-accent">{n}</div>
       <div className="mt-1.5 font-mono text-[0.6rem] uppercase tracking-[0.18em] text-muted">
         {label}
       </div>
@@ -38,8 +38,14 @@ function Gloss({ n, label }: { n: string; label: string }) {
 const STEPS: [string, string][] = [
   ["Paste your draft", "Add the prompt and word limit if you have them."],
   ["One deep read", "A full structural diagnostic, in a single pass."],
-  ["One question at a time", "A vague answer gets a narrower question, not a pass."],
-  ["Rewrite it yourself", "Save a version, run it again, watch the spots close."],
+  [
+    "One question at a time",
+    "A vague answer gets a narrower question, not a pass.",
+  ],
+  [
+    "Rewrite it yourself",
+    "Save a version, run it again, watch the spots close.",
+  ],
 ];
 
 const FAQ: [string, string][] = [
@@ -130,7 +136,7 @@ export default async function LandingPage() {
 
           <div>
             <h1
-              className="rise font-wordmark text-[2.75rem] leading-[1.02] tracking-tight text-ink sm:text-6xl"
+              className="rise display text-[2.75rem] text-ink sm:text-6xl"
               style={{ animationDelay: "0.06s" }}
             >
               The honest read
@@ -191,15 +197,15 @@ export default async function LandingPage() {
           </Reveal>
 
           <Reveal delay={0.06}>
-            <h2 className="font-wordmark text-4xl leading-[1.08] tracking-tight text-ink sm:text-5xl">
+            <h2 className="display text-4xl text-ink sm:text-5xl">
               Ask it to write for you.
               <br />
               It says no.
             </h2>
             <p className="mt-6 font-serif text-lg leading-relaxed text-muted">
               Every other tool hands you a paragraph and calls it help. The
-              admissions officer has read that paragraph a thousand times, and so
-              has everyone else applying with it.
+              admissions officer has read that paragraph a thousand times, and
+              so has everyone else applying with it.
             </p>
             <p className="mt-4 font-serif text-lg leading-relaxed text-muted">
               Essence refuses — plainly, every time — and gives you back the
@@ -235,20 +241,26 @@ export default async function LandingPage() {
         </section>
 
         {/* How a session goes ---------------------------------------------- */}
-        <section id="how" className="sheet scroll-mt-24 border-t border-line py-16 sm:py-24">
+        <section
+          id="how"
+          className="sheet scroll-mt-24 border-t border-line py-16 sm:py-24"
+        >
           <Reveal className="gloss">
             <Gloss n="02" label="The loop" />
           </Reveal>
 
           <Reveal delay={0.06}>
-            <h2 className="font-wordmark text-4xl leading-[1.08] tracking-tight text-ink sm:text-5xl">
+            <h2 className="display text-4xl text-ink sm:text-5xl">
               One read, then one question at a time.
             </h2>
 
             <ol className="mt-10 space-y-7">
               {STEPS.map(([title, body], i) => (
-                <li key={title} className="flex gap-5 border-t border-line pt-5">
-                  <span className="font-wordmark text-2xl leading-none text-accent">
+                <li
+                  key={title}
+                  className="flex gap-5 border-t border-line pt-5"
+                >
+                  <span className="display text-2xl leading-none text-accent">
                     {i + 1}
                   </span>
                   <div>
@@ -270,7 +282,7 @@ export default async function LandingPage() {
           </Reveal>
 
           <Reveal delay={0.06}>
-            <h2 className="font-wordmark text-4xl leading-[1.08] tracking-tight text-ink sm:text-5xl">
+            <h2 className="display text-4xl text-ink sm:text-5xl">
               We ran this page through it.
             </h2>
             <p className="mt-6 font-serif text-lg leading-relaxed text-muted">
@@ -287,8 +299,8 @@ export default async function LandingPage() {
               It is right. That sentence could close almost any essay, about
               almost anyone — which is exactly the pattern it names. We kept it,
               because a landing page is allowed a flourish that an application
-              essay is not. But you can see how the call gets made, and it is the
-              same call it will make on your draft.
+              essay is not. But you can see how the call gets made, and it is
+              the same call it will make on your draft.
             </p>
           </Reveal>
 
@@ -334,7 +346,7 @@ export default async function LandingPage() {
           </Reveal>
 
           <Reveal delay={0.06}>
-            <h2 className="font-wordmark text-4xl leading-[1.08] tracking-tight text-ink sm:text-5xl">
+            <h2 className="display text-4xl text-ink sm:text-5xl">
               You should know where it goes.
             </h2>
             <p className="mt-6 font-serif text-lg leading-relaxed text-muted">
@@ -346,9 +358,9 @@ export default async function LandingPage() {
             </p>
             <p className="mt-4 font-serif text-lg leading-relaxed text-muted">
               So Essence names the provider in use and states plainly what its
-              terms allow, in the app and on the privacy page. If the current one
-              may train on what you paste, that warning sits in the workspace
-              where you are pasting — not buried in a policy.
+              terms allow, in the app and on the privacy page. If the current
+              one may train on what you paste, that warning sits in the
+              workspace where you are pasting — not buried in a policy.
             </p>
             <Link
               href="/settings"
@@ -361,7 +373,10 @@ export default async function LandingPage() {
         </section>
 
         {/* FAQ -------------------------------------------------------------- */}
-        <section id="faq" className="sheet scroll-mt-24 border-t border-line py-16 sm:py-24">
+        <section
+          id="faq"
+          className="sheet scroll-mt-24 border-t border-line py-16 sm:py-24"
+        >
           <Reveal className="gloss">
             <Gloss n="05" label="Questions" />
           </Reveal>
@@ -369,16 +384,24 @@ export default async function LandingPage() {
           <Reveal delay={0.06}>
             <div className="border-t border-line">
               {FAQ.map(([question, answer]) => (
-                <details key={question} className="faq group border-b border-line">
+                <details
+                  key={question}
+                  className="faq group border-b border-line"
+                >
                   <summary className="flex items-start justify-between gap-6 py-5 text-left">
-                    <span className="font-wordmark text-2xl leading-tight text-ink transition-colors group-hover:text-accent">
+                    <span className="display text-xl text-ink transition-colors group-hover:text-accent">
                       {question}
                     </span>
                     <span
                       className="faq-sign mt-2 shrink-0 text-muted"
                       aria-hidden="true"
                     >
-                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                      <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 14 14"
+                        fill="none"
+                      >
                         <path
                           d="M7 1v12M1 7h12"
                           stroke="currentColor"
@@ -401,7 +424,7 @@ export default async function LandingPage() {
         <section className="border-t border-line py-20 text-center sm:py-28">
           <Reveal>
             <LogoMark className="mx-auto h-10 w-10" />
-            <h2 className="mx-auto mt-8 max-w-3xl font-wordmark text-[2.5rem] leading-[1.04] tracking-tight text-ink sm:text-6xl">
+            <h2 className="mx-auto mt-8 max-w-3xl display text-[2.5rem] text-ink sm:text-6xl">
               Your essay is already in there.
               <br />
               <em className="italic">Go find it.</em>

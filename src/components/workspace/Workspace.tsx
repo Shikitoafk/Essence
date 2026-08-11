@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useIsomorphicLayoutEffect } from "@/lib/useIsomorphicLayoutEffect";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import DraftEditor from "./DraftEditor";
@@ -61,22 +60,10 @@ export default function Workspace({
     "idle",
   );
   const [analysing, setAnalysing] = useState(false);
-  const [banner, setBanner] = useState<
-    { kind: "error" | "info"; text: string } | null
-  >(null);
-
-  /*
-   * Marginalia.
-   *
-   * A card in a list tells you a line is flagged; a card beside the line shows
-   * you which one, with no clicking and no hunting. `quoteOffsets` is where the
-   * editor found each quote in page coordinates, and the layout effect below
-   * pushes each note down until it is level with its own.
-   */
-  const marginRef = useRef<HTMLDivElement>(null);
-  const [quoteOffsets, setQuoteOffsets] = useState<Map<string, number>>(
-    () => new Map(),
-  );
+  const [banner, setBanner] = useState<{
+    kind: "error" | "info";
+    text: string;
+  } | null>(null);
 
   const words = countWords(draft);
   const tooShort = words < MIN_DRAFT_WORDS;
@@ -102,40 +89,6 @@ export default function Workspace({
 
     return () => clearTimeout(timer);
   }, [draft, essay.id, essay.current_draft]);
-
-  /*
-   * Slide each note down to meet its quote.
-   *
-   * Done with margin-top on elements still in normal flow, never absolute
-   * positioning. Flow guarantees the one thing that matters here: two notes can
-   * never land on top of each other. When a quote sits higher than the note
-   * can reach — because the note above it is long — the note stays put and is
-   * merely lower than ideal, which is a far better failure than an overlap.
-   *
-   * Alignment is a nicety of wide layouts. Below the breakpoint the margin is
-   * underneath the draft, where a pixel offset would only push the first card
-   * off the bottom of the screen.
-   */
-  useIsomorphicLayoutEffect(() => {
-    const margin = marginRef.current;
-    if (!margin) return;
-
-    const notes = [
-      ...margin.querySelectorAll<HTMLElement>("[data-note-for]"),
-    ];
-    for (const note of notes) note.style.marginTop = "";
-
-    if (!window.matchMedia("(min-width: 1180px)").matches) return;
-
-    for (const note of notes) {
-      const target = quoteOffsets.get(note.dataset.noteFor ?? "");
-      if (target === undefined) continue;
-
-      const current = note.getBoundingClientRect().top + window.scrollY;
-      const shift = target - current;
-      if (shift > 1) note.style.marginTop = `${shift}px`;
-    }
-  }, [quoteOffsets, spots, tab, activeSpotId, showMinor]);
 
   const runFeedback = useCallback(async () => {
     if (analysing || tooShort) return;
@@ -298,7 +251,7 @@ export default function Workspace({
       <div className="nav-blur sticky top-0 z-30 border-b border-line">
         <div className="mx-auto flex max-w-[82rem] flex-wrap items-center justify-between gap-3 px-6 py-3">
           <div className="min-w-0">
-            <h1 className="truncate font-serif text-xl">{essay.title}</h1>
+            <h1 className="display truncate text-xl">{essay.title}</h1>
             <p className="text-xs uppercase tracking-widest text-muted">
               {essay.essay_kind === "supplemental"
                 ? "Supplemental"
@@ -403,22 +356,28 @@ export default function Workspace({
               onSelectSpot={setActiveSpotId}
               wordLimit={essay.word_limit}
               saving={saving}
-              onQuoteOffsets={setQuoteOffsets}
             />
           </div>
           <EssaySettings essay={essay} />
         </div>
 
-        <div ref={marginRef} className="flex flex-col gap-4">
+        {/* Notes used to be slid down to sit level with their quotes. Seen at
+            full size that spent most of the column on blank paper — the gaps
+            between cards were larger than the cards. They stack together now,
+            and the connection to the text is made on demand instead: selecting
+            a card scrolls its line into view.
+
+            Sticky, with its own scroll, so the notes stay put while a long
+            draft moves past them. */}
+        <div className="flex flex-col gap-4 min-[1180px]:sticky min-[1180px]:top-[5.5rem] min-[1180px]:max-h-[calc(100vh-7rem)] min-[1180px]:overflow-y-auto min-[1180px]:pr-1">
           {/* "Full read" said nothing about what was inside it, so testers kept
               assuming the framework and priorities had gone missing. The labels
               now name their contents. Follow-up is a third tab rather than a
               panel below the cards: testers had to scroll past every card to
               reach the conversation, and gave up before finding it. */}
-          {/* Sticky under the header: notes are aligned to their quotes, so on
-              a long draft they sit far down the page, and switching view had
-              meant scrolling all the way back to the top to reach these. */}
-          <div className="nav-blur sticky top-[5.5rem] z-20 flex gap-1 rounded-full border border-line p-1 text-sm">
+          {/* Sticky to the column's own scrollport, so the switcher is still
+              there after scrolling down a long list of notes. */}
+          <div className="nav-blur sticky top-0 z-20 flex gap-1 rounded-full border border-line p-1 text-sm">
             {(
               [
                 [
@@ -440,7 +399,9 @@ export default function Workspace({
                 onClick={() => setTab(value)}
                 title={hint}
                 className={`flex-1 rounded-full px-3 py-1.5 leading-tight transition ${
-                  tab === value ? "bg-ink text-paper" : "text-muted hover:text-ink"
+                  tab === value
+                    ? "bg-ink text-paper"
+                    : "text-muted hover:text-ink"
                 }`}
               >
                 <span className="block">{label}</span>
@@ -472,121 +433,119 @@ export default function Workspace({
               />
             </div>
           ) : (
-          <div className="space-y-3">
-            {essay.last_feedback_at && (
-              <ReadinessCard readiness={readiness} report={report} />
-            )}
+            <div className="space-y-3">
+              {essay.last_feedback_at && (
+                <ReadinessCard readiness={readiness} report={report} />
+              )}
 
-            {/* Rounds are never blocked — the cost is just made visible. */}
-            {rounds >= DIMINISHING_RETURNS_ROUND && (
-              <p className="rounded-lg border border-flag-medium/40 bg-flag-medium/10 p-3 text-xs text-ink">
-                {/* Built as one string: interpolating a count between JSX text
+              {/* Rounds are never blocked — the cost is just made visible. */}
+              {rounds >= DIMINISHING_RETURNS_ROUND && (
+                <p className="rounded-lg border border-flag-medium/40 bg-flag-medium/10 p-3 text-xs text-ink">
+                  {/* Built as one string: interpolating a count between JSX text
                     nodes swallowed the space after it and rendered "4rounds". */}
-                {`You've run ${rounds} rounds of feedback on this essay. Most essays stop improving after 3–4 rounds and start losing voice. Here's what's still open — decide whether it's worth it.`}
-              </p>
-            )}
-
-            {tab === "spots" ? (
-              spots.length === 0 ? (
-                <p className="rounded-lg border border-dashed border-line bg-white p-6 text-sm text-muted">
-                  No flagged spots yet. Paste your draft and press{" "}
-                  <span className="text-ink">Get feedback</span> — Essence reads
-                  the whole essay in one pass, then works through what it found
-                  one question at a time.
+                  {`You've run ${rounds} rounds of feedback on this essay. Most essays stop improving after 3–4 rounds and start losing voice. Here's what's still open — decide whether it's worth it.`}
                 </p>
-              ) : (
-                <>
-                  {/* `data-note-for` is what the alignment effect reads to
-                      slide this card down to its quote. */}
-                  {primarySpots.map((spot) => (
-                    <div
-                      key={spot.id}
-                      data-note-for={spot.id}
-                      data-active={spot.id === activeSpotId}
-                    >
+              )}
+
+              {tab === "spots" ? (
+                spots.length === 0 ? (
+                  <p className="rounded-lg border border-dashed border-line bg-white p-6 text-sm text-muted">
+                    No flagged spots yet. Paste your draft and press{" "}
+                    <span className="text-ink">Get feedback</span> — Essence
+                    reads the whole essay in one pass, then works through what
+                    it found one question at a time.
+                  </p>
+                ) : (
+                  <>
+                    {primarySpots.map((spot) => (
                       <SpotCard
+                        key={spot.id}
                         spot={spot}
                         active={spot.id === activeSpotId}
                         missingInDraft={!locateQuote(draft, spot.quoted_text)}
                         onSelect={() => setActiveSpotId(spot.id)}
-                        onStatusChange={(status) => changeStatus(spot.id, status)}
+                        onStatusChange={(status) =>
+                          changeStatus(spot.id, status)
+                        }
                       />
-                    </div>
-                  ))}
+                    ))}
 
-                  {/* Sits among the spots, not in a separate tab: this is the
+                    {/* Sits among the spots, not in a separate tab: this is the
                       only thing on the screen saying what NOT to change, and it
                       has to be where the changing gets decided. */}
-                  {keepList.map((item, i) => (
-                    <KeepCard key={`keep-${i}`} item={item} />
-                  ))}
+                    {keepList.map((item, i) => (
+                      <KeepCard key={`keep-${i}`} item={item} />
+                    ))}
 
-                  {minorSpots.length > 0 && (
-                    <div className="rounded-lg border border-line bg-white">
-                      <button
-                        type="button"
-                        onClick={() => setShowMinor((v) => !v)}
-                        className="flex w-full items-center justify-between px-4 py-3 text-sm"
-                      >
-                        <span className="text-muted">
-                          Minor notes ({minorSpots.length})
-                        </span>
-                        <span className="text-xs text-muted">
-                          {showMinor ? "Hide" : "Show"}
-                        </span>
-                      </button>
-                      {showMinor && (
-                        <div className="space-y-3 border-t border-line p-3">
-                          <p className="text-xs text-muted">
-                            Taste, not improvement. Safe to ignore entirely.
-                          </p>
-                          {minorSpots.map((spot) => (
-                            <SpotCard
-                              key={spot.id}
-                              spot={spot}
-                              active={spot.id === activeSpotId}
-                              missingInDraft={
-                                !locateQuote(draft, spot.quoted_text)
-                              }
-                              onSelect={() => setActiveSpotId(spot.id)}
-                              onStatusChange={(status) =>
-                                changeStatus(spot.id, status)
-                              }
-                            />
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </>
-              )
-            ) : report ? (
-              <div className="space-y-5 rounded-lg border border-line bg-white p-5">
-                <ReportSection
-                  title="Overall impression"
-                  body={report.overall_impression}
-                />
-                <ReportSection
-                  title="Checklist findings"
-                  body={report.checklist_findings}
-                />
-                <ReportSection
-                  title="Framework findings"
-                  body={report.framework_findings}
-                />
-                <ReportSection title="Top priorities" body={report.priorities} />
-                <ReportSection
-                  title="Why this essay works"
-                  body={report.strengths}
-                />
-              </div>
-            ) : (
-              <p className="rounded-lg border border-dashed border-line bg-white p-6 text-sm text-muted">
-                The full structural read appears here after your first feedback
-                run.
-              </p>
-            )}
-          </div>
+                    {minorSpots.length > 0 && (
+                      <div className="rounded-lg border border-line bg-white">
+                        <button
+                          type="button"
+                          onClick={() => setShowMinor((v) => !v)}
+                          className="flex w-full items-center justify-between px-4 py-3 text-sm"
+                        >
+                          <span className="text-muted">
+                            Minor notes ({minorSpots.length})
+                          </span>
+                          <span className="text-xs text-muted">
+                            {showMinor ? "Hide" : "Show"}
+                          </span>
+                        </button>
+                        {showMinor && (
+                          <div className="space-y-3 border-t border-line p-3">
+                            <p className="text-xs text-muted">
+                              Taste, not improvement. Safe to ignore entirely.
+                            </p>
+                            {minorSpots.map((spot) => (
+                              <SpotCard
+                                key={spot.id}
+                                spot={spot}
+                                active={spot.id === activeSpotId}
+                                missingInDraft={
+                                  !locateQuote(draft, spot.quoted_text)
+                                }
+                                onSelect={() => setActiveSpotId(spot.id)}
+                                onStatusChange={(status) =>
+                                  changeStatus(spot.id, status)
+                                }
+                              />
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </>
+                )
+              ) : report ? (
+                <div className="space-y-5 rounded-lg border border-line bg-white p-5">
+                  <ReportSection
+                    title="Overall impression"
+                    body={report.overall_impression}
+                  />
+                  <ReportSection
+                    title="Checklist findings"
+                    body={report.checklist_findings}
+                  />
+                  <ReportSection
+                    title="Framework findings"
+                    body={report.framework_findings}
+                  />
+                  <ReportSection
+                    title="Top priorities"
+                    body={report.priorities}
+                  />
+                  <ReportSection
+                    title="Why this essay works"
+                    body={report.strengths}
+                  />
+                </div>
+              ) : (
+                <p className="rounded-lg border border-dashed border-line bg-white p-6 text-sm text-muted">
+                  The full structural read appears here after your first
+                  feedback run.
+                </p>
+              )}
+            </div>
           )}
         </div>
       </div>
@@ -635,7 +594,7 @@ function ReadinessCard({
 
   return (
     <section className={`rounded-lg border p-4 ${copy.tone}`}>
-      <h2 className={ready ? "font-serif text-xl" : "font-serif text-base"}>
+      <h2 className={ready ? "display text-xl" : "display text-base"}>
         {copy.label}
       </h2>
       <p className="mt-0.5 text-xs opacity-90">{copy.blurb}</p>

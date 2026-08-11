@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useIsomorphicLayoutEffect } from "@/lib/useIsomorphicLayoutEffect";
 import { locateQuote } from "@/lib/ai/parseReport";
 import { countWords, type FlaggedSpot } from "@/lib/types";
@@ -13,15 +13,6 @@ interface Props {
   onSelectSpot: (spotId: string) => void;
   wordLimit: number | null;
   saving: "idle" | "saving" | "saved" | "error";
-  /**
-   * Where each flagged quote sits, so the margin can put its note level with
-   * the line it is about. Keyed by spot id, in pixels down the *document* —
-   * page coordinates rather than offsets within the editor, so the margin can
-   * compare them against its own cards without knowing anything about how the
-   * two columns are nested. Must be a stable reference: it is a layout-effect
-   * dependency.
-   */
-  onQuoteOffsets?: (offsets: Map<string, number>) => void;
 }
 
 interface Range {
@@ -43,7 +34,6 @@ export default function DraftEditor({
   onSelectSpot,
   wordLimit,
   saving,
-  onQuoteOffsets,
 }: Props) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const backdropRef = useRef<HTMLDivElement>(null);
@@ -58,9 +48,7 @@ export default function DraftEditor({
       const hit = locateQuote(value, spot.quoted_text);
       if (!hit) continue;
       // Overlapping highlights would nest badly — first spot to claim a span wins.
-      const clashes = found.some(
-        (r) => hit.start < r.end && r.start < hit.end,
-      );
+      const clashes = found.some((r) => hit.start < r.end && r.start < hit.end);
       if (!clashes) {
         found.push({ start: hit.start, end: hit.end, spotId: spot.id });
       }
@@ -114,11 +102,12 @@ export default function DraftEditor({
 
       out.push({
         text: value.slice(start, end),
-        spotId: ranges.find((r) => start >= r.start && end <= r.end)?.spotId ?? null,
+        spotId:
+          ranges.find((r) => start >= r.start && end <= r.end)?.spotId ?? null,
         inParagraph: Boolean(
           activeParagraph &&
-            start >= activeParagraph.start &&
-            end <= activeParagraph.end,
+          start >= activeParagraph.start &&
+          end <= activeParagraph.end,
         ),
       });
     }
@@ -142,35 +131,6 @@ export default function DraftEditor({
     ta.style.height = "auto";
     ta.style.height = `${ta.scrollHeight}px`;
   }, [value]);
-
-  /** Tell the margin where every flagged quote landed. */
-  const publishOffsets = useCallback(() => {
-    const backdrop = backdropRef.current;
-    if (!backdrop || !onQuoteOffsets) return;
-
-    const offsets = new Map<string, number>();
-    for (const el of backdrop.querySelectorAll<HTMLElement>("[data-spot-id]")) {
-      const id = el.dataset.spotId;
-      // A quote split across segments reports its first fragment, which is the
-      // line the reader's eye goes to.
-      if (id && !offsets.has(id)) {
-        offsets.set(id, el.getBoundingClientRect().top + window.scrollY);
-      }
-    }
-    onQuoteOffsets(offsets);
-  }, [onQuoteOffsets]);
-
-  useIsomorphicLayoutEffect(publishOffsets, [publishOffsets, segments, value]);
-
-  // Reflowing the text moves every quote below it, and nothing about a resize
-  // re-renders this component on its own.
-  useEffect(() => {
-    const backdrop = backdropRef.current;
-    if (!backdrop || typeof ResizeObserver === "undefined") return;
-    const observer = new ResizeObserver(publishOffsets);
-    observer.observe(backdrop);
-    return () => observer.disconnect();
-  }, [publishOffsets]);
 
   /** Bring the highlighted line into view when a card is selected. */
   useEffect(() => {

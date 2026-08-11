@@ -106,7 +106,7 @@ export default async function DashboardPage() {
           <div>
             {essays.length === 0 ? (
               <div className="rounded-lg border border-dashed border-line bg-white p-10 text-center">
-                <p className="font-serif text-lg">Nothing here yet.</p>
+                <p className="display text-lg">Nothing here yet.</p>
                 <p className="mx-auto mt-2 max-w-sm text-sm text-muted">
                   Create your first essay, paste a draft of at least 50 words,
                   and Essence will read it once, properly.
@@ -157,7 +157,7 @@ export default async function DashboardPage() {
                       >
                         <div className="flex flex-wrap items-start justify-between gap-3">
                           <div>
-                            <h2 className="font-serif text-lg">{essay.title}</h2>
+                            <h2 className="display text-lg">{essay.title}</h2>
                             <p className="mt-0.5 text-xs uppercase tracking-widest text-muted">
                               {kindIsRedundant
                                 ? `Edited ${formatWhen(essay.updated_at)}`
