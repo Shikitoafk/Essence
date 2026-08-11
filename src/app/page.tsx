@@ -5,16 +5,35 @@ import HeroAnnotation from "@/components/HeroAnnotation";
 import { createClient, supabaseConfigured } from "@/lib/supabase/server";
 
 /**
- * Three typefaces, three jobs, and the split is the point:
+ * The page is laid out as the thing the product does.
  *
- *   Instrument Serif  the page speaking as Essence — display only
- *   system sans       interface furniture: labels, chrome, explanation
- *   Georgia           the student's own writing, wherever it appears
+ * Essence's whole gesture is a reader working in the margin of someone's page —
+ * a line marked, a question written beside it. So this is not a centred column
+ * of cards containing a picture of that. It is set on `.sheet`: a left margin
+ * for what organises a page without being part of it, a measure for the prose,
+ * and a right margin where annotations land beside the line they answer.
  *
- * A draft never renders in the interface's voice. That rule holds in the
- * workspace too (`.draft-shared-metrics`), so the landing page is showing the
- * real product rather than a dressed-up version of it.
+ * Prose carries `font-serif` (Newsreader). Sans is left to chrome — buttons,
+ * nav, labels — so the reading and the interface never speak in one voice.
  */
+
+/**
+ * A section's marginal label — the number a reader writes beside a passage.
+ *
+ * Rendered without a wrapper so it can be dropped straight into a `.sheet`
+ * slot: which column anything lands in is decided by source order, so an extra
+ * element here would push the measure and the note one track along.
+ */
+function Gloss({ n, label }: { n: string; label: string }) {
+  return (
+    <>
+      <div className="font-wordmark text-3xl leading-none text-accent">{n}</div>
+      <div className="mt-1.5 font-mono text-[0.6rem] uppercase tracking-[0.18em] text-muted">
+        {label}
+      </div>
+    </>
+  );
+}
 
 const STEPS: [string, string][] = [
   ["Paste your draft", "Add the prompt and word limit if you have them."],
@@ -62,7 +81,7 @@ export default async function LandingPage() {
   return (
     <div className="min-h-screen">
       <header className="nav-blur sticky top-0 z-50 border-b border-line/70">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
+        <div className="mx-auto flex max-w-[78rem] items-center justify-between px-6 py-4">
           <Link href="/" aria-label="Essence — home">
             <Logo size="sm" />
           </Link>
@@ -96,36 +115,42 @@ export default async function LandingPage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-6xl px-6">
-        {/* Hero ------------------------------------------------------------ */}
-        <section className="pt-16 pb-14 sm:pt-24 sm:pb-20">
-          {/* Above the fold, so these use the CSS-only `.rise` entrance —
-              nothing here waits on a bundle to become visible. */}
-          <div className="rise flex items-center gap-3">
-            <span className="h-px w-8 bg-line" aria-hidden="true" />
-            <span className="font-mono text-[0.65rem] uppercase tracking-[0.22em] text-muted">
-              For college application essays
-            </span>
+      <main className="mx-auto max-w-[78rem] px-6">
+        {/* Hero -------------------------------------------------------------
+            Above the fold, so entrances are the CSS-only `.rise` — nothing here
+            waits on a bundle to become visible. */}
+        <section className="sheet pt-16 pb-14 sm:pt-24 sm:pb-20">
+          <div className="gloss rise">
+            <div className="font-mono text-[0.6rem] uppercase tracking-[0.18em] text-muted">
+              Admissions
+              <br />
+              essays
+            </div>
           </div>
 
-          <div className="rise" style={{ animationDelay: "0.08s" }}>
-            <h1 className="mt-7 max-w-4xl font-wordmark text-[2.75rem] leading-[1.02] tracking-tight text-ink sm:text-6xl lg:text-7xl">
+          <div>
+            <h1
+              className="rise font-wordmark text-[2.75rem] leading-[1.02] tracking-tight text-ink sm:text-6xl"
+              style={{ animationDelay: "0.06s" }}
+            >
               The honest read
               <br />
               your essay <em className="italic">hasn&apos;t had</em>.
             </h1>
-          </div>
 
-          <div className="rise" style={{ animationDelay: "0.16s" }}>
-            <p className="mt-7 max-w-xl text-lg leading-relaxed text-muted">
+            <p
+              className="rise mt-7 font-serif text-xl leading-relaxed text-muted"
+              style={{ animationDelay: "0.14s" }}
+            >
               Essence finds the lines where you told the reader something
               instead of showing it, then asks one precise question at a time
               until the real material comes out.
             </p>
-          </div>
 
-          <div className="rise" style={{ animationDelay: "0.24s" }}>
-            <div className="mt-9 flex flex-wrap items-center gap-x-5 gap-y-4">
+            <div
+              className="rise mt-9 flex flex-wrap items-center gap-x-5 gap-y-4"
+              style={{ animationDelay: "0.22s" }}
+            >
               <Link
                 href={primaryHref}
                 className="rounded-full bg-accent px-7 py-3.5 text-paper transition hover:opacity-88 hover:shadow-[0_8px_24px_-8px_rgba(122,92,62,0.6)]"
@@ -138,181 +163,232 @@ export default async function LandingPage() {
               >
                 How it works
               </Link>
-              <span className="text-sm text-muted">
-                Free. No card. No AI-written sentences, ever.
-              </span>
             </div>
-          </div>
 
-          <div
-            className="rise mt-14 sm:mt-20"
-            style={{ animationDelay: "0.32s" }}
-          >
-            <HeroAnnotation />
+            <p
+              className="rise mt-5 text-sm text-muted"
+              style={{ animationDelay: "0.28s" }}
+            >
+              Free. No card. No AI-written sentences, ever.
+            </p>
           </div>
+        </section>
+
+        <section className="rise pb-16 sm:pb-24" style={{ animationDelay: "0.34s" }}>
+          <HeroAnnotation />
         </section>
 
         {/* The refusal ----------------------------------------------------- */}
-        <section className="border-t border-line py-16 sm:py-24">
-          <div className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] lg:gap-16">
-            <Reveal>
-              <p className="font-mono text-[0.65rem] uppercase tracking-[0.22em] text-muted">
-                The part everyone else gets wrong
-              </p>
-              <h2 className="mt-4 font-wordmark text-4xl leading-[1.08] tracking-tight text-ink sm:text-5xl">
-                Ask it to write for you.
-                <br />
-                It says no.
-              </h2>
-              <p className="mt-6 max-w-md leading-relaxed text-muted">
-                Every other tool hands you a paragraph and calls it help. The
-                admissions officer has read that paragraph a thousand times, and
-                so has everyone else applying with it.
-              </p>
-              <p className="mt-4 max-w-md leading-relaxed text-muted">
-                Essence refuses — plainly, every time — and gives you back the
-                thing you actually needed: the question you couldn&apos;t ask
-                yourself.
-              </p>
-            </Reveal>
+        <section className="sheet border-t border-line py-16 sm:py-24">
+          <Reveal className="gloss">
+            <Gloss n="01" label="The difference" />
+          </Reveal>
 
-            <Reveal delay={0.1}>
-              <div className="space-y-3">
-                <div className="ml-auto max-w-[88%] rounded-2xl rounded-br-md bg-ink px-5 py-3.5 text-paper">
-                  <p className="leading-relaxed">
-                    can you just rewrite that paragraph so it sounds better
-                  </p>
-                </div>
+          <Reveal delay={0.06}>
+            <h2 className="font-wordmark text-4xl leading-[1.08] tracking-tight text-ink sm:text-5xl">
+              Ask it to write for you.
+              <br />
+              It says no.
+            </h2>
+            <p className="mt-6 font-serif text-lg leading-relaxed text-muted">
+              Every other tool hands you a paragraph and calls it help. The
+              admissions officer has read that paragraph a thousand times, and so
+              has everyone else applying with it.
+            </p>
+            <p className="mt-4 font-serif text-lg leading-relaxed text-muted">
+              Essence refuses — plainly, every time — and gives you back the
+              thing you actually needed: the question you couldn&apos;t ask
+              yourself.
+            </p>
+          </Reveal>
 
-                <div className="max-w-[92%] rounded-2xl rounded-bl-md border border-line bg-white px-5 py-4">
-                  <div className="flex items-center gap-2">
-                    <LogoMark className="h-4 w-4" />
-                    <span className="font-mono text-[0.6rem] uppercase tracking-[0.16em] text-muted">
-                      Essence
-                    </span>
-                  </div>
-                  <p className="mt-3 leading-relaxed text-ink">
-                    I won&apos;t write it for you — but let&apos;s get the real
-                    material first, and you&apos;ll have something better than
-                    anything I&apos;d put there.
-                  </p>
-                  <p className="mt-3 leading-relaxed text-ink">
-                    What was the next thing you nearly quit, and didn&apos;t?
-                  </p>
-                </div>
+          <Reveal delay={0.12} className="note">
+            <div className="space-y-3">
+              <div className="ml-auto max-w-[92%] rounded-2xl rounded-br-md bg-ink px-4 py-3 text-sm text-paper">
+                can you just rewrite that paragraph so it sounds better
               </div>
-            </Reveal>
-          </div>
+
+              <div className="rounded-2xl rounded-bl-md border border-line bg-white px-4 py-4">
+                <div className="flex items-center gap-2">
+                  <LogoMark className="h-3.5 w-3.5" />
+                  <span className="font-mono text-[0.58rem] uppercase tracking-[0.16em] text-muted">
+                    Essence
+                  </span>
+                </div>
+                <p className="mt-2.5 font-serif leading-relaxed text-ink">
+                  I won&apos;t write it for you — but let&apos;s get the real
+                  material first, and you&apos;ll have something better than
+                  anything I&apos;d put there.
+                </p>
+                <p className="mt-2.5 font-serif leading-relaxed text-ink">
+                  What was the next thing you nearly quit, and didn&apos;t?
+                </p>
+              </div>
+            </div>
+          </Reveal>
         </section>
 
         {/* How a session goes ---------------------------------------------- */}
-        <section id="how" className="scroll-mt-24 border-t border-line py-16 sm:py-24">
-          <Reveal>
-            <p className="font-mono text-[0.65rem] uppercase tracking-[0.22em] text-muted">
-              How a session goes
-            </p>
-            <h2 className="mt-4 max-w-2xl font-wordmark text-4xl leading-[1.08] tracking-tight text-ink sm:text-5xl">
-              One read, then one question at a time.
-            </h2>
+        <section id="how" className="sheet scroll-mt-24 border-t border-line py-16 sm:py-24">
+          <Reveal className="gloss">
+            <Gloss n="02" label="The loop" />
           </Reveal>
 
-          <ol className="mt-12 grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
-            {STEPS.map(([title, body], i) => (
-              <Reveal as="li" key={title} delay={i * 0.08}>
-                <div className="flex items-baseline gap-3 border-t border-line pt-5">
-                  <span className="font-wordmark text-3xl leading-none text-accent">
+          <Reveal delay={0.06}>
+            <h2 className="font-wordmark text-4xl leading-[1.08] tracking-tight text-ink sm:text-5xl">
+              One read, then one question at a time.
+            </h2>
+
+            <ol className="mt-10 space-y-7">
+              {STEPS.map(([title, body], i) => (
+                <li key={title} className="flex gap-5 border-t border-line pt-5">
+                  <span className="font-wordmark text-2xl leading-none text-accent">
                     {i + 1}
                   </span>
-                  <h3 className="font-medium text-ink">{title}</h3>
+                  <div>
+                    <h3 className="font-medium text-ink">{title}</h3>
+                    <p className="mt-1.5 font-serif leading-relaxed text-muted">
+                      {body}
+                    </p>
+                  </div>
+                </li>
+              ))}
+            </ol>
+          </Reveal>
+        </section>
+
+        {/* The page marks up its own copy ----------------------------------- */}
+        <section className="sheet border-t border-line py-16 sm:py-24">
+          <Reveal className="gloss">
+            <Gloss n="03" label="Proof" />
+          </Reveal>
+
+          <Reveal delay={0.06}>
+            <h2 className="font-wordmark text-4xl leading-[1.08] tracking-tight text-ink sm:text-5xl">
+              We ran this page through it.
+            </h2>
+            <p className="mt-6 font-serif text-lg leading-relaxed text-muted">
+              It flagged our own closing line. Here is the finding, unedited:
+            </p>
+
+            <blockquote className="draft-shared-metrics mt-7 rounded-2xl border border-line bg-white text-ink">
+              <span className="marked">
+                Your essay is already in there. Go find it.
+              </span>
+            </blockquote>
+
+            <p className="mt-7 font-serif text-lg leading-relaxed text-muted">
+              It is right. That sentence could close almost any essay, about
+              almost anyone — which is exactly the pattern it names. We kept it,
+              because a landing page is allowed a flourish that an application
+              essay is not. But you can see how the call gets made, and it is the
+              same call it will make on your draft.
+            </p>
+          </Reveal>
+
+          <Reveal delay={0.12} className="note">
+            <div className="rounded-2xl border border-line bg-paper p-5 shadow-[0_10px_30px_-16px_rgba(28,26,23,0.3)]">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="rounded-full bg-accent-soft px-2.5 py-1 text-xs font-medium text-accent">
+                  Generic closing claim
+                </span>
+                <span className="font-mono text-[0.6rem] uppercase tracking-[0.14em] text-muted">
+                  high
+                </span>
+              </div>
+              <dl className="mt-4 space-y-3 text-sm">
+                <div>
+                  <dt className="font-medium text-ink">What is clear</dt>
+                  <dd className="mt-0.5 font-serif leading-relaxed text-muted">
+                    The writer believes the material is already there.
+                  </dd>
                 </div>
-                <p className="mt-3 text-sm leading-relaxed text-muted">{body}</p>
-              </Reveal>
-            ))}
-          </ol>
+                <div>
+                  <dt className="font-medium text-ink">Still unexplored</dt>
+                  <dd className="mt-0.5 font-serif leading-relaxed text-muted">
+                    Nothing specific enough to belong to this page rather than
+                    any other.
+                  </dd>
+                </div>
+                <div>
+                  <dt className="font-medium text-ink">Impact</dt>
+                  <dd className="mt-0.5 font-serif leading-relaxed text-muted">
+                    Polish. Worth knowing, not worth losing the line over.
+                  </dd>
+                </div>
+              </dl>
+            </div>
+          </Reveal>
         </section>
 
         {/* Where the essay goes -------------------------------------------- */}
-        <section className="border-t border-line py-16 sm:py-24">
-          <div className="grid gap-12 lg:grid-cols-2 lg:gap-16">
-            <Reveal>
-              <p className="font-mono text-[0.65rem] uppercase tracking-[0.22em] text-muted">
-                Before you paste anything
-              </p>
-              <h2 className="mt-4 font-wordmark text-4xl leading-[1.08] tracking-tight text-ink sm:text-5xl">
-                You should know where it goes.
-              </h2>
-            </Reveal>
+        <section className="sheet border-t border-line py-16 sm:py-24">
+          <Reveal className="gloss">
+            <Gloss n="04" label="Your words" />
+          </Reveal>
 
-            <Reveal delay={0.1} className="space-y-5">
-              <p className="leading-relaxed text-muted">
-                An application essay is the most personal thing most people
-                write before they turn eighteen. It gets read by a language
-                model, and which company that is decides what may be done with
-                your words afterwards — those terms are not the same everywhere,
-                and on some free tiers they permit a human to read what you
-                submitted.
-              </p>
-              <p className="leading-relaxed text-muted">
-                So Essence names the provider in use and states plainly what its
-                terms allow, in the app and on the privacy page. If the current
-                one may train on what you paste, that warning sits in the
-                workspace where you are pasting — not buried in a policy.
-              </p>
-              <Link
-                href="/settings"
-                className="inline-flex items-center gap-2 text-ink underline decoration-line underline-offset-4 transition-colors hover:decoration-ink"
-              >
-                Read what we store
-                <span aria-hidden="true">&rarr;</span>
-              </Link>
-            </Reveal>
-          </div>
+          <Reveal delay={0.06}>
+            <h2 className="font-wordmark text-4xl leading-[1.08] tracking-tight text-ink sm:text-5xl">
+              You should know where it goes.
+            </h2>
+            <p className="mt-6 font-serif text-lg leading-relaxed text-muted">
+              An application essay is the most personal thing most people write
+              before they turn eighteen. It gets read by a language model, and
+              which company that is decides what may be done with your words
+              afterwards — those terms are not the same everywhere, and on some
+              free tiers they permit a human to read what you submitted.
+            </p>
+            <p className="mt-4 font-serif text-lg leading-relaxed text-muted">
+              So Essence names the provider in use and states plainly what its
+              terms allow, in the app and on the privacy page. If the current one
+              may train on what you paste, that warning sits in the workspace
+              where you are pasting — not buried in a policy.
+            </p>
+            <Link
+              href="/settings"
+              className="mt-6 inline-flex items-center gap-2 text-ink underline decoration-line underline-offset-4 transition-colors hover:decoration-ink"
+            >
+              Read what we store
+              <span aria-hidden="true">&rarr;</span>
+            </Link>
+          </Reveal>
         </section>
 
         {/* FAQ -------------------------------------------------------------- */}
-        <section id="faq" className="scroll-mt-24 border-t border-line py-16 sm:py-24">
-          <div className="grid gap-12 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] lg:gap-16">
-            <Reveal>
-              <p className="font-mono text-[0.65rem] uppercase tracking-[0.22em] text-muted">
-                FAQ
-              </p>
-              <h2 className="mt-4 font-wordmark text-4xl leading-[1.08] tracking-tight text-ink sm:text-5xl">
-                Questions,
-                <br />
-                <em className="italic">answered</em>.
-              </h2>
-            </Reveal>
+        <section id="faq" className="sheet scroll-mt-24 border-t border-line py-16 sm:py-24">
+          <Reveal className="gloss">
+            <Gloss n="05" label="Questions" />
+          </Reveal>
 
-            <Reveal delay={0.1}>
-              <div className="border-t border-line">
-                {FAQ.map(([question, answer]) => (
-                  <details key={question} className="faq group border-b border-line">
-                    <summary className="flex items-start justify-between gap-6 py-5 text-left">
-                      <span className="font-medium text-ink transition-colors group-hover:text-accent">
-                        {question}
-                      </span>
-                      <span
-                        className="faq-sign mt-1 shrink-0 text-muted"
-                        aria-hidden="true"
-                      >
-                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                          <path
-                            d="M7 1v12M1 7h12"
-                            stroke="currentColor"
-                            strokeWidth="1.4"
-                            strokeLinecap="round"
-                          />
-                        </svg>
-                      </span>
-                    </summary>
-                    <p className="max-w-prose pb-6 leading-relaxed text-muted">
-                      {answer}
-                    </p>
-                  </details>
-                ))}
-              </div>
-            </Reveal>
-          </div>
+          <Reveal delay={0.06}>
+            <div className="border-t border-line">
+              {FAQ.map(([question, answer]) => (
+                <details key={question} className="faq group border-b border-line">
+                  <summary className="flex items-start justify-between gap-6 py-5 text-left">
+                    <span className="font-wordmark text-2xl leading-tight text-ink transition-colors group-hover:text-accent">
+                      {question}
+                    </span>
+                    <span
+                      className="faq-sign mt-2 shrink-0 text-muted"
+                      aria-hidden="true"
+                    >
+                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                        <path
+                          d="M7 1v12M1 7h12"
+                          stroke="currentColor"
+                          strokeWidth="1.4"
+                          strokeLinecap="round"
+                        />
+                      </svg>
+                    </span>
+                  </summary>
+                  <p className="pb-6 font-serif text-lg leading-relaxed text-muted">
+                    {answer}
+                  </p>
+                </details>
+              ))}
+            </div>
+          </Reveal>
         </section>
 
         {/* Close ------------------------------------------------------------ */}
@@ -340,7 +416,7 @@ export default async function LandingPage() {
       </main>
 
       <footer className="border-t border-line">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-6 py-9 text-sm text-muted">
+        <div className="mx-auto flex max-w-[78rem] flex-wrap items-center justify-between gap-4 px-6 py-9 text-sm text-muted">
           <span className="flex items-center gap-2.5">
             <LogoMark className="h-5 w-5" />
             Your words, sharper questions.

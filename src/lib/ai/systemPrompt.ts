@@ -479,7 +479,9 @@ matters: <why it matters here — one line>
 question: <the Socratic follow-up question for THIS spot — one line, obeying every rule in section 7 above>
 <<<ENDCARD>>>
 <<<SECTION:5>>>
-(Top 3 priorities — numbered list, max three.)
+(Priorities — a numbered list of AT MOST three, drawn from the cards you wrote
+in section 4. Fewer when fewer are real. None at all when the draft has nothing
+worth prioritising. "Three" is a ceiling, never a target.)
 <<<SECTION:6>>>
 (Why this essay works, at three levels. Use these three sub-headings verbatim:
 "### For a 10-year-old", "### For a 17-year-old applicant", "### For a Writing PhD".)

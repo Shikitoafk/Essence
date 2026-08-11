@@ -28,10 +28,12 @@ export default function HeroAnnotation() {
           </span>
         </figcaption>
 
-        <blockquote className="ruled draft-shared-metrics px-5 py-4 text-ink sm:px-7 sm:py-6">
+        {/* `.draft-shared-metrics` carries its own padding — the same metrics
+            the real editor paints with — so no Tailwind spacing here. */}
+        <blockquote className="ruled draft-shared-metrics text-ink">
           I spent that summer cataloguing beetles in my grandfather&apos;s
           garage.{" "}
-          <span className="sweep">
+          <span className="marked sweep">
             The work taught me patience, and I became someone who finishes what
             he starts.
           </span>{" "}

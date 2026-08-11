@@ -16,8 +16,11 @@
   --color-flag-medium: #9a7b3a;
   --color-flag-low: #6a7a5c;
 
-  --font-serif: Georgia, "Iowan Old Style", "Times New Roman", serif;
-  /* Loaded by next/font in the root layout; falls back to the body serif. */
+  /* Both loaded by next/font in the root layout. `serif` is the reading face —
+     it sets this page's prose and every student draft the app renders, so the
+     fallback has to be metrically close or the editor's highlight layer drifts
+     off the text it marks during the swap. */
+  --font-serif: var(--font-reading), Georgia, "Iowan Old Style", serif;
   --font-wordmark: var(--font-instrument), Georgia, serif;
 }
 
@@ -108,6 +111,42 @@ body {
    product can. Everything below is scoped to it — the workspace stays quiet.
    --------------------------------------------------------------------------- */
 
+/* The manuscript grid.
+ *
+ * Essence's whole gesture is a reader working in the margin of someone's page:
+ * a line marked, a question written beside it. So the page is not a centred
+ * column of cards that happens to contain a picture of that — it is laid out as
+ * the thing itself.
+ *
+ * Three tracks. The left margin carries what organises a page and is not part
+ * of it: section numbers, labels, metadata. The measure carries the prose, held
+ * near 40rem because that is where a reading face stays readable. The right
+ * margin is where annotations land, beside the line they answer.
+ *
+ * Below the breakpoint there are no margins to write in, so it collapses to one
+ * column and the marginalia become ordinary blocks in the flow.
+ */
+.sheet {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.25rem;
+}
+
+@media (min-width: 1080px) {
+  .sheet {
+    grid-template-columns: 9rem minmax(0, 40rem) minmax(0, 15rem);
+    column-gap: 2.5rem;
+    align-items: start;
+  }
+
+  /* Marginalia sit level with the first line of what they annotate rather than
+     above it, and read inward toward the text they belong to. */
+  .gloss {
+    text-align: right;
+    padding-top: 0.4rem;
+  }
+}
+
 /* Entrances come in two kinds, and the split is a safety property.
  *
  * Nothing here may leave content permanently invisible. An opacity-0 resting
@@ -169,7 +208,7 @@ body {
   }
 }
 
-.sweep {
+.marked {
   background-image: linear-gradient(var(--color-mark), var(--color-mark));
   background-repeat: no-repeat;
   background-position: 0 0.12em;
@@ -178,6 +217,10 @@ body {
   -webkit-box-decoration-break: clone;
   padding: 0 0.05em;
 }
+
+/* `.sweep` is a modifier on `.marked`, applied as `class="marked sweep"`: same
+   stroke, drawn rather than already there. Only the hero uses it — anywhere
+   else the delay fires off-screen and the reader arrives after the fact. */
 
 /* How a reader's comment actually arrives — from the edge of the page, landing
    beside the line it belongs to. */
