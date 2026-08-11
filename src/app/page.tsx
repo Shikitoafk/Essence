@@ -49,7 +49,7 @@ const FAQ: [string, string][] = [
   ],
   [
     "Is it free?",
-    "Yes. There is no card, no trial that expires, and no paid tier that unlocks the good feedback. Usage is capped per person so one heavy session can't exhaust the limits for everyone else.",
+    "Yes. No card, and no trial clock running out on you. Usage is capped per person so one heavy session can't exhaust the limits for everyone else.",
   ],
   [
     "What happens to my essay?",

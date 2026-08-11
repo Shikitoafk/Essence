@@ -415,7 +415,10 @@ export default function Workspace({
               now name their contents. Follow-up is a third tab rather than a
               panel below the cards: testers had to scroll past every card to
               reach the conversation, and gave up before finding it. */}
-          <div className="flex gap-1 rounded-full border border-line bg-white p-1 text-sm">
+          {/* Sticky under the header: notes are aligned to their quotes, so on
+              a long draft they sit far down the page, and switching view had
+              meant scrolling all the way back to the top to reach these. */}
+          <div className="nav-blur sticky top-[5.5rem] z-20 flex gap-1 rounded-full border border-line p-1 text-sm">
             {(
               [
                 [
@@ -496,7 +499,11 @@ export default function Workspace({
                   {/* `data-note-for` is what the alignment effect reads to
                       slide this card down to its quote. */}
                   {primarySpots.map((spot) => (
-                    <div key={spot.id} data-note-for={spot.id}>
+                    <div
+                      key={spot.id}
+                      data-note-for={spot.id}
+                      data-active={spot.id === activeSpotId}
+                    >
                       <SpotCard
                         spot={spot}
                         active={spot.id === activeSpotId}

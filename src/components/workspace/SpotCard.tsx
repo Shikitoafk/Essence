@@ -28,6 +28,14 @@ const STATUS_LABEL: Record<SpotStatus, string> = {
   skipped: "Set aside",
 };
 
+/** The collapsed line has room for a word or two, not a sentence. */
+const STATUS_SHORT: Record<SpotStatus, string> = {
+  open: "",
+  answered: "Ready to work in",
+  resolved: "Resolved",
+  skipped: "Set aside",
+};
+
 interface Props {
   spot: FlaggedSpot;
   active: boolean;
@@ -48,9 +56,22 @@ export default function SpotCard({
   const awaitingRevision = spot.status === "answered";
 
   return (
+    /*
+     * Collapsed to a line until it is the one being worked on.
+     *
+     * A margin of fully open cards is a wall of text competing with the essay,
+     * and it forces every note far down the page to clear the one above it —
+     * which is the same thing as breaking the alignment they exist for. Shut,
+     * a note is a mark in the margin: weight, name, and where it sits.
+     *
+     * Open is not separate state. Exactly one spot is live at a time, which the
+     * product already believed, so the live one is the open one and clicking a
+     * note is what makes it live.
+     */
     <article
-      onClick={onSelect}
-      className={`cursor-pointer rounded-lg border bg-white p-4 transition ${
+      className={`rounded-lg border bg-white transition ${
+        active ? "p-4" : "px-3 py-2.5"
+      } ${
         awaitingRevision
           ? "border-flag-medium/60 shadow-sm"
           : active
@@ -58,120 +79,154 @@ export default function SpotCard({
             : "border-line hover:border-accent/50"
       } ${dimmed ? "opacity-60" : ""}`}
     >
-      <div className="flex flex-wrap items-center gap-2">
+      <button
+        type="button"
+        onClick={onSelect}
+        aria-expanded={active}
+        className="flex w-full items-center gap-2 text-left"
+      >
         <span
-          className={`rounded-full px-2.5 py-1 text-xs font-medium ${IMPACT_STYLE[spot.impact]}`}
+          className={`shrink-0 rounded-full px-2 py-0.5 text-[0.7rem] font-medium ${IMPACT_STYLE[spot.impact]}`}
           title={IMPACT_BLURB[spot.impact]}
         >
           {IMPACT_LABEL[spot.impact]}
         </span>
-        <span className="rounded-full bg-accent-soft px-2.5 py-1 text-xs font-medium text-accent">
+        <span className="min-w-0 flex-1 truncate text-sm text-ink">
           {spot.pattern_name}
         </span>
-        <span
-          className={`text-xs ${CONFIDENCE_STYLE[spot.confidence] ?? "text-muted"}`}
-        >
-          {spot.confidence} confidence
-        </span>
-        {spot.status !== "open" && (
-          <span className="ml-auto text-xs text-muted">
-            {STATUS_LABEL[spot.status]}
+
+        {active ? (
+          <span
+            className={`shrink-0 text-xs ${CONFIDENCE_STYLE[spot.confidence] ?? "text-muted"}`}
+          >
+            {spot.confidence} confidence
           </span>
+        ) : spot.status !== "open" ? (
+          <span className="shrink-0 text-[0.7rem] text-muted">
+            {STATUS_SHORT[spot.status]}
+          </span>
+        ) : (
+          <svg
+            width="11"
+            height="11"
+            viewBox="0 0 12 12"
+            fill="none"
+            aria-hidden="true"
+            className="shrink-0 text-muted"
+          >
+            <path
+              d="M2.5 4.5L6 8l3.5-3.5"
+              stroke="currentColor"
+              strokeWidth="1.4"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
         )}
-      </div>
+      </button>
 
-      <blockquote className="mt-3 border-l-2 border-accent/40 pl-3 font-serif text-sm leading-relaxed">
-        {spot.quoted_text}
-      </blockquote>
+      {!active ? null : (
+        <>
+          {spot.status !== "open" && (
+            <p className="mt-2 text-xs text-muted">
+              {STATUS_LABEL[spot.status]}
+            </p>
+          )}
 
-      {missingInDraft && (
-        <p className="mt-2 text-xs text-flag-medium">
-          This line isn&apos;t in your current draft any more — it&apos;s kept
-          here from the version that was read.
-        </p>
-      )}
+          <blockquote className="mt-3 border-l-2 border-accent/40 pl-3 font-serif text-sm leading-relaxed">
+            {spot.quoted_text}
+          </blockquote>
 
-      {/* The student's own material, handed back so it reads as material rather
+          {missingInDraft && (
+            <p className="mt-2 text-xs text-flag-medium">
+              This line isn&apos;t in your current draft any more — it&apos;s
+              kept here from the version that was read.
+            </p>
+          )}
+
+          {/* The student's own material, handed back so it reads as material rather
           than as a chat message they have to go dig out. Deliberately a list of
           raw specifics: no ordering into prose, no suggested phrasing. */}
-      {awaitingRevision && spot.new_material.length > 0 && (
-        <div className="mt-4 rounded-md border border-flag-medium/40 bg-flag-medium/10 p-3">
-          <p className="text-xs uppercase tracking-widest text-flag-medium">
-            What you turned up — not in the draft yet
-          </p>
-          <ul className="mt-2 space-y-1.5 text-sm">
-            {spot.new_material.map((item, i) => (
-              <li key={i} className="flex gap-2">
-                <span className="text-flag-medium">·</span>
-                <span>{item}</span>
-              </li>
-            ))}
-          </ul>
-          <p className="mt-3 text-xs text-muted">
-            Your words, not ours. Work them into the quoted line above however
-            you want — this closes itself once that passage changes.
-          </p>
-        </div>
+          {awaitingRevision && spot.new_material.length > 0 && (
+            <div className="mt-4 rounded-md border border-flag-medium/40 bg-flag-medium/10 p-3">
+              <p className="text-xs uppercase tracking-widest text-flag-medium">
+                What you turned up — not in the draft yet
+              </p>
+              <ul className="mt-2 space-y-1.5 text-sm">
+                {spot.new_material.map((item, i) => (
+                  <li key={i} className="flex gap-2">
+                    <span className="text-flag-medium">·</span>
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-3 text-xs text-muted">
+                Your words, not ours. Work them into the quoted line above
+                however you want — this closes itself once that passage changes.
+              </p>
+            </div>
+          )}
+
+          <dl className="mt-4 space-y-2.5 text-sm">
+            <div>
+              <dt className="text-xs uppercase tracking-widest text-muted">
+                What is clear
+              </dt>
+              <dd className="mt-0.5">{spot.what_is_clear}</dd>
+            </div>
+            <div>
+              <dt className="text-xs uppercase tracking-widest text-muted">
+                What is still unexplored
+              </dt>
+              <dd className="mt-0.5">{spot.what_is_unexplored}</dd>
+            </div>
+            <div>
+              <dt className="text-xs uppercase tracking-widest text-muted">
+                Why it matters here
+              </dt>
+              <dd className="mt-0.5">{spot.why_it_matters}</dd>
+            </div>
+          </dl>
+
+          <div className="mt-4 flex flex-wrap gap-2 border-t border-line pt-3 text-xs">
+            {spot.status === "open" || awaitingRevision ? (
+              <>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onStatusChange("resolved");
+                  }}
+                  className="rounded-full border border-line px-3 py-1 hover:border-flag-low hover:text-flag-low"
+                >
+                  {awaitingRevision ? "Already handled it" : "Mark resolved"}
+                </button>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onStatusChange("skipped");
+                  }}
+                  className="rounded-full border border-line px-3 py-1 hover:border-muted"
+                >
+                  Nothing here — set aside
+                </button>
+              </>
+            ) : (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onStatusChange("open");
+                }}
+                className="rounded-full border border-line px-3 py-1 hover:border-accent hover:text-accent"
+              >
+                Reopen
+              </button>
+            )}
+          </div>
+        </>
       )}
-
-      <dl className="mt-4 space-y-2.5 text-sm">
-        <div>
-          <dt className="text-xs uppercase tracking-widest text-muted">
-            What is clear
-          </dt>
-          <dd className="mt-0.5">{spot.what_is_clear}</dd>
-        </div>
-        <div>
-          <dt className="text-xs uppercase tracking-widest text-muted">
-            What is still unexplored
-          </dt>
-          <dd className="mt-0.5">{spot.what_is_unexplored}</dd>
-        </div>
-        <div>
-          <dt className="text-xs uppercase tracking-widest text-muted">
-            Why it matters here
-          </dt>
-          <dd className="mt-0.5">{spot.why_it_matters}</dd>
-        </div>
-      </dl>
-
-      <div className="mt-4 flex flex-wrap gap-2 border-t border-line pt-3 text-xs">
-        {spot.status === "open" || awaitingRevision ? (
-          <>
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                onStatusChange("resolved");
-              }}
-              className="rounded-full border border-line px-3 py-1 hover:border-flag-low hover:text-flag-low"
-            >
-              {awaitingRevision ? "Already handled it" : "Mark resolved"}
-            </button>
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                onStatusChange("skipped");
-              }}
-              className="rounded-full border border-line px-3 py-1 hover:border-muted"
-            >
-              Nothing here — set aside
-            </button>
-          </>
-        ) : (
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              onStatusChange("open");
-            }}
-            className="rounded-full border border-line px-3 py-1 hover:border-accent hover:text-accent"
-          >
-            Reopen
-          </button>
-        )}
-      </div>
     </article>
   );
 }
