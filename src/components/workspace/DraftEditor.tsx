@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useIsomorphicLayoutEffect } from "@/lib/useIsomorphicLayoutEffect";
 import { locateQuote } from "@/lib/ai/parseReport";
 import { countWords, type FlaggedSpot } from "@/lib/types";
 
@@ -12,6 +13,15 @@ interface Props {
   onSelectSpot: (spotId: string) => void;
   wordLimit: number | null;
   saving: "idle" | "saving" | "saved" | "error";
+  /**
+   * Where each flagged quote sits, so the margin can put its note level with
+   * the line it is about. Keyed by spot id, in pixels down the *document* —
+   * page coordinates rather than offsets within the editor, so the margin can
+   * compare them against its own cards without knowing anything about how the
+   * two columns are nested. Must be a stable reference: it is a layout-effect
+   * dependency.
+   */
+  onQuoteOffsets?: (offsets: Map<string, number>) => void;
 }
 
 interface Range {
@@ -33,6 +43,7 @@ export default function DraftEditor({
   onSelectSpot,
   wordLimit,
   saving,
+  onQuoteOffsets,
 }: Props) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const backdropRef = useRef<HTMLDivElement>(null);
@@ -115,40 +126,64 @@ export default function DraftEditor({
     return out;
   }, [ranges, value, activeParagraph]);
 
-  // Keep the painted layer locked to the textarea's scroll position.
-  useEffect(() => {
+  /*
+   * Grow to fit rather than scroll inside a box.
+   *
+   * The draft used to be a fixed-height pane with its own scrollbar, and the
+   * highlight layer had to be kept in step with it by hand. Letting the
+   * textarea take the height of its content moves scrolling out to the page,
+   * which deletes that whole class of bug — and, more to the point, is what
+   * makes a margin possible: a note can only sit level with its line if the
+   * line and the note scroll as one surface.
+   */
+  useIsomorphicLayoutEffect(() => {
     const ta = textareaRef.current;
-    const backdrop = backdropRef.current;
-    if (!ta || !backdrop) return;
-    const sync = () => {
-      backdrop.scrollTop = ta.scrollTop;
-      backdrop.scrollLeft = ta.scrollLeft;
-    };
-    sync();
-    ta.addEventListener("scroll", sync);
-    return () => ta.removeEventListener("scroll", sync);
+    if (!ta) return;
+    ta.style.height = "auto";
+    ta.style.height = `${ta.scrollHeight}px`;
   }, [value]);
 
-  /** Scroll the highlighted line into view when a card is selected. */
+  /** Tell the margin where every flagged quote landed. */
+  const publishOffsets = useCallback(() => {
+    const backdrop = backdropRef.current;
+    if (!backdrop || !onQuoteOffsets) return;
+
+    const offsets = new Map<string, number>();
+    for (const el of backdrop.querySelectorAll<HTMLElement>("[data-spot-id]")) {
+      const id = el.dataset.spotId;
+      // A quote split across segments reports its first fragment, which is the
+      // line the reader's eye goes to.
+      if (id && !offsets.has(id)) {
+        offsets.set(id, el.getBoundingClientRect().top + window.scrollY);
+      }
+    }
+    onQuoteOffsets(offsets);
+  }, [onQuoteOffsets]);
+
+  useIsomorphicLayoutEffect(publishOffsets, [publishOffsets, segments, value]);
+
+  // Reflowing the text moves every quote below it, and nothing about a resize
+  // re-renders this component on its own.
+  useEffect(() => {
+    const backdrop = backdropRef.current;
+    if (!backdrop || typeof ResizeObserver === "undefined") return;
+    const observer = new ResizeObserver(publishOffsets);
+    observer.observe(backdrop);
+    return () => observer.disconnect();
+  }, [publishOffsets]);
+
+  /** Bring the highlighted line into view when a card is selected. */
   useEffect(() => {
     if (!activeSpotId) return;
-    const backdrop = backdropRef.current;
-    const ta = textareaRef.current;
-    if (!backdrop || !ta) return;
-    const mark = backdrop.querySelector<HTMLElement>(
+    const mark = backdropRef.current?.querySelector<HTMLElement>(
       `[data-spot-id="${activeSpotId}"]`,
     );
-    if (!mark) return;
-    const target = Math.max(
-      0,
-      mark.offsetTop - ta.clientHeight / 2 + mark.offsetHeight / 2,
-    );
-    ta.scrollTo({ top: target, behavior: "smooth" });
+    mark?.scrollIntoView({ behavior: "smooth", block: "center" });
   }, [activeSpotId]);
 
   return (
-    <div className="flex h-full flex-col">
-      <div className="flex items-center justify-between border-b border-line px-4 py-2 text-xs">
+    <div className="flex flex-col">
+      <div className="flex items-center justify-between border-b border-line px-1 py-2 text-xs">
         <div className="flex items-center gap-3">
           <span className={over ? "font-medium text-flag-high" : "text-muted"}>
             {words} word{words === 1 ? "" : "s"}
@@ -174,11 +209,13 @@ export default function DraftEditor({
         </span>
       </div>
 
-      <div className="relative min-h-0 flex-1">
+      {/* The textarea is in flow and sized to its content; the painted layer is
+          stretched over it. Neither scrolls, so they cannot fall out of step. */}
+      <div className="relative">
         <div
           ref={backdropRef}
           aria-hidden="true"
-          className="draft-shared-metrics pointer-events-none absolute inset-0 overflow-hidden text-transparent"
+          className="draft-shared-metrics pointer-events-none absolute inset-0 !px-0 text-transparent"
         >
           {segments.map((segment, i) => (
             <span
@@ -214,8 +251,9 @@ export default function DraftEditor({
             if (hit) onSelectSpot(hit.spotId);
           }}
           spellCheck
+          rows={1}
           placeholder="Paste or write your draft here. Essence needs at least 50 words before it will read it."
-          className="draft-shared-metrics absolute inset-0 h-full w-full resize-none bg-transparent text-ink caret-accent outline-none"
+          className="draft-shared-metrics relative block w-full resize-none overflow-hidden !px-0 bg-transparent text-ink caret-accent outline-none"
         />
       </div>
     </div>

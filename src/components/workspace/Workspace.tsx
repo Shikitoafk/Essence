@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useIsomorphicLayoutEffect } from "@/lib/useIsomorphicLayoutEffect";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import DraftEditor from "./DraftEditor";
@@ -64,6 +65,19 @@ export default function Workspace({
     { kind: "error" | "info"; text: string } | null
   >(null);
 
+  /*
+   * Marginalia.
+   *
+   * A card in a list tells you a line is flagged; a card beside the line shows
+   * you which one, with no clicking and no hunting. `quoteOffsets` is where the
+   * editor found each quote in page coordinates, and the layout effect below
+   * pushes each note down until it is level with its own.
+   */
+  const marginRef = useRef<HTMLDivElement>(null);
+  const [quoteOffsets, setQuoteOffsets] = useState<Map<string, number>>(
+    () => new Map(),
+  );
+
   const words = countWords(draft);
   const tooShort = words < MIN_DRAFT_WORDS;
   // Recomputed from the live spots rather than read off the stored report, so
@@ -88,6 +102,40 @@ export default function Workspace({
 
     return () => clearTimeout(timer);
   }, [draft, essay.id, essay.current_draft]);
+
+  /*
+   * Slide each note down to meet its quote.
+   *
+   * Done with margin-top on elements still in normal flow, never absolute
+   * positioning. Flow guarantees the one thing that matters here: two notes can
+   * never land on top of each other. When a quote sits higher than the note
+   * can reach — because the note above it is long — the note stays put and is
+   * merely lower than ideal, which is a far better failure than an overlap.
+   *
+   * Alignment is a nicety of wide layouts. Below the breakpoint the margin is
+   * underneath the draft, where a pixel offset would only push the first card
+   * off the bottom of the screen.
+   */
+  useIsomorphicLayoutEffect(() => {
+    const margin = marginRef.current;
+    if (!margin) return;
+
+    const notes = [
+      ...margin.querySelectorAll<HTMLElement>("[data-note-for]"),
+    ];
+    for (const note of notes) note.style.marginTop = "";
+
+    if (!window.matchMedia("(min-width: 1180px)").matches) return;
+
+    for (const note of notes) {
+      const target = quoteOffsets.get(note.dataset.noteFor ?? "");
+      if (target === undefined) continue;
+
+      const current = note.getBoundingClientRect().top + window.scrollY;
+      const shift = target - current;
+      if (shift > 1) note.style.marginTop = `${shift}px`;
+    }
+  }, [quoteOffsets, spots, tab, activeSpotId, showMinor]);
 
   const runFeedback = useCallback(async () => {
     if (analysing || tooShort) return;
@@ -244,8 +292,11 @@ export default function Workspace({
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <div className="border-b border-line bg-white">
-        <div className="mx-auto flex max-w-[110rem] flex-wrap items-center justify-between gap-3 px-6 py-3">
+      {/* Sticky: a session here runs for an hour and the draft scrolls a long
+          way, so "Get feedback" and the word count have to stay reachable
+          without a trip back to the top. */}
+      <div className="nav-blur sticky top-0 z-30 border-b border-line">
+        <div className="mx-auto flex max-w-[82rem] flex-wrap items-center justify-between gap-3 px-6 py-3">
           <div className="min-w-0">
             <h1 className="truncate font-serif text-xl">{essay.title}</h1>
             <p className="text-xs uppercase tracking-widest text-muted">
@@ -338,9 +389,12 @@ export default function Workspace({
         )}
       </div>
 
-      <div className="mx-auto grid min-h-0 w-full max-w-[110rem] flex-1 gap-6 px-6 py-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,26rem)]">
-        <div className="flex min-h-0 flex-col gap-4">
-          <div className="flex min-h-[26rem] flex-1 flex-col overflow-hidden rounded-lg border border-line bg-white">
+      {/* The draft sits on a sheet in the measure; the margin runs beside it.
+          Neither scrolls internally — the page does — because a note can only
+          stay level with its line if the line and the note move together. */}
+      <div className="mx-auto grid w-full max-w-[82rem] gap-8 px-6 py-8 min-[1180px]:grid-cols-[minmax(0,40rem)_minmax(0,23rem)]">
+        <div className="flex flex-col gap-4">
+          <div className="rounded-lg border border-line bg-white px-6 py-4 sm:px-8 sm:py-6">
             <DraftEditor
               value={draft}
               onChange={setDraft}
@@ -349,12 +403,13 @@ export default function Workspace({
               onSelectSpot={setActiveSpotId}
               wordLimit={essay.word_limit}
               saving={saving}
+              onQuoteOffsets={setQuoteOffsets}
             />
           </div>
           <EssaySettings essay={essay} />
         </div>
 
-        <div className="flex min-h-0 flex-col gap-4">
+        <div ref={marginRef} className="flex flex-col gap-4">
           {/* "Full read" said nothing about what was inside it, so testers kept
               assuming the framework and priorities had gone missing. The labels
               now name their contents. Follow-up is a third tab rather than a
@@ -414,7 +469,7 @@ export default function Workspace({
               />
             </div>
           ) : (
-          <div className="min-h-0 flex-1 space-y-3 overflow-y-auto pr-1">
+          <div className="space-y-3">
             {essay.last_feedback_at && (
               <ReadinessCard readiness={readiness} report={report} />
             )}
@@ -438,15 +493,18 @@ export default function Workspace({
                 </p>
               ) : (
                 <>
+                  {/* `data-note-for` is what the alignment effect reads to
+                      slide this card down to its quote. */}
                   {primarySpots.map((spot) => (
-                    <SpotCard
-                      key={spot.id}
-                      spot={spot}
-                      active={spot.id === activeSpotId}
-                      missingInDraft={!locateQuote(draft, spot.quoted_text)}
-                      onSelect={() => setActiveSpotId(spot.id)}
-                      onStatusChange={(status) => changeStatus(spot.id, status)}
-                    />
+                    <div key={spot.id} data-note-for={spot.id}>
+                      <SpotCard
+                        spot={spot}
+                        active={spot.id === activeSpotId}
+                        missingInDraft={!locateQuote(draft, spot.quoted_text)}
+                        onSelect={() => setActiveSpotId(spot.id)}
+                        onStatusChange={(status) => changeStatus(spot.id, status)}
+                      />
+                    </div>
                   ))}
 
                   {/* Sits among the spots, not in a separate tab: this is the
