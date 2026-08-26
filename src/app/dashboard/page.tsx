@@ -79,11 +79,12 @@ export default async function DashboardPage() {
     <div className="min-h-screen">
       <AppHeader email={user.email ?? undefined} />
 
-      <main className="mx-auto max-w-[68rem] px-6 py-10">
-        <div className="flex flex-wrap items-end justify-between gap-4">
+      <main className="mx-auto max-w-[68rem] px-6 py-10 sm:py-14">
+        <div className="dashboard-intro flex flex-wrap items-end justify-between gap-4 rounded-[1.75rem] border border-line bg-white px-6 py-7 sm:px-8 sm:py-9">
           <div>
-            <h1 className="display text-3xl">Your essays</h1>
-            <p className="mt-1 text-sm text-muted">
+            <p className="section-eyebrow">Your writing season</p>
+            <h1 className="mt-3 font-display text-4xl font-medium tracking-[-0.05em] text-ink sm:text-5xl">Your essays</h1>
+            <p className="mt-3 max-w-lg text-sm leading-6 text-muted">
               One document per essay. Drafts, flagged spots and conversations
               stay together across the season.
             </p>
@@ -92,7 +93,7 @@ export default async function DashboardPage() {
           {essays.length >= 2 ? (
             <Link
               href="/compare"
-              className="rounded-full border border-line bg-white px-4 py-2 text-sm hover:border-accent"
+              className="rounded-full border border-line bg-white px-4 py-2 text-sm transition hover:border-accent hover:bg-accent-soft/30"
             >
               Compare versions
             </Link>
@@ -113,15 +114,15 @@ export default async function DashboardPage() {
 
           <div>
             {essays.length === 0 ? (
-              <div className="rounded-lg border border-dashed border-line bg-white p-10 text-center">
-                <p className="display text-lg">Nothing here yet.</p>
+              <div className="rounded-[1.5rem] border border-dashed border-line bg-white p-10 text-center">
+                <p className="font-display text-2xl font-medium tracking-[-0.04em]">Nothing here yet.</p>
                 <p className="mx-auto mt-2 max-w-sm text-sm text-muted">
                   Create your first essay, paste a draft of at least 50 words,
                   and Essence will read it once, properly.
                 </p>
               </div>
             ) : (
-              <ul className="border-t border-line">
+              <ul className="overflow-hidden rounded-[1.5rem] border border-line bg-white">
                 {essays.map((essay) => {
                   // Only the newest run counts. Leftovers from earlier runs
                   // describe drafts that no longer exist, and counting them
@@ -158,13 +159,13 @@ export default async function DashboardPage() {
                     );
 
                   return (
-                    <li key={essay.id} className="border-b border-line">
+                    <li key={essay.id} className="border-b border-line last:border-b-0">
                       <Link
                         href={`/essays/${essay.id}`}
-                        className="group flex flex-wrap items-baseline gap-x-6 gap-y-2 py-5 transition-colors"
+                        className="group flex flex-wrap items-baseline gap-x-6 gap-y-2 px-5 py-5 transition-colors hover:bg-accent-soft/30 sm:px-6"
                       >
                         <div className="min-w-0 flex-1">
-                          <h2 className="display text-xl text-ink transition-colors group-hover:text-accent">
+                          <h2 className="font-display text-xl font-medium tracking-[-0.035em] text-ink transition-colors group-hover:text-accent">
                             {essay.title}
                           </h2>
                           <p className="mt-1 font-mono text-[0.62rem] uppercase tracking-[0.16em] text-muted">

@@ -11,13 +11,22 @@ export async function GET(request: Request) {
     const supabase = await createClient();
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
-      // Behind a proxy (Vercel) the forwarded host is the user-facing one.
+      // Local sign-in must return to the local app. `NEXT_PUBLIC_SITE_URL`
+      // normally names the Vercel deployment, so using it unconditionally
+      // would silently bounce a localhost session into production.
+      const isLocal = /^https?:\/\/(localhost|127\.0\.0\.1)(:|\/|$)/.test(
+        origin,
+      );
+      // Behind a production proxy (Vercel) the forwarded host is the
+      // user-facing one.
       const forwardedHost = request.headers.get("x-forwarded-host");
       const base =
-        process.env.NEXT_PUBLIC_SITE_URL ??
-        (process.env.NODE_ENV === "production" && forwardedHost
-          ? `https://${forwardedHost}`
-          : origin);
+        isLocal
+          ? origin
+          : process.env.NEXT_PUBLIC_SITE_URL ??
+            (process.env.NODE_ENV === "production" && forwardedHost
+              ? `https://${forwardedHost}`
+              : origin);
       return NextResponse.redirect(`${base}${next}`);
     }
   }

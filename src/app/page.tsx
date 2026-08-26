@@ -1,463 +1,74 @@
 import Link from "next/link";
 import Logo, { LogoMark } from "@/components/Logo";
-import Reveal from "@/components/Reveal";
 import QuestionPathPreview from "@/components/QuestionPathPreview";
+import Reveal from "@/components/Reveal";
 import { createClient, supabaseConfigured } from "@/lib/supabase/server";
 
-/**
- * The landing page is laid out as the product's method, not as an imitation of
- * a consultant report. The hero is a question path: a claimed change becomes a
- * single question, then raw material the writer owns. Prose carries Newsreader;
- * interface chrome stays in DM Sans.
- */
+const FAQ = [
+  ["Will Essence write my essay?", "No. It surfaces a specific weak spot and asks a question that helps you find your own material. There are no replacement sentences or insert buttons."],
+  ["What does the feedback look at?", "Clarity, concrete detail, reflection, structure, voice, and whether recurring images actually earn their return. Feedback is always tied to a line in your draft."],
+  ["Can I use it for supplements too?", "Yes. Create a workspace for every personal statement or supplemental response and keep its draft, questions, and versions together."],
+  ["Is my draft private?", "Your essay and session history are stored in your own account. The draft is sent to the feedback model only when you request feedback."],
+];
 
-/**
- * A section's marginal label — the number a reader writes beside a passage.
- *
- * Rendered without a wrapper so it can be dropped straight into a `.sheet`
- * slot: which column anything lands in is decided by source order, so an extra
- * element here would push the measure and the note one track along.
- */
-function Gloss({ n, label }: { n: string; label: string }) {
-  return (
-    <>
-      <div className="display text-3xl leading-none text-accent">{n}</div>
-      <div className="mt-1.5 font-mono text-[0.6rem] uppercase tracking-[0.18em] text-muted">
-        {label}
-      </div>
-    </>
-  );
+const FEATURES = [
+  { eyebrow: "01 · Find the gap", title: "Feedback attached to the exact line.", copy: "See what a reader understands, what is still only claimed, and why that moment matters — without getting a rewritten paragraph back.", tone: "feature-indigo" },
+  { eyebrow: "02 · Follow one thread", title: "One precise question at a time.", copy: "Answer in your own words. If there is more to uncover, Essence narrows the question instead of dumping a checklist on you.", tone: "feature-mint" },
+  { eyebrow: "03 · Keep ownership", title: "Your draft. Your language. Your decision.", copy: "Save versions, resolve what matters, skip what does not. The tool helps you discover material; it never impersonates you.", tone: "feature-slate" },
+];
+
+function Arrow() {
+  return <svg aria-hidden="true" viewBox="0 0 20 20" fill="none" className="h-4 w-4"><path d="M3 10h13M11 5l5 5-5 5" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" /></svg>;
 }
 
-const STEPS: [string, string][] = [
-  ["Paste your draft", "Add the prompt and word limit if you have them."],
-  ["One deep read", "A full structural diagnostic, in a single pass."],
-  [
-    "One question at a time",
-    "A vague answer gets a narrower question, not a pass.",
-  ],
-  [
-    "Rewrite it yourself",
-    "Save a version, run it again, watch the spots close.",
-  ],
-];
-
-const FAQ: [string, string][] = [
-  [
-    "Will it write my essay for me?",
-    "No, and there is no setting that changes that. Ask it directly and it refuses, then re-asks the question it was on. What you get back is your own material, in your own words, laid out so you can see it — never a sentence to paste.",
-  ],
-  [
-    "Is it free?",
-    "Yes. No card, and no trial clock running out on you. Usage is capped per person so one heavy session can't exhaust the limits for everyone else.",
-  ],
-  [
-    "What happens to my essay?",
-    "It is sent to a language model to be read, and stored in your account so you can compare versions later. Which model, and exactly what its terms permit that company to do with your text, is written in plain language on the privacy page — before you paste anything.",
-  ],
-  [
-    "Will it just tell me my essay is good?",
-    "No. It will also tell you when the essay is finished, which is rarer and more useful. Every finding is rated by how much it actually matters, and a draft with nothing serious left is reported as ready — padding it with nitpicks would only flatten your voice.",
-  ],
-  [
-    "Does it work on supplementals?",
-    "Yes, and it checks them against your other essays for repetition — two essays that reveal the same side of you are a wasted slot, and that is easy to miss when you write them weeks apart.",
-  ],
-];
-
-export default async function LandingPage() {
+export default async function Home() {
   let signedIn = false;
   if (supabaseConfigured()) {
     const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const { data: { user } } = await supabase.auth.getUser();
     signedIn = Boolean(user);
   }
-
-  const primaryHref = signedIn ? "/dashboard" : "/login";
-  const primaryLabel = signedIn ? "Go to your essays" : "Start free";
+  const appHref = signedIn ? "/dashboard" : "/login";
 
   return (
-    <div className="min-h-screen">
-      <header className="nav-blur sticky top-0 z-50 border-b border-line/70">
-        <div className="mx-auto flex max-w-[78rem] items-center justify-between px-6 py-4">
-          <Link href="/" aria-label="Essence — home">
-            <Logo size="sm" />
-          </Link>
-
-          <nav className="flex items-center gap-6 text-sm">
-            <Link
-              href="#how"
-              className="hidden text-muted transition-colors hover:text-ink sm:block"
-            >
-              How it works
-            </Link>
-            <Link
-              href="#faq"
-              className="hidden text-muted transition-colors hover:text-ink sm:block"
-            >
-              FAQ
-            </Link>
-            <Link
-              href="/settings"
-              className="hidden text-muted transition-colors hover:text-ink sm:block"
-            >
-              Privacy
-            </Link>
-            <Link
-              href={primaryHref}
-              className="rounded-full bg-ink px-4 py-2 text-paper transition hover:opacity-85"
-            >
-              {signedIn ? "Your essays" : "Start free"}
-            </Link>
-          </nav>
-        </div>
+    <main className="landing-shell min-h-screen overflow-hidden">
+      <header className="landing-nav mx-auto flex max-w-7xl items-center justify-between px-5 py-5 sm:px-8 lg:px-10">
+        <Logo />
+        <nav className="hidden items-center gap-7 text-sm text-muted md:flex" aria-label="Main navigation">
+          <a href="#method" className="transition hover:text-ink">How it works</a><a href="#faq" className="transition hover:text-ink">FAQ</a><Link href="/privacy" className="transition hover:text-ink">Privacy</Link>
+        </nav>
+        <Link href={appHref} className="landing-nav-cta inline-flex items-center gap-2 rounded-full bg-ink px-4 py-2.5 text-sm font-medium text-white transition hover:-translate-y-0.5 hover:bg-accent">{signedIn ? "Open workspace" : "Start free"}<Arrow /></Link>
       </header>
 
-      <main className="mx-auto max-w-[78rem] px-6">
-        {/* Hero -------------------------------------------------------------
-            Above the fold, so entrances are the CSS-only `.rise` — nothing here
-            waits on a bundle to become visible. */}
-        <section className="sheet pt-16 pb-14 sm:pt-24 sm:pb-20">
-          <div className="gloss rise">
-            <div className="font-mono text-[0.6rem] uppercase tracking-[0.18em] text-muted">
-              Admissions
-              <br />
-              essays
-            </div>
-          </div>
-
-          <div>
-            <h1
-              className="rise display text-[2.75rem] text-ink sm:text-6xl"
-              style={{ animationDelay: "0.06s" }}
-            >
-              The honest read
-              <br />
-              your essay <em className="italic">hasn&apos;t had</em>.
-            </h1>
-
-            <p
-              className="rise mt-7 font-serif text-xl leading-relaxed text-muted"
-              style={{ animationDelay: "0.14s" }}
-            >
-              Essence finds the lines where you told the reader something
-              instead of showing it, then asks one precise question at a time
-              until the real material comes out.
-            </p>
-
-            <div
-              className="rise mt-9 flex flex-wrap items-center gap-x-5 gap-y-4"
-              style={{ animationDelay: "0.22s" }}
-            >
-              <Link
-                href={primaryHref}
-                className="rounded-full bg-accent px-7 py-3.5 text-paper transition hover:opacity-88 hover:shadow-[0_8px_24px_-8px_rgba(122,92,62,0.6)]"
-              >
-                {primaryLabel}
-              </Link>
-              <Link
-                href="#how"
-                className="rounded-full border border-line px-7 py-3.5 text-ink transition hover:border-ink/30 hover:bg-white"
-              >
-                How it works
-              </Link>
-            </div>
-
-            <p
-              className="rise mt-5 text-sm text-muted"
-              style={{ animationDelay: "0.28s" }}
-            >
-              Free. No card. No AI-written sentences, ever.
-            </p>
-          </div>
-
-          {/* The product demo is intentionally a conversation path, not a
-              manuscript with margin notes. The distinction is visual as well
-              as behavioural: Essence helps the writer discover material rather
-              than delivering an admissions-consultant markup. */}
-          <div
-            className="spread rise mt-14 sm:mt-16"
-            style={{ animationDelay: "0.34s" }}
-          >
-            <QuestionPathPreview />
-          </div>
-        </section>
-
-        {/* The refusal ----------------------------------------------------- */}
-        <section className="sheet border-t border-line py-16 sm:py-24">
-          <Reveal className="gloss">
-            <Gloss n="01" label="The difference" />
+      <section className="mx-auto max-w-7xl px-5 pb-20 pt-12 sm:px-8 sm:pt-20 lg:px-10 lg:pb-28">
+        <div className="hero-grid items-center gap-12 lg:gap-10">
+          <Reveal className="max-w-2xl">
+            <div className="landing-kicker"><span className="landing-kicker-dot" /> AI feedback that leaves the writing to you</div>
+            <h1 className="mt-7 max-w-xl font-display text-[3.15rem] font-medium leading-[0.97] tracking-[-0.06em] text-ink sm:text-7xl lg:text-[5.4rem]">Better essays start with <span className="text-accent">better questions.</span></h1>
+            <p className="mt-7 max-w-lg text-lg leading-8 text-muted sm:text-xl">Essence finds the places where your draft says something important but has not shown it yet — then helps you uncover the real story behind it.</p>
+            <div className="mt-9 flex flex-wrap items-center gap-4"><Link href={appHref} className="inline-flex items-center gap-2 rounded-full bg-accent px-6 py-3.5 text-sm font-semibold text-white shadow-[0_14px_30px_-15px_rgba(91,92,226,0.7)] transition hover:-translate-y-0.5 hover:bg-[#4849c8]">{signedIn ? "Continue writing" : "Try Essence free"}<Arrow /></Link><a href="#method" className="inline-flex items-center gap-2 rounded-full border border-line px-5 py-3.5 text-sm font-medium text-ink transition hover:border-ink/30 hover:bg-white">See how it works</a></div>
+            <p className="mt-4 text-xs text-muted">No credit card. No generated sentences. Ever.</p>
           </Reveal>
-
-          <Reveal delay={0.06}>
-            <h2 className="display text-4xl text-ink sm:text-5xl">
-              Ask it to write for you.
-              <br />
-              It says no.
-            </h2>
-            <p className="mt-6 font-serif text-lg leading-relaxed text-muted">
-              A polished sentence can sound convincing and still erase the
-              reason the essay mattered. Your application is not a place to
-              borrow somebody else&apos;s voice.
-            </p>
-            <p className="mt-4 font-serif text-lg leading-relaxed text-muted">
-              Essence refuses — plainly, every time — and gives you back the
-              thing you actually needed: the question you couldn&apos;t ask
-              yourself.
-            </p>
-          </Reveal>
-
-          <Reveal delay={0.12} className="note">
-            <div className="space-y-3">
-              <div className="ml-auto max-w-[92%] rounded-2xl rounded-br-md bg-ink px-4 py-3 text-sm text-paper">
-                can you just rewrite that paragraph so it sounds better
-              </div>
-
-              <div className="rounded-2xl rounded-bl-md border border-line bg-white px-4 py-4">
-                <div className="flex items-center gap-2">
-                  <LogoMark className="h-3.5 w-3.5" />
-                  <span className="font-mono text-[0.58rem] uppercase tracking-[0.16em] text-muted">
-                    Essence
-                  </span>
-                </div>
-                <p className="mt-2.5 font-serif leading-relaxed text-ink">
-                  I won&apos;t write it for you — but let&apos;s get the real
-                  material first, and you&apos;ll have something better than
-                  anything I&apos;d put there.
-                </p>
-                <p className="mt-2.5 font-serif leading-relaxed text-ink">
-                  What was the next thing you nearly quit, and didn&apos;t?
-                </p>
-              </div>
-            </div>
-          </Reveal>
-        </section>
-
-        {/* How a session goes ---------------------------------------------- */}
-        <section
-          id="how"
-          className="sheet scroll-mt-24 border-t border-line py-16 sm:py-24"
-        >
-          <Reveal className="gloss">
-            <Gloss n="02" label="The loop" />
-          </Reveal>
-
-          <Reveal delay={0.06}>
-            <h2 className="display text-4xl text-ink sm:text-5xl">
-              One read, then one question at a time.
-            </h2>
-
-            <ol className="mt-10 space-y-7">
-              {STEPS.map(([title, body], i) => (
-                <li
-                  key={title}
-                  className="flex gap-5 border-t border-line pt-5"
-                >
-                  <span className="display text-2xl leading-none text-accent">
-                    {i + 1}
-                  </span>
-                  <div>
-                    <h3 className="font-medium text-ink">{title}</h3>
-                    <p className="mt-1.5 font-serif leading-relaxed text-muted">
-                      {body}
-                    </p>
-                  </div>
-                </li>
-              ))}
-            </ol>
-          </Reveal>
-        </section>
-
-        {/* The page marks up its own copy ----------------------------------- */}
-        <section className="sheet border-t border-line py-16 sm:py-24">
-          <Reveal className="gloss">
-            <Gloss n="03" label="Proof" />
-          </Reveal>
-
-          <Reveal delay={0.06}>
-            <h2 className="display text-4xl text-ink sm:text-5xl">
-              We ran this page through it.
-            </h2>
-            <p className="mt-6 font-serif text-lg leading-relaxed text-muted">
-              It flagged our own closing line. Here is the finding, unedited:
-            </p>
-
-            <blockquote className="draft-shared-metrics mt-7 rounded-2xl border border-line bg-white text-ink">
-              <span className="marked">
-                Your essay is already in there. Go find it.
-              </span>
-            </blockquote>
-
-            <p className="mt-7 font-serif text-lg leading-relaxed text-muted">
-              It is right. That sentence could close almost any essay, about
-              almost anyone — which is exactly the pattern it names. We kept it,
-              because a landing page is allowed a flourish that an application
-              essay is not. But you can see how the call gets made, and it is
-              the same call it will make on your draft.
-            </p>
-          </Reveal>
-
-          <Reveal delay={0.12} className="note">
-            <div className="rounded-2xl border border-line bg-paper p-5 shadow-[0_10px_30px_-16px_rgba(28,26,23,0.3)]">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="rounded-full bg-accent-soft px-2.5 py-1 text-xs font-medium text-accent">
-                  Generic closing claim
-                </span>
-                <span className="font-mono text-[0.6rem] uppercase tracking-[0.14em] text-muted">
-                  high
-                </span>
-              </div>
-              <dl className="mt-4 space-y-3 text-sm">
-                <div>
-                  <dt className="font-medium text-ink">What is clear</dt>
-                  <dd className="mt-0.5 font-serif leading-relaxed text-muted">
-                    The writer believes the material is already there.
-                  </dd>
-                </div>
-                <div>
-                  <dt className="font-medium text-ink">Still unexplored</dt>
-                  <dd className="mt-0.5 font-serif leading-relaxed text-muted">
-                    Nothing specific enough to belong to this page rather than
-                    any other.
-                  </dd>
-                </div>
-                <div>
-                  <dt className="font-medium text-ink">Impact</dt>
-                  <dd className="mt-0.5 font-serif leading-relaxed text-muted">
-                    Polish. Worth knowing, not worth losing the line over.
-                  </dd>
-                </div>
-              </dl>
-            </div>
-          </Reveal>
-        </section>
-
-        {/* Where the essay goes -------------------------------------------- */}
-        <section className="sheet border-t border-line py-16 sm:py-24">
-          <Reveal className="gloss">
-            <Gloss n="04" label="Your words" />
-          </Reveal>
-
-          <Reveal delay={0.06}>
-            <h2 className="display text-4xl text-ink sm:text-5xl">
-              You should know where it goes.
-            </h2>
-            <p className="mt-6 font-serif text-lg leading-relaxed text-muted">
-              An application essay is the most personal thing most people write
-              before they turn eighteen. It gets read by a language model, and
-              which company that is decides what may be done with your words
-              afterwards — those terms are not the same everywhere, and on some
-              free tiers they permit a human to read what you submitted.
-            </p>
-            <p className="mt-4 font-serif text-lg leading-relaxed text-muted">
-              So Essence names the provider in use and states plainly what its
-              terms allow, in the app and on the privacy page. If the current
-              one may train on what you paste, that warning sits in the
-              workspace where you are pasting — not buried in a policy.
-            </p>
-            <Link
-              href="/settings"
-              className="mt-6 inline-flex items-center gap-2 text-ink underline decoration-line underline-offset-4 transition-colors hover:decoration-ink"
-            >
-              Read what we store
-              <span aria-hidden="true">&rarr;</span>
-            </Link>
-          </Reveal>
-        </section>
-
-        {/* FAQ -------------------------------------------------------------- */}
-        <section
-          id="faq"
-          className="sheet scroll-mt-24 border-t border-line py-16 sm:py-24"
-        >
-          <Reveal className="gloss">
-            <Gloss n="05" label="Questions" />
-          </Reveal>
-
-          <Reveal delay={0.06}>
-            <div className="border-t border-line">
-              {FAQ.map(([question, answer]) => (
-                <details
-                  key={question}
-                  className="faq group border-b border-line"
-                >
-                  <summary className="flex items-start justify-between gap-6 py-5 text-left">
-                    <span className="display text-xl text-ink transition-colors group-hover:text-accent">
-                      {question}
-                    </span>
-                    <span
-                      className="faq-sign mt-2 shrink-0 text-muted"
-                      aria-hidden="true"
-                    >
-                      <svg
-                        width="14"
-                        height="14"
-                        viewBox="0 0 14 14"
-                        fill="none"
-                      >
-                        <path
-                          d="M7 1v12M1 7h12"
-                          stroke="currentColor"
-                          strokeWidth="1.4"
-                          strokeLinecap="round"
-                        />
-                      </svg>
-                    </span>
-                  </summary>
-                  <p className="pb-6 font-serif text-lg leading-relaxed text-muted">
-                    {answer}
-                  </p>
-                </details>
-              ))}
-            </div>
-          </Reveal>
-        </section>
-
-        {/* Close ------------------------------------------------------------ */}
-        <section className="border-t border-line py-20 text-center sm:py-28">
-          <Reveal>
-            <LogoMark className="mx-auto h-10 w-10" />
-            <h2 className="mx-auto mt-8 max-w-3xl display text-[2.5rem] text-ink sm:text-6xl">
-              Your essay is already in there.
-              <br />
-              <em className="italic">Go find it.</em>
-            </h2>
-            <div className="mt-10">
-              <Link
-                href={primaryHref}
-                className="inline-block rounded-full bg-accent px-8 py-4 text-paper transition hover:opacity-88 hover:shadow-[0_10px_30px_-10px_rgba(122,92,62,0.65)]"
-              >
-                {primaryLabel}
-              </Link>
-            </div>
-            <p className="mt-5 text-sm text-muted">
-              Free. No card. Every word stays yours.
-            </p>
-          </Reveal>
-        </section>
-      </main>
-
-      <footer className="border-t border-line">
-        <div className="mx-auto flex max-w-[78rem] flex-wrap items-center justify-between gap-4 px-6 py-9 text-sm text-muted">
-          <span className="flex items-center gap-2.5">
-            <LogoMark className="h-5 w-5" />
-            Your words, sharper questions.
-          </span>
-          <div className="flex flex-wrap items-center gap-6">
-            <Link href="#how" className="transition-colors hover:text-ink">
-              How it works
-            </Link>
-            <Link href="#faq" className="transition-colors hover:text-ink">
-              FAQ
-            </Link>
-            <Link href="/settings" className="transition-colors hover:text-ink">
-              What we store
-            </Link>
-          </div>
+          <Reveal delay={100} className="hero-preview-wrap"><QuestionPathPreview /></Reveal>
         </div>
-      </footer>
-    </div>
+      </section>
+
+      <section className="border-y border-line bg-white/70"><div className="mx-auto grid max-w-7xl divide-y divide-line px-5 sm:grid-cols-3 sm:divide-x sm:divide-y-0 sm:px-8 lg:px-10">{[["Not a ghostwriter", "No rewrites, autocomplete, or AI voice."], ["Made for applicants", "Personal statements and supplements in one place."], ["Built for revision", "Keep the history behind your stronger draft."]].map(([title, copy]) => <div key={title} className="py-7 sm:px-7 sm:first:pl-0 sm:last:pr-0"><p className="font-medium text-ink">{title}</p><p className="mt-1.5 text-sm leading-6 text-muted">{copy}</p></div>)}</div></section>
+
+      <section id="method" className="mx-auto max-w-7xl px-5 py-24 sm:px-8 lg:px-10 lg:py-32">
+        <Reveal><p className="section-eyebrow">The Essence method</p><div className="mt-5 flex flex-col justify-between gap-6 md:flex-row md:items-end"><h2 className="max-w-2xl font-display text-4xl font-medium leading-[1.02] tracking-[-0.05em] text-ink sm:text-6xl">Less generic advice. More of what only you can say.</h2><p className="max-w-xs leading-7 text-muted">A clear workflow for turning a vague claim into a detail that gives it weight.</p></div></Reveal>
+        <div className="mt-14 grid gap-4 lg:grid-cols-3">{FEATURES.map((feature, index) => <Reveal key={feature.title} delay={index * 75}><article className={`feature-card ${feature.tone}`}><p className="font-mono text-[0.66rem] uppercase tracking-[0.15em] opacity-65">{feature.eyebrow}</p><h3 className="mt-10 max-w-[15rem] font-display text-3xl font-medium leading-[1.05] tracking-[-0.04em]">{feature.title}</h3><p className="mt-5 max-w-sm text-sm leading-6 opacity-75">{feature.copy}</p><span className="mt-10 inline-flex h-9 w-9 items-center justify-center rounded-full border border-current/20"><Arrow /></span></article></Reveal>)}</div>
+      </section>
+
+      <section className="mx-auto max-w-7xl px-5 pb-24 sm:px-8 lg:px-10 lg:pb-32"><Reveal><div className="process-panel overflow-hidden rounded-[2rem] p-7 sm:p-10 lg:p-14"><div className="grid gap-12 lg:grid-cols-[0.8fr_1.2fr]"><div><p className="section-eyebrow text-white/50">A real revision session</p><h2 className="mt-5 max-w-md font-display text-4xl font-medium leading-[1.02] tracking-[-0.05em] text-white sm:text-5xl">From “I changed” to the moment we can feel.</h2><p className="mt-6 max-w-sm leading-7 text-white/60">Essence does not score your identity or hand you a polished ending. It stays with one moment until it becomes usable material.</p></div><div className="grid gap-3 sm:grid-cols-3">{[["01", "Draft", "You make a claim."], ["02", "Question", "Essence asks for the missing moment."], ["03", "Material", "You decide what belongs in the draft."]].map(([number, label, text]) => <div key={number} className="process-step rounded-2xl p-5"><span className="font-mono text-xs tracking-[0.16em] text-mark">{number}</span><p className="mt-12 text-sm font-medium text-white">{label}</p><p className="mt-2 text-sm leading-6 text-white/55">{text}</p></div>)}</div></div></div></Reveal></section>
+
+      <section className="mx-auto max-w-7xl px-5 pb-24 sm:px-8 lg:px-10 lg:pb-32"><Reveal><div className="privacy-band rounded-2xl border border-line px-6 py-8 sm:flex sm:items-center sm:justify-between sm:gap-10 sm:px-9"><div className="flex gap-4"><div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent-soft text-accent"><LogoMark className="h-6 w-6" /></div><div><p className="font-medium text-ink">Your story is not training data for a public essay generator.</p><p className="mt-1 max-w-2xl text-sm leading-6 text-muted">Drafts and conversation history stay scoped to your account. You choose when feedback is requested.</p></div></div><Link href="/privacy" className="mt-5 inline-flex shrink-0 items-center gap-2 text-sm font-medium text-accent sm:mt-0">Privacy, explained <Arrow /></Link></div></Reveal></section>
+
+      <section id="faq" className="mx-auto max-w-3xl px-5 pb-24 sm:px-8 lg:pb-32"><Reveal><p className="section-eyebrow text-center">Questions, answered</p><h2 className="mt-5 text-center font-display text-4xl font-medium tracking-[-0.05em] text-ink sm:text-5xl">A tool with boundaries on purpose.</h2></Reveal><div className="modern-faq mt-12 border-t border-line">{FAQ.map(([question, answer]) => <details key={question} className="group border-b border-line py-1"><summary className="flex cursor-pointer items-center justify-between gap-5 py-5 font-medium text-ink"><span>{question}</span><span className="text-2xl font-light text-accent transition group-open:rotate-45">+</span></summary><p className="max-w-2xl pb-5 pr-10 text-sm leading-7 text-muted">{answer}</p></details>)}</div></section>
+
+      <section className="mx-auto max-w-7xl px-5 pb-16 sm:px-8 lg:px-10"><Reveal><div className="final-cta rounded-[2rem] px-7 py-12 text-center sm:px-12 sm:py-16"><p className="section-eyebrow text-accent">Start with the story you already have</p><h2 className="mx-auto mt-5 max-w-2xl font-display text-4xl font-medium leading-[1.02] tracking-[-0.05em] text-ink sm:text-6xl">Your essay does not need another author.</h2><p className="mx-auto mt-5 max-w-lg leading-7 text-muted">It needs the right question, asked at the right line.</p><Link href={appHref} className="mt-8 inline-flex items-center gap-2 rounded-full bg-ink px-6 py-3.5 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-accent">{signedIn ? "Open my workspace" : "Start free"}<Arrow /></Link></div></Reveal></section>
+
+      <footer className="mx-auto flex max-w-7xl flex-col gap-5 px-5 py-8 text-sm text-muted sm:flex-row sm:items-center sm:justify-between sm:px-8 lg:px-10"><Logo /><p>Better questions. Still your voice.</p><div className="flex gap-5"><Link href="/privacy" className="hover:text-ink">Privacy</Link><Link href="/login" className="hover:text-ink">Log in</Link></div></footer>
+    </main>
   );
 }

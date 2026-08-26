@@ -10,7 +10,7 @@ function SubmitButton() {
     <button
       type="submit"
       disabled={pending}
-      className="w-full rounded-lg bg-ink px-4 py-2.5 text-sm font-medium text-paper transition hover:opacity-90 disabled:opacity-50"
+      className="w-full rounded-xl bg-accent px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#4849c8] disabled:opacity-50"
     >
       {pending ? "Creating…" : "Create essay"}
     </button>
@@ -31,7 +31,7 @@ export default function NewEssayForm() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="w-full rounded-lg border border-dashed border-line bg-white px-5 py-3 text-sm text-muted transition hover:border-accent hover:text-ink"
+        className="w-full rounded-2xl border border-dashed border-line bg-white px-5 py-4 text-sm text-muted transition hover:border-accent hover:bg-accent-soft/30 hover:text-ink"
       >
         + New essay
       </button>
@@ -39,10 +39,10 @@ export default function NewEssayForm() {
   }
 
   return (
-    <section className="rounded-lg border border-line bg-white p-5">
+    <section className="rounded-2xl border border-line bg-white p-5 shadow-[0_16px_30px_-30px_rgba(23,32,51,0.55)]">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h2 className="font-serif text-lg">New essay</h2>
+          <h2 className="font-display text-xl font-medium tracking-[-0.03em]">New essay</h2>
           <p className="mt-1 text-sm text-muted">
             You can leave everything but the title blank and fill it in later.
           </p>

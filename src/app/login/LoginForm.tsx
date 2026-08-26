@@ -75,7 +75,7 @@ export default function LoginForm() {
         type="button"
         onClick={handleGoogle}
         disabled={busy}
-        className="flex w-full items-center justify-center gap-2 rounded-lg border border-line bg-white px-4 py-3 text-sm font-medium transition hover:bg-accent-soft/40 disabled:opacity-50"
+        className="flex w-full items-center justify-center gap-2 rounded-xl border border-line bg-white px-4 py-3 text-sm font-medium transition hover:border-accent/40 hover:bg-accent-soft/40 disabled:opacity-50"
       >
         <svg className="h-4 w-4" viewBox="0 0 24 24" aria-hidden="true">
           <path
@@ -113,7 +113,7 @@ export default function LoginForm() {
             autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="mt-1 w-full rounded-lg border border-line bg-white px-3 py-2.5 text-sm outline-none focus:border-accent"
+            className="mt-1.5 w-full rounded-xl border border-line bg-white px-3 py-2.5 text-sm outline-none transition focus:border-accent focus:ring-4 focus:ring-accent-soft/70"
           />
         </label>
 
@@ -126,7 +126,7 @@ export default function LoginForm() {
             autoComplete={mode === "signup" ? "new-password" : "current-password"}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="mt-1 w-full rounded-lg border border-line bg-white px-3 py-2.5 text-sm outline-none focus:border-accent"
+            className="mt-1.5 w-full rounded-xl border border-line bg-white px-3 py-2.5 text-sm outline-none transition focus:border-accent focus:ring-4 focus:ring-accent-soft/70"
           />
         </label>
 
@@ -144,7 +144,7 @@ export default function LoginForm() {
         <button
           type="submit"
           disabled={busy}
-          className="w-full rounded-lg bg-ink px-4 py-3 text-sm font-medium text-paper transition hover:opacity-90 disabled:opacity-50"
+          className="w-full rounded-xl bg-accent px-4 py-3 text-sm font-semibold text-white shadow-[0_12px_24px_-16px_rgba(91,92,226,0.8)] transition hover:bg-[#4849c8] disabled:opacity-50"
         >
           {busy
             ? "Working…"

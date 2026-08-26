@@ -83,10 +83,10 @@ export function LogoMark({ className = "h-8 w-8" }: { className?: string }) {
       aria-label="Essence"
       className={`shrink-0 ${className}`}
     >
-      <rect width="64" height="64" rx="14" fill="var(--color-ink, #1c1a17)" />
-      <rect x="15" y="21" width="34" height="5" rx="2.5" fill="var(--color-paper, #fbfaf7)" />
+      <rect width="64" height="64" rx="14" fill="var(--color-ink, #172033)" />
+      <rect x="15" y="21" width="34" height="5" rx="2.5" fill="var(--color-paper, #f8fafc)" />
       <rect x="15" y="30" width="24" height="5" rx="2.5" fill="var(--color-mark, #c8e45c)" />
-      <rect x="15" y="39" width="34" height="5" rx="2.5" fill="var(--color-paper, #fbfaf7)" />
+      <rect x="15" y="39" width="34" height="5" rx="2.5" fill="var(--color-paper, #f8fafc)" />
     </svg>
   );
 }

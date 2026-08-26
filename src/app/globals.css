@@ -1,20 +1,23 @@
 @import "tailwindcss";
 
 @theme {
-  --color-paper: #fbfaf7;
-  --color-ink: #1c1a17;
-  --color-muted: #6f6a61;
-  --color-line: #e5e1d8;
-  --color-accent: #7a5c3e;
-  --color-accent-soft: #f0e9df;
+  /* Product UI, not a paper manuscript: cool whites, deep slate, one indigo
+     action colour and one mint mark. The editor can still use a reading face;
+     the surrounding product should feel current, calm, and light. */
+  --color-paper: #ffffff;
+  --color-ink: #172033;
+  --color-muted: #667085;
+  --color-line: #e5eaf2;
+  --color-accent: #5b5ce2;
+  --color-accent-soft: #eef0ff;
 
-  /* Brand highlighter. The only saturated colour in the palette, reserved for
-     the mark — it reads as a pen stroke, which is what the product does. */
-  --color-mark: #c8e45c;
+  /* Reserved for the writer's own words: it is a discovery mark, never an
+     alarm colour or a generic AI gradient. */
+  --color-mark: #9fe6c1;
 
-  --color-flag-high: #b4552f;
-  --color-flag-medium: #9a7b3a;
-  --color-flag-low: #6a7a5c;
+  --color-flag-high: #dd5b3f;
+  --color-flag-medium: #b7791f;
+  --color-flag-low: #4d8b68;
 
   /* Both loaded by next/font in the root layout. `serif` is the reading face —
      it sets this page's prose and every student draft the app renders, so the
@@ -228,7 +231,7 @@ body {
   isolation: isolate;
   background:
     radial-gradient(circle at 52% 45%, rgba(200, 228, 92, 0.12), transparent 28rem),
-    radial-gradient(circle at 95% 8%, rgba(126, 128, 248, 0.18), transparent 20rem),
+    radial-gradient(circle at 95% 8%, rgba(91, 92, 226, 0.24), transparent 20rem),
     var(--color-ink);
 }
 
@@ -265,7 +268,7 @@ body {
 }
 
 .question-node-material {
-  background: rgba(126, 128, 248, 0.12);
+  background: rgba(91, 92, 226, 0.16);
 }
 
 @media (min-width: 1024px) {
@@ -381,4 +384,51 @@ body {
 
 .typing-dot {
   animation: pulse-dot 1.4s infinite ease-in-out both;
+}
+
+/* Landing: this is a product interface, not a marked manuscript. The visual
+   idea is a calm path from claim to question to memory. */
+.landing-shell {
+  background: #ffffff;
+}
+
+.landing-nav {
+  position: relative;
+  z-index: 1;
+}
+
+.landing-nav-cta { box-shadow: 0 8px 18px -12px rgba(23, 32, 51, 0.72); }
+.hero-grid { display: grid; grid-template-columns: minmax(0, 1fr); }
+.hero-preview-wrap { min-width: 0; }
+
+.landing-kicker,
+.section-eyebrow {
+  font-family: var(--font-sans);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.landing-kicker { display: inline-flex; align-items: center; gap: 0.55rem; color: var(--color-muted); }
+.landing-kicker-dot { width: 0.5rem; height: 0.5rem; border-radius: 999px; background: var(--color-mark); box-shadow: 0 0 0 5px color-mix(in srgb, var(--color-mark) 21%, transparent); }
+.section-eyebrow { color: var(--color-accent); }
+
+.feature-card { min-height: 23rem; border-radius: 1.5rem; padding: 1.65rem; transition: transform 180ms ease, box-shadow 180ms ease; }
+.feature-card:hover { transform: translateY(-4px); box-shadow: 0 20px 32px -28px rgba(23, 32, 51, 0.72); }
+.feature-indigo { background: var(--color-accent); color: white; }
+.feature-mint { background: var(--color-mark); color: var(--color-ink); }
+.feature-slate { background: #e8edf4; color: var(--color-ink); }
+
+.process-panel { background: linear-gradient(135deg, #172033 0%, #222c47 100%); box-shadow: 0 30px 60px -45px rgba(23, 32, 51, 0.9); }
+.process-step { border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.055); }
+.privacy-band { background: rgba(255, 255, 255, 0.7); }
+.final-cta { background: linear-gradient(135deg, #eef0ff 0%, #f5fbf8 100%); }
+
+.modern-faq summary::-webkit-details-marker { display: none; }
+.modern-faq summary { list-style: none; }
+
+@media (min-width: 1024px) {
+  .hero-grid { grid-template-columns: minmax(0, 0.87fr) minmax(0, 1.13fr); }
+  .feature-card { padding: 2rem; }
 }
