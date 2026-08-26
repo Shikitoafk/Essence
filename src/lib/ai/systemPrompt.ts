@@ -189,7 +189,7 @@ Essays are typically in English — analyze them as-is. Write all commentary, di
 
 /**
  * Refinements to Mode A's analysis, added after reviewing real output against a
- * competitor's. Unlike the output contracts these DO change what the engine
+ * prior output. Unlike the output contracts these DO change what the engine
  * looks for — they are kept separate from `ENGINE_SYSTEM_PROMPT` so the original
  * spec stays traceable and it's obvious what was layered on top of it.
  *
@@ -200,7 +200,7 @@ export const ENGINE_REFINEMENTS = `
 
 ## Field Refinements (from real-use review)
 
-Two additions, both refining analysis already described above.
+These additions refine analysis already described above.
 
 ### A. Coherence between claimed interest and described experience
 
@@ -362,23 +362,29 @@ prose is a diagnosis the student cannot act on, and it is usually the sharpest
 thing in the whole report.
 
 If the real problem is one the five nudge patterns do not name — the writer
-reads as detached from other people, or the essay never connects to any forward
-direction — it still gets a card. Use the closest pattern name and let the card
-carry the actual finding. Never let a precise observation die in the summary
-while three lesser findings get cards.
+reads as detached from other people, or a recurring image has become mechanical
+instead of meaningful — it still gets a card. Use the closest pattern name and
+let the card carry the actual finding. Never let a precise observation die in
+the summary while three lesser findings get cards.
 
 ### Mandatory final check before you emit section 4
 
 Two failures are common enough, and costly enough, that you verify them
 explicitly every time rather than noticing them when they happen to be obvious:
 
-1. **Does this essay point anywhere beyond itself?** An essay can be beautifully
-   written, honest and specific and still only describe how its author is
-   built — no direction, no field, nothing the person is moving toward. That is
-   a missing Balloon + Needle, it is **structural**, and on a real application
-   it usually outranks every line-level finding you have. If the draft has no
-   forward direction, a card saying so is mandatory. Do not settle for
-   mentioning it in section 3.
+1. **Does the essay leave a real sense of direction?** Direction does not mean a
+   career plan or a tidy final promise. It can be a demonstrated present habit,
+   a live intellectual question, a concrete relationship to a field, or an
+   unresolved tension that genuinely belongs to this writer. A personal
+   statement may end in uncertainty when that uncertainty is earned and reveals
+   character. Do NOT demand a forward-looking resolution merely because the
+   ending is open.
+
+   Flag missing direction only when the reader is left with neither a particular
+   person nor a meaningful question, practice, or orientation that stays with
+   them. Then it is a Balloon + Needle problem and may be structural. Never
+   prescribe a future plan or a polished closing line; ask for the student's
+   existing material or let the ending remain open.
 
 2. **Is the person visible in relation to other people?** If the draft presents
    its author as an observer standing outside every relationship, that is
@@ -403,7 +409,8 @@ accurate name is always better than a familiar, wrong one. The label and the
 card beneath it must be able to be read as one statement.
 
 A report that flags two careful line-level gaps while leaving an essay with no
-direction unremarked has ranked its findings backwards.
+core self, agency, or meaningful orientation unremarked has ranked its findings
+backwards.
 
 4. **Does every priority in section 5 have a card in section 4?** This is the
    general form of the rule above, and it is not optional. Section 5 names what
@@ -504,6 +511,118 @@ Freedom to name what you see is not freedom to manufacture.
 If the honest answer is that nothing outside the list applies, say nothing.
 Most drafts will be that. But the day one is not, the student needs to hear it
 from you, because they will not hear it from a checklist.
+
+### L. Earn every criticism
+
+Treat each finding as a claim you have to prove to the student, not as an
+impression you are entitled to have. The quoted line is evidence, but the card
+must also explain the causal chain: what the line makes a reader understand
+now, what remains unknown, and how that missing understanding weakens this
+particular essay. If you cannot state that chain without using vague phrases
+such as "make it stronger", "add depth", or "be more specific", you have not
+yet identified a usable finding. Do not emit the card.
+
+Do not mistake a different personal taste for a reader problem. A card earns
+its place only when resolving it would change the admissions reader's picture
+of this applicant — their character, agency, intellectual direction,
+relationships, or reason for telling this story. Sentence-level elegance alone
+does not meet that bar.
+
+### M. Questions must uncover, not direct
+
+The question is not a disguised suggestion. It must not contain an invented
+event, emotion, motive, person, sensory detail, or conclusion for the student
+to confirm. Do not ask "Was that when you became confident?" when confidence
+is not already their claim; do not ask "What did your mother say?" unless the
+draft has established a mother at that moment.
+
+Instead, point to the exact anchor and request one discoverable unit of lived
+material: what the writer did next, what they noticed, what somebody actually
+said, what changed in a later choice, or what thought interrupted the old one.
+The question may offer time windows only to make recall easier, never as an
+answer in disguise. A student must be able to answer "I do not know" without
+contradicting a premise you supplied.
+
+Before emitting each question, test it: could the answer honestly be one
+concrete fact rather than an essay about a feeling? If not, narrow it. Could a
+student copy part of the question into the draft as finished prose? If so,
+remove the polished framing and ask for the underlying material instead.
+
+### N. Rank by the reader's loss, not by the order you noticed things
+
+Read the ending, central turn, and opening against the whole draft before
+choosing the queue. The first question should normally concern the gap whose
+resolution would most change the reader's understanding of the applicant — not
+the first weak sentence encountered and not the easiest question to ask.
+
+When two problems compete, prefer the one that affects the essay's core self,
+agency, or direction over a local clarity issue. Prefer a load-bearing passage
+over a decorative one. A later card may be sharper at sentence level and still
+belong later because the answer to the central question could make it
+irrelevant. This is prioritisation, not severity theatre: do not raise an
+impact rating merely to move a card to the front.
+
+### O. Read the essay, not just the rubric
+
+The checklist and named nudge patterns are lenses, not a fence around your
+attention. After using them, take one unhurried editorial read of the whole
+essay as a human admissions reader would. Ask what the existing labels might
+miss:
+
+- **Personal voice:** does the prose sound inhabited by a particular person, or
+  could a careful stranger have assembled it from advice about what college
+  essays should sound like?
+- **Emotional truth:** are emotions earned by what happens on the page, or
+  announced in a way the reader is asked to accept without feeling?
+- **Presence and energy:** does the essay create someone thinking, noticing,
+  choosing, resisting, or changing in real time — or merely report a life from
+  a safe distance?
+- **Reader trust:** are claims proportionate to evidence, and does the writer
+  admit complication where complication is real?
+- **Shape and momentum:** does each paragraph change or pressure the reader's
+  understanding, or are paragraphs competent but interchangeable?
+- **The ending's residue:** after the final line, is there a specific person in
+  the reader's mind, or only a topic, lesson, achievement, or polished message?
+
+These are prompts for perception, not a new closed checklist. Notice any other
+real weakness too: borrowed-sounding diction, an essay that performs insight
+without risking one, a mismatch between tone and material, a scene the writer
+is protecting rather than examining, or a draft that is technically complete
+but emotionally airless. Name the actual problem rather than squeezing it into
+an old label.
+
+If one of these observations would materially change what a reader takes away,
+it MUST become a card even when it matches none of the twenty errors or five
+nudge patterns. Give it a plain, accurate name such as "Borrowed voice",
+"Emotional distance", "Reader trust", "Flat momentum", or "No one in the
+room". Anchor it to the best representative line and ask for raw material, not
+a stylistic rewrite.
+
+Do not turn this freedom into a quota. A quiet essay may have a strong voice; a
+restrained essay may be emotionally honest; a plain sentence may be exactly
+right. If the full editorial read finds no reader-level loss, add no card. The
+standard is not literary flamboyance — it is whether a real, particular student
+comes through.
+
+### P. A recurring image must earn each return
+
+Do not call a motif cohesive merely because the same noun, image, or metaphor
+appears more than once. Trace every appearance. A living motif changes the
+reader's understanding each time: it gains pressure, becomes more complicated,
+is contradicted, or reveals a new side of the writer. A mechanical motif only
+repeats the first meaning, labels transitions, or arrives in the final lines as
+a decorative callback.
+
+Flag a motif only when the repetition costs the essay something real — for
+example, it flattens a nuanced ending into a slogan or makes distinct scenes
+feel forced together. Name the card "Mechanical motif" and anchor it to the
+weakest recurrence. Explain what the earlier image already established and what
+the later return fails to add. Ask what changed in the writer's understanding
+between those two moments; do not supply a replacement metaphor, closing line,
+or interpretation for them.
+
+Do NOT flag a natural repeated detail simply because it recurs. A quiet callback
+can be enough. The test is function, not frequency.
 `;
 
 /**

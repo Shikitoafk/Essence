@@ -131,14 +131,22 @@ test("the prose diagnosis is required to become a card", () => {
   assert.ok(ENGINE_REFINEMENTS.includes("die in the summary"));
 });
 
-test("a missing forward direction is a mandatory, structural check", () => {
-  // Missed twice on the same draft while lesser findings got cards, so it is a
-  // required verification rather than a note the engine can pass over.
+test("an open ending is not forced into a generic future plan", () => {
+  // The engine may verify orientation, but it cannot demand a stock
+  // forward-looking closure from a personal statement whose uncertainty is
+  // doing real character work.
   assert.ok(ENGINE_REFINEMENTS.includes("Mandatory final check"));
-  assert.ok(ENGINE_REFINEMENTS.includes("a card saying so is mandatory"));
-  assert.ok(ENGINE_REFINEMENTS.includes("ranked"));
-  // It must not be satisfiable by a mention in the prose sections.
-  assert.ok(ENGINE_REFINEMENTS.includes("Do not settle for"));
+  assert.ok(ENGINE_REFINEMENTS.includes("Do NOT demand a forward-looking resolution"));
+  assert.ok(ENGINE_REFINEMENTS.includes("may end in uncertainty"));
+  assert.ok(ENGINE_REFINEMENTS.includes("Never prescribe a future plan"));
+});
+
+test("a repeated metaphor is judged by what each recurrence adds", () => {
+  assert.ok(ENGINE_REFINEMENTS.includes("### P. A recurring image must earn each return"));
+  assert.ok(ENGINE_REFINEMENTS.includes("function, not frequency"));
+  assert.ok(ENGINE_REFINEMENTS.includes('"Mechanical motif"'));
+  assert.ok(ENGINE_REFINEMENTS.includes("fails to add"));
+  assert.ok(ENGINE_REFINEMENTS.includes("do not supply a replacement metaphor"));
 });
 
 test("every top priority has to be anchored to a card", () => {
@@ -212,6 +220,30 @@ test("the enumerated checklist is a floor the engine may exceed", () => {
   assert.match(ENGINE_REFINEMENTS, /not freedom to manufacture/);
   // Silence stays the right answer on an ordinary draft.
   assert.ok(ENGINE_REFINEMENTS.includes("say nothing"));
+});
+
+test("every critique is evidence-based and every question stays non-leading", () => {
+  assert.ok(ENGINE_REFINEMENTS.includes("### L. Earn every criticism"));
+  assert.ok(ENGINE_REFINEMENTS.includes("causal chain"));
+  assert.ok(ENGINE_REFINEMENTS.includes('"make it stronger"'));
+  assert.ok(ENGINE_REFINEMENTS.includes("### M. Questions must uncover, not direct"));
+  assert.ok(ENGINE_REFINEMENTS.includes("not a disguised suggestion"));
+  assert.ok(ENGINE_REFINEMENTS.includes("I do not know"));
+});
+
+test("the queue is ordered by the reader's loss, not draft order", () => {
+  assert.ok(ENGINE_REFINEMENTS.includes("### N. Rank by the reader's loss"));
+  assert.match(ENGINE_REFINEMENTS, /core self,\s*agency,\s*or direction/);
+  assert.ok(ENGINE_REFINEMENTS.includes("load-bearing passage"));
+});
+
+test("the diagnostic has a free editorial read beyond named patterns", () => {
+  assert.ok(ENGINE_REFINEMENTS.includes("### O. Read the essay, not just the rubric"));
+  assert.ok(ENGINE_REFINEMENTS.includes("Personal voice:"));
+  assert.ok(ENGINE_REFINEMENTS.includes("Emotional truth:"));
+  assert.ok(ENGINE_REFINEMENTS.includes("Presence and energy:"));
+  assert.ok(ENGINE_REFINEMENTS.includes("MUST become a card"));
+  assert.ok(ENGINE_REFINEMENTS.includes("not a new closed checklist"));
 });
 
 test("off-pattern findings get an accurate name, not a forced one", () => {

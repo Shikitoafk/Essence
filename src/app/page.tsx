@@ -1,20 +1,14 @@
 import Link from "next/link";
 import Logo, { LogoMark } from "@/components/Logo";
 import Reveal from "@/components/Reveal";
-import HeroAnnotation from "@/components/HeroAnnotation";
+import QuestionPathPreview from "@/components/QuestionPathPreview";
 import { createClient, supabaseConfigured } from "@/lib/supabase/server";
 
 /**
- * The page is laid out as the thing the product does.
- *
- * Essence's whole gesture is a reader working in the margin of someone's page —
- * a line marked, a question written beside it. So this is not a centred column
- * of cards containing a picture of that. It is set on `.sheet`: a left margin
- * for what organises a page without being part of it, a measure for the prose,
- * and a right margin where annotations land beside the line they answer.
- *
- * Prose carries `font-serif` (Newsreader). Sans is left to chrome — buttons,
- * nav, labels — so the reading and the interface never speak in one voice.
+ * The landing page is laid out as the product's method, not as an imitation of
+ * a consultant report. The hero is a question path: a claimed change becomes a
+ * single question, then raw material the writer owns. Prose carries Newsreader;
+ * interface chrome stays in DM Sans.
  */
 
 /**
@@ -179,14 +173,15 @@ export default async function LandingPage() {
             </p>
           </div>
 
-          {/* Third slot, so it starts on the measure's left edge and runs out
-              into the note margin — the demo has to sit on the same line the
-              headline does or the grid is a claim the page doesn't keep. */}
+          {/* The product demo is intentionally a conversation path, not a
+              manuscript with margin notes. The distinction is visual as well
+              as behavioural: Essence helps the writer discover material rather
+              than delivering an admissions-consultant markup. */}
           <div
             className="spread rise mt-14 sm:mt-16"
             style={{ animationDelay: "0.34s" }}
           >
-            <HeroAnnotation />
+            <QuestionPathPreview />
           </div>
         </section>
 
@@ -203,9 +198,9 @@ export default async function LandingPage() {
               It says no.
             </h2>
             <p className="mt-6 font-serif text-lg leading-relaxed text-muted">
-              Every other tool hands you a paragraph and calls it help. The
-              admissions officer has read that paragraph a thousand times, and
-              so has everyone else applying with it.
+              A polished sentence can sound convincing and still erase the
+              reason the essay mattered. Your application is not a place to
+              borrow somebody else&apos;s voice.
             </p>
             <p className="mt-4 font-serif text-lg leading-relaxed text-muted">
               Essence refuses — plainly, every time — and gives you back the

@@ -218,11 +218,65 @@ body {
   transform: none;
 }
 
-/* The hero performs the product: a highlighter finds the sentence doing no
-   work, then a question arrives beside it. Both are keyframe animations on a
-   delay rather than JS-staged state, so the sequence needs no client component
-   and its resting state — struck through, note in place — is what renders when
-   animation is off. Nothing here can strand content out of sight. */
+/* The older manuscript demo is still used by no route, but its mark classes
+   are shared with the real editor. The landing hero itself is now a distinct
+   question path: dark, spatial, and conversational rather than a consultant's
+   page of margin annotations. */
+
+.question-path {
+  position: relative;
+  isolation: isolate;
+  background:
+    radial-gradient(circle at 52% 45%, rgba(200, 228, 92, 0.12), transparent 28rem),
+    radial-gradient(circle at 95% 8%, rgba(126, 128, 248, 0.18), transparent 20rem),
+    var(--color-ink);
+}
+
+.question-path::before {
+  content: "";
+  position: absolute;
+  inset: 5.15rem 12% 4.25rem;
+  z-index: -1;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.15) 1px, transparent 1px);
+  background-size: 20px 20px;
+  mask-image: linear-gradient(to right, transparent, black 18%, black 82%, transparent);
+  opacity: 0.34;
+  pointer-events: none;
+}
+
+.question-node {
+  min-height: 15.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: transform 0.25s ease, border-color 0.25s ease;
+}
+
+.question-node:hover {
+  transform: translateY(-3px);
+  border-color: rgba(255, 255, 255, 0.24);
+}
+
+.question-node-draft {
+  background: rgba(255, 255, 255, 0.055);
+}
+
+.question-node-question {
+  background: linear-gradient(145deg, rgba(200, 228, 92, 0.18), rgba(255, 255, 255, 0.075));
+  box-shadow: 0 18px 38px -28px rgba(200, 228, 92, 0.8);
+}
+
+.question-node-material {
+  background: rgba(126, 128, 248, 0.12);
+}
+
+@media (min-width: 1024px) {
+  .question-node-question {
+    transform: translateY(-0.9rem);
+  }
+
+  .question-node-question:hover {
+    transform: translateY(-1.1rem);
+  }
+}
 
 /* Drawn rather than filled: a background image grown from zero width, so it
    sweeps left-to-right the way a real marker does. `box-decoration-break`
