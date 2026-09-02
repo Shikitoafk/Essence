@@ -18,7 +18,7 @@ import {
   isReadyToSubmit,
   DIMINISHING_RETURNS_ROUND,
   SUPPRESS_POLISH_FROM_ROUND,
-  MIN_DRAFT_WORDS,
+  minimumWordsForEssay,
   type ConversationMessage,
   type Essay,
   type EssayReport,
@@ -66,7 +66,8 @@ export default function Workspace({
   } | null>(null);
 
   const words = countWords(draft);
-  const tooShort = words < MIN_DRAFT_WORDS;
+  const minimumWords = minimumWordsForEssay(essay.essay_kind);
+  const tooShort = words < minimumWords;
   // Recomputed from the live spots rather than read off the stored report, so
   // resolving the last substantive card updates the verdict immediately.
   const readiness = deriveReadiness(spots);
@@ -285,7 +286,7 @@ export default function Workspace({
               disabled={analysing || tooShort}
               title={
                 tooShort
-                  ? `Write at least ${MIN_DRAFT_WORDS} words first.`
+                  ? `Write at least ${minimumWords} words first.`
                   : atRest
                     ? "This draft is already at rest — another read is unlikely to help."
                     : undefined
@@ -324,8 +325,8 @@ export default function Workspace({
         {tooShort && (
           <p className="border-t border-line bg-accent-soft/40 px-6 py-2 text-xs text-accent">
             {words === 0
-              ? `Paste a draft to get started — Essence needs at least ${MIN_DRAFT_WORDS} words.`
-              : `${words} of ${MIN_DRAFT_WORDS} words. A little more and Essence can read it properly.`}
+              ? `Paste a draft to get started — Essence needs at least ${minimumWords} words.`
+              : `${words} of ${minimumWords} words. A little more and Essence can read it properly.`}
           </p>
         )}
 
@@ -356,6 +357,7 @@ export default function Workspace({
               onSelectSpot={setActiveSpotId}
               wordLimit={essay.word_limit}
               saving={saving}
+              minimumWords={minimumWords}
             />
           </div>
           <EssaySettings essay={essay} />

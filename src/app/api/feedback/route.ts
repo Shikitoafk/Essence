@@ -9,7 +9,7 @@ import {
   countWords,
   deriveReadiness,
   spotKey,
-  MIN_DRAFT_WORDS,
+  minimumWordsForEssay,
   SUPPRESS_POLISH_FROM_ROUND,
   type Essay,
   type FlaggedSpot,
@@ -58,10 +58,11 @@ export async function POST(request: Request) {
 
   const draft = (essay.current_draft ?? "").trim();
   const words = countWords(draft);
-  if (words < MIN_DRAFT_WORDS) {
+  const minimumWords = minimumWordsForEssay(essay.essay_kind);
+  if (words < minimumWords) {
     return NextResponse.json(
       {
-        error: `There's not much to read yet — ${words} word${words === 1 ? "" : "s"}. Write at least ${MIN_DRAFT_WORDS} before asking for feedback.`,
+        error: `There's not much to read yet — ${words} word${words === 1 ? "" : "s"}. Write at least ${minimumWords} before asking for feedback.`,
         code: "too_short",
       },
       { status: 400 },
@@ -388,7 +389,7 @@ function buildModeAPrompt(
 
   parts.push(
     essay.essay_kind === "supplemental"
-      ? "This is a SUPPLEMENTAL essay. Apply the Why Us framework and the supplemental-specific checks."
+      ? "This is a SUPPLEMENTAL essay. First infer the exact task from the student's pasted prompt, then apply only the checks that task requires. Do NOT assume it is a Why Us essay."
       : "This is a PERSONAL STATEMENT.",
   );
 

@@ -83,6 +83,12 @@ export type MessageRole = "assistant" | "user";
 
 /** Minimum draft length before we're willing to spend a Gemini call on it. */
 export const MIN_DRAFT_WORDS = 50;
+/** Many real supplemental prompts cap the student at 35–100 words. */
+export const MIN_SUPPLEMENT_WORDS = 8;
+
+export function minimumWordsForEssay(kind: EssayKind): number {
+  return kind === "supplemental" ? MIN_SUPPLEMENT_WORDS : MIN_DRAFT_WORDS;
+}
 
 export interface Essay {
   id: string;

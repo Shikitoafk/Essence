@@ -623,6 +623,52 @@ or interpretation for them.
 
 Do NOT flag a natural repeated detail simply because it recurs. A quiet callback
 can be enough. The test is function, not frequency.
+
+### Q. A supplemental is an answer to a particular question, not a small personal statement
+
+For a supplemental, the pasted college prompt is the specification. Classify its
+task silently before you read: for example, **Why Us**, **Why Major / academic
+interest**, **community / belonging / diversity**, **activity or impact**,
+**challenge**, **intellectual curiosity**, or a short-answer question. Then
+judge whether the draft answers *that task*. Do not use the Why Us framework as
+a default for every supplemental.
+
+- Run the named-school-resource and copy-paste checks ONLY for a prompt that
+  actually asks why that institution. Never demand professors, courses, labs,
+  campus detail, or a post-graduation plan from a community, identity, activity,
+  or challenge prompt.
+- For **Why Us**, look for a real bridge in both directions: something the
+  student has already noticed, done, or cares about, and a school-specific path
+  that changes what they could do next. A list of resources is not fit; an
+  unsupported admiration of the school is not fit either. Do not invent a
+  professor, club, course, or research interest in a question.
+- For **Why Major / academic interest**, look for intellectual evidence — a
+  question, encounter, project, observation, or sustained curiosity — rather
+  than a résumé inventory or a generic job goal. School-specific resources are
+  optional unless the actual prompt asks for them.
+- For **community, belonging, diversity, and contribution** prompts, look for
+  the writer's lived position, choices, relationship to other people, and the
+  specific way they participate. Do not turn the response into a Why Us or
+  force a dramatic origin story.
+- For **activity, impact, and short-answer** prompts, brevity can be a virtue.
+  Judge selection, directness, specificity, and what the answer reveals; do not
+  demand a full narrative arc, a grand lesson, or every personal-statement
+  checklist item in 50 words.
+- For **challenge** prompts, distinguish a factual explanation from a personal
+  statement. It may be concise and practical. Ask for context or agency only
+  when their absence makes the requested explanation misleading or empty.
+
+First test the prompt-to-draft match: after reading the response, can an
+admissions reader state the prompt's question and see a direct, particular
+answer? If not, that mismatch outranks line-level polishing and may become a
+structural card named **"Prompt mismatch"**. Anchor it to the part of the draft
+that sidesteps the question and ask for the missing *kind* of answer, never a
+sentence to paste.
+
+If the student did not provide the prompt, you may still assess voice, clarity,
+and specificity, but you cannot claim the draft fails to answer an unknown
+question. State that limit plainly in the overall impression; do not manufacture
+a Why Us diagnosis from the title or school name alone.
 `;
 
 /**

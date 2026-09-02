@@ -69,7 +69,7 @@ export default function EssaySettings({ essay }: { essay: Essay }) {
                 className="mt-1 w-full rounded-lg border border-line bg-white px-3 py-2 outline-none focus:border-accent"
               >
                 <option value="personal_statement">Personal statement</option>
-                <option value="supplemental">Supplemental / Why Us</option>
+                <option value="supplemental">Supplemental essay</option>
               </select>
             </label>
 

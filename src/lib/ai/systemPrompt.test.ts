@@ -149,6 +149,18 @@ test("a repeated metaphor is judged by what each recurrence adds", () => {
   assert.ok(ENGINE_REFINEMENTS.includes("do not supply a replacement metaphor"));
 });
 
+test("supplementals are judged against their actual prompt, not a default Why Us rubric", () => {
+  assert.ok(
+    ENGINE_REFINEMENTS.includes(
+      "### Q. A supplemental is an answer to a particular question",
+    ),
+  );
+  assert.ok(ENGINE_REFINEMENTS.includes("Do not use the Why Us framework as"));
+  assert.ok(ENGINE_REFINEMENTS.includes("Prompt mismatch"));
+  assert.ok(ENGINE_REFINEMENTS.includes("student did not provide the prompt"));
+  assert.ok(ENGINE_REFINEMENTS.includes("brevity can be a virtue"));
+});
+
 test("every top priority has to be anchored to a card", () => {
   // Observed: three priorities, two cards. The third was advice the student
   // could read but never work on, because only cards become questions.

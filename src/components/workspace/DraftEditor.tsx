@@ -13,6 +13,7 @@ interface Props {
   onSelectSpot: (spotId: string) => void;
   wordLimit: number | null;
   saving: "idle" | "saving" | "saved" | "error";
+  minimumWords: number;
 }
 
 interface Range {
@@ -34,6 +35,7 @@ export default function DraftEditor({
   onSelectSpot,
   wordLimit,
   saving,
+  minimumWords,
 }: Props) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const backdropRef = useRef<HTMLDivElement>(null);
@@ -212,7 +214,7 @@ export default function DraftEditor({
           }}
           spellCheck
           rows={1}
-          placeholder="Paste or write your draft here. Essence needs at least 50 words before it will read it."
+          placeholder={`Paste or write your draft here. Essence needs at least ${minimumWords} words before it will read it.`}
           className="draft-shared-metrics relative block w-full resize-none overflow-hidden !px-0 bg-transparent text-ink caret-accent outline-none"
         />
       </div>

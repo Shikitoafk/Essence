@@ -116,6 +116,9 @@ export async function POST(request: Request) {
     (history ?? []) as Pick<ConversationMessage, "role" | "content">[],
     (facts ?? []).map((f) => f.fact as string),
     essay.word_limit,
+    essay.essay_kind,
+    essay.prompt_text,
+    essay.school,
     intent,
   );
 
@@ -273,6 +276,9 @@ function buildModeBPrompt(
   history: Pick<ConversationMessage, "role" | "content">[],
   facts: string[],
   wordLimit: number | null,
+  essayKind: Essay["essay_kind"],
+  promptText: string | null,
+  school: string | null,
   intent: "answer" | "ask",
 ): string {
   const parts: string[] = [];
@@ -290,6 +296,14 @@ The question you asked about it: ${spot.question}`,
   );
 
   if (wordLimit) parts.push(`The essay's word limit is ${wordLimit}.`);
+
+  if (essayKind === "supplemental") {
+    parts.push(
+      promptText
+        ? `This is a supplemental. Its actual prompt is:\n${promptText}\nStay faithful to that prompt. Do not turn a non-Why-Us response into a Why Us answer or invent school resources.`
+        : `This is a supplemental, but its prompt was not provided. Do not assume it is a Why Us essay or claim it fails an unknown prompt.${school ? ` The target school is ${school}, but that alone does not make school-specific detail required.` : ""}`,
+    );
+  }
 
   if (facts.length > 0) {
     parts.push(
