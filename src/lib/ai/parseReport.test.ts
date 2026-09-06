@@ -8,6 +8,23 @@ By August the drawers were full, and I had stopped counting.
 
 What I learned is that persistence matters more than talent.`;
 
+test("retains more than three independent cards even when the queue omits them", () => {
+  const cards = Array.from({ length: 7 }, (_, index) => `<<<CARD>>>
+pattern: Finding ${index}
+confidence: medium
+impact: substantive
+quote: Passage ${index}
+clear: An action is named.
+unexplored: Its significance is absent.
+matters: The reader cannot understand this choice.
+question: What led to choice ${index}?
+<<<ENDCARD>>>`).join("\n");
+  const report = parseModeAReport(`<<<SECTION:4>>>\n${cards}\n<<<SECTION:5>>>\n1. Start here.\n<<<SECTION:7>>>\n1. [7] What led to choice 6?\n<<<END>>>`);
+  assert.equal(report.spots.length, 7);
+  assert.deepEqual(report.queue, [6, 0, 1, 2, 3, 4, 5]);
+  assert.equal(new Set(report.spots.map((spot) => spot.question)).size, 7);
+});
+
 const REPORT = `<<<SECTION:1>>>
 A Narrative essay with a real setting and a genuine ear for detail. The central
 problem lands mid-essay, which works here because the garage is established first.

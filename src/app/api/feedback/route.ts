@@ -428,7 +428,7 @@ Use these only to ask better questions and to avoid re-asking what you already k
         .map((e) => `- ${e.title} (${e.kind})`)
         .join(
           "\n",
-        )}\nIf this draft reveals the same facet of the person as one of those rather than a complementary one, flag it under checklist point 11.`,
+        )}\nThese are titles and types only, not essay contents. Do not infer repeated facets, contradictions, or missing interests from titles. Cross-essay comparison requires actual supplied content.`,
     );
   }
 

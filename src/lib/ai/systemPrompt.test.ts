@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
+  EDITORIAL_CALIBRATION,
   ENGINE_REFINEMENTS,
   ENGINE_SYSTEM_PROMPT,
   MODE_A_SYSTEM,
@@ -128,7 +129,7 @@ test("the prose diagnosis is required to become a card", () => {
   // Matched without spanning a line wrap, since the prompt is hard-wrapped.
   assert.ok(ENGINE_REFINEMENTS.includes("to appear as a spot card"));
   assert.ok(ENGINE_REFINEMENTS.includes("Balloon + Needle"));
-  assert.ok(ENGINE_REFINEMENTS.includes("die in the summary"));
+  assert.match(ENGINE_REFINEMENTS, /die in\s+the summary/);
 });
 
 test("an open ending is not forced into a generic future plan", () => {
@@ -138,7 +139,7 @@ test("an open ending is not forced into a generic future plan", () => {
   assert.ok(ENGINE_REFINEMENTS.includes("Mandatory final check"));
   assert.ok(ENGINE_REFINEMENTS.includes("Do NOT demand a forward-looking resolution"));
   assert.ok(ENGINE_REFINEMENTS.includes("may end in uncertainty"));
-  assert.ok(ENGINE_REFINEMENTS.includes("Never prescribe a future plan"));
+  assert.match(ENGINE_REFINEMENTS, /Never\s+prescribe a future plan/);
 });
 
 test("a repeated metaphor is judged by what each recurrence adds", () => {
@@ -159,6 +160,42 @@ test("supplementals are judged against their actual prompt, not a default Why Us
   assert.ok(ENGINE_REFINEMENTS.includes("Prompt mismatch"));
   assert.ok(ENGINE_REFINEMENTS.includes("student did not provide the prompt"));
   assert.ok(ENGINE_REFINEMENTS.includes("brevity can be a virtue"));
+});
+
+test("the full diagnostic covers every distinct gap instead of stopping at three cards", () => {
+  assert.ok(ENGINE_REFINEMENTS.includes("### R. Coverage first; priorities second"));
+  const normalized = ENGINE_REFINEMENTS.replace(/\*/g, "").replace(/\s+/g, " ");
+  assert.match(normalized, /Do not stop at three\./);
+  assert.match(normalized, /never a quota in either direction/);
+  assert.match(normalized, /not a three-card rule/i);
+  assert.match(normalized, /coverage read, not a teaser/);
+  assert.ok(MODE_A_SYSTEM.includes("it must NEVER limit the number of spot cards"));
+  assert.ok(MODE_A_SYSTEM.includes("EVERY distinct structural or substantive gap"));
+});
+
+test("research calibration reaches diagnostic and both conversation modes after legacy rules", () => {
+  for (const system of [MODE_A_SYSTEM, MODE_B_SYSTEM, MODE_B_ASK_SYSTEM]) {
+    assert.ok(system.includes(EDITORIAL_CALIBRATION));
+    assert.ok(system.indexOf(EDITORIAL_CALIBRATION) >= ENGINE_SYSTEM_PROMPT.length);
+    assert.match(system, /not admission chances/);
+    assert.match(system, /titles alone/);
+    assert.match(system, /initial diagnosis as revisable/);
+  }
+});
+
+test("research lenses distinguish substantive depth from formula compliance", () => {
+  for (const lens of ["Specificity of thinking", "Relationships with agency", "Detail with a job", "Selection and progression", "Proportionate change", "Supplemental depth per word"]) {
+    assert.ok(ENGINE_REFINEMENTS.includes(lens), lens);
+  }
+  assert.match(EDITORIAL_CALIBRATION, /Showing and telling can both work/);
+  assert.match(EDITORIAL_CALIBRATION, /refusal to share/);
+  assert.match(EDITORIAL_CALIBRATION, /Do not predict acceptance/);
+});
+
+test("a first detail does not automatically end a Socratic thread", () => {
+  assert.ok(ENGINE_REFINEMENTS.includes("one concrete noun or fact"));
+  assert.ok(ENGINE_REFINEMENTS.includes("enough truthful raw material"));
+  assert.ok(ENGINE_REFINEMENTS.includes("never continue questioning merely"));
 });
 
 test("every top priority has to be anchored to a card", () => {
