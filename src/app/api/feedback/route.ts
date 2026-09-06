@@ -69,6 +69,24 @@ export async function POST(request: Request) {
     );
   }
 
+  const context = await buildSeasonContext(supabase, user.id, essay, draft);
+
+  // A second model call is not a second opinion. If the text is unchanged, it
+  // has to keep the same cards and verdict — especially a finished draft must
+  // not be made "unfinished" by sampling noise. Reuse the saved read and do
+  // not spend a request quota on it.
+  if (context.draftUnchanged) {
+    return NextResponse.json({
+      ok: true,
+      reused: true,
+      spotCount: 0,
+      droppedCount: 0,
+      carriedOver: 0,
+      truncated: false,
+      draftUnchanged: true,
+    });
+  }
+
   const limit = await checkRateLimit(supabase, user.id, "feedback");
   if (!limit.allowed) {
     return NextResponse.json(
@@ -81,8 +99,6 @@ export async function POST(request: Request) {
       },
     );
   }
-
-  const context = await buildSeasonContext(supabase, user.id, essay, draft);
 
   let raw: string;
   try {

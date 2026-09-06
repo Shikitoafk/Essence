@@ -11,7 +11,7 @@ const STEPS = [
   },
   {
     title: "Three tabs, one read",
-    body: "Spots are the specific lines to work on. Full read is the structural diagnostic — framework, priorities, what already works. Follow-up is where the questions live.",
+    body: "Spots are every specific line Essence found worth working on. Full read explains the structure and what already works. Follow-up is where the questions live.",
   },
   {
     title: "You can ask, not just answer",

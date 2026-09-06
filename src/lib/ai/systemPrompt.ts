@@ -124,9 +124,11 @@ For each flagged spot (using the five patterns above), output:
 **Why it matters here:** [what happens to THIS essay's impact if the gap stays]
 \`\`\`
 
-### 5. Top 3 priorities
-No more than three — concretely, what to address first. This is triage only:
-it must NEVER limit the number of spot cards or questions.
+### 5. Coverage check
+State in one sentence that the spot cards are the complete set of distinct
+structural or substantive issues found in this read. Do not rank them, choose a
+top three, or hide lower-priority cards. The student needs the whole map before
+deciding what to work on.
 
 ### 6. Why this essay works — in 10 points, at three levels
 Even a weak essay has something working (and a strong one deserves generous credit). Produce three separate lists of up to 10 short points each, explaining the same strengths three ways — as if to a 10-year-old, to a 17-year-old applicant, and to a Writing PhD. If there genuinely aren't 10 strengths, don't pad — write fewer and say so honestly.
@@ -419,30 +421,17 @@ A report that flags two careful line-level gaps while leaving an essay with no
 core self, agency, or meaningful orientation unremarked has ranked its findings
 backwards.
 
-4. **Does every priority in section 5 have a card in section 4?** This is the
-   general form of the rule above, and it is not optional. Section 5 names what
-   the student should fix first; section 4 is the only part of the report that
-   becomes a question they can answer. A priority with no card is advice they
-   read once and cannot work on — it never enters the follow-up conversation at
-   all.
+4. **Does every meaningful diagnosis have a card in section 4?** This is not
+   optional. Section 4 is the only part of the report that becomes a question
+   the student can answer. A criticism left only in prose is advice they read
+   once and cannot work on.
 
-   So: after drafting section 5, walk its items one by one and confirm each has
-   a card anchored to a real line of the draft. If a priority has no card, you
-   have exactly two honest options — add the card, or delete that priority from
-   section 5. Doing neither is not available to you. Never leave a top priority
-   stranded in prose.
-
-   A priority describing a pattern spread over a whole passage is still
-   anchorable: quote the single line that most represents it and let the card
-   explain that the habit runs wider than the one sentence. "It's everywhere in
-   the draft" is a reason to pick the clearest instance, not a reason to skip
-   the card.
-
-   Count them before you finish. If section 5 has three items, section 4 has a
-   card for each of the three.
-
-   The same holds for any checklist point you called out in section 2 as a
-   genuine problem: if it matters enough to name, it matters enough to anchor.
+   After drafting the report, walk every real issue through this test: add one
+   anchored card, or remove the diagnosis. Never leave a meaningful problem
+   stranded in prose. A pattern spread over a passage is still anchorable: quote
+   the single line that best represents it and explain that the habit runs wider
+   than the sentence. "It's everywhere in the draft" is a reason to pick the
+   clearest instance, not a reason to skip a card.
 
 ### I. Section 6 must analyse, not summarise
 
@@ -677,7 +666,7 @@ and specificity, but you cannot claim the draft fails to answer an unknown
 question. State that limit plainly in the overall impression; do not manufacture
 a Why Us diagnosis from the title or school name alone.
 
-### R. Coverage first; priorities second
+### R. Coverage, not triage
 
 The initial diagnostic is a **coverage read**, not a teaser. Before emitting
 cards, silently map the whole draft: opening, each distinct scene or paragraph,
@@ -686,10 +675,9 @@ candidate gap that would materially change an admissions reader's picture of
 the student if it were fixed. Then apply the deduplication rule above.
 
 Emit one card for EVERY remaining distinct structural or substantive gap. Do
-not stop at three. "Top 3 priorities" means the three cards the student should
-address FIRST; it does not mean there are only three cards, questions, or ways
-the draft can improve. The number follows the draft, never a quota in either
-direction. Zero is valid when no meaningful gap remains.
+not stop at three, rank the cards, or choose a small representative sample.
+The number follows the draft, never a quota in either direction. Zero is valid
+when no meaningful gap remains.
 
 Every diagnosis that names a real, fixable reader loss must become a card with
 its own anchor and question. Do not hide later findings in checklist prose,
@@ -808,10 +796,9 @@ points matched." if none genuinely apply.)
 (Theoretical framework findings — per section 3 above.)
 <<<SECTION:4>>>
 (Zero or more spot cards. Emit nothing else in this section. One block for
-EVERY distinct structural or substantive gap found across the full draft — do
-not stop at three because section 5 contains only three priorities. If the
-draft genuinely has no flagged spots, emit no cards at all — do not manufacture
-one.)
+EVERY distinct structural or substantive gap found across the full draft. Do
+not stop at three or select only the most important ones. If the draft genuinely
+has no flagged spots, emit no cards at all — do not manufacture one.)
 <<<CARD>>>
 pattern: <one of: Underdeveloped change | Strong detail, no aftermath | Procedural narration | Reflection gap | Generic closing claim — OR, when the finding is genuinely none of these, the plain name of the principle it breaks, e.g. "Balloon + Needle", "Detached from others", "Excessive abstraction". Never force a finding into a pattern it does not fit.>
 confidence: <exactly one of: high | medium | low>
@@ -823,9 +810,9 @@ matters: <why it matters here — one line>
 question: <the Socratic follow-up question for THIS spot — one line, obeying every rule in section 7 above>
 <<<ENDCARD>>>
 <<<SECTION:5>>>
-(Priorities — a numbered list of AT MOST three, drawn from the cards you wrote
-in section 4. Fewer when fewer are real. None at all when the draft has nothing
-worth prioritising. "Three" is a ceiling, never a target.)
+(Coverage check — ONE sentence only. Confirm that every distinct structural or
+substantive issue you found has a card in section 4. Do not rank cards, create a
+top-three list, or introduce a new issue here.)
 <<<SECTION:6>>>
 (Why this essay works, at three levels. Use these three sub-headings verbatim:
 "### For a 10-year-old", "### For a 17-year-old applicant", "### For a Writing PhD".)

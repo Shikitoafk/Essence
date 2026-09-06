@@ -373,7 +373,7 @@ export default function Workspace({
             draft moves past them. */}
         <div className="flex flex-col gap-4 min-[1180px]:sticky min-[1180px]:top-[5.5rem] min-[1180px]:max-h-[calc(100vh-7rem)] min-[1180px]:overflow-y-auto min-[1180px]:pr-1">
           {/* "Full read" said nothing about what was inside it, so testers kept
-              assuming the framework and priorities had gone missing. The labels
+              assuming the framework and strengths had gone missing. The labels
               now name their contents. Follow-up is a third tab rather than a
               panel below the cards: testers had to scroll past every card to
               reach the conversation, and gave up before finding it. */}
@@ -387,7 +387,7 @@ export default function Workspace({
                   `Spots${spots.length ? ` (${spots.length})` : ""}`,
                   "Specific lines to work on",
                 ],
-                ["report", "Full read", "Structure, priorities, strengths"],
+                ["report", "Full read", "Structure and strengths"],
                 [
                   "followup",
                   `Follow-up${openCount ? ` (${openCount})` : ""}`,
@@ -531,10 +531,6 @@ export default function Workspace({
                   <ReportSection
                     title="Framework findings"
                     body={report.framework_findings}
-                  />
-                  <ReportSection
-                    title="Top priorities"
-                    body={report.priorities}
                   />
                   <ReportSection
                     title="Why this essay works"

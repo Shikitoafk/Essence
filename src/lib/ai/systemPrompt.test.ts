@@ -163,13 +163,20 @@ test("supplementals are judged against their actual prompt, not a default Why Us
 });
 
 test("the full diagnostic covers every distinct gap instead of stopping at three cards", () => {
-  assert.ok(ENGINE_REFINEMENTS.includes("### R. Coverage first; priorities second"));
+  assert.ok(ENGINE_REFINEMENTS.includes("### R. Coverage, not triage"));
   const normalized = ENGINE_REFINEMENTS.replace(/\*/g, "").replace(/\s+/g, " ");
-  assert.match(normalized, /Do not stop at three\./);
+  assert.match(
+    normalized,
+    /not stop at three, rank the cards, or choose a small representative sample/i,
+  );
   assert.match(normalized, /never a quota in either direction/);
-  assert.match(normalized, /not a three-card rule/i);
   assert.match(normalized, /coverage read, not a teaser/);
-  assert.ok(MODE_A_SYSTEM.includes("it must NEVER limit the number of spot cards"));
+  // Matched clear of the hard wraps in the prompt text.
+  const normalizedModeA = MODE_A_SYSTEM.replace(/\s+/g, " ");
+  assert.match(
+    normalizedModeA,
+    /Do not rank cards, create a top-three list, or introduce a new issue here/i,
+  );
   assert.ok(MODE_A_SYSTEM.includes("EVERY distinct structural or substantive gap"));
 });
 
@@ -198,18 +205,11 @@ test("a first detail does not automatically end a Socratic thread", () => {
   assert.ok(ENGINE_REFINEMENTS.includes("never continue questioning merely"));
 });
 
-test("every top priority has to be anchored to a card", () => {
-  // Observed: three priorities, two cards. The third was advice the student
-  // could read but never work on, because only cards become questions.
-  assert.ok(ENGINE_REFINEMENTS.includes("have a card in section 4"));
-  // Matched clear of the hard wrap in the prompt text.
-  assert.ok(ENGINE_REFINEMENTS.includes("Never leave a top priority"));
+test("every meaningful diagnosis has to become an anchored card", () => {
+  assert.ok(ENGINE_REFINEMENTS.includes("Does every meaningful diagnosis have a card in section 4?"));
+  assert.ok(ENGINE_REFINEMENTS.includes("Never leave a meaningful problem"));
   assert.ok(ENGINE_REFINEMENTS.includes("stranded in prose"));
-  // Dropping an unanchorable priority is the other honest way out, and doing
-  // neither — which is what kept happening — is explicitly closed off.
-  assert.ok(ENGINE_REFINEMENTS.includes("delete that priority"));
-  assert.ok(ENGINE_REFINEMENTS.includes("Doing neither is not available"));
-  assert.ok(ENGINE_REFINEMENTS.includes("Count them before you finish"));
+  assert.match(ENGINE_REFINEMENTS, /add one\s+anchored card, or remove the diagnosis/);
 });
 
 test("a flat draft is caught even when nothing is missing from it", () => {
