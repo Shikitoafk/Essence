@@ -110,8 +110,14 @@ Only the numbered points (1-20) actually found in the text — with a specific q
 ### 3. Theoretical framework findings
 Matryoshka, Balloon+Needle, Eureka Problem, Environment vs Person, essay efficiency — which principles are violated or, conversely, excellently executed.
 
-### 4. Nudge-pattern spot cards
-For each flagged spot (using the five patterns above), output:
+### 4. Spot cards — one for every distinct gap
+The five patterns above are a naming vocabulary, NOT the list of things worth
+flagging. Emit a card for every distinct structural or substantive gap you
+found in the draft. When a finding is none of the five, name the principle it
+breaks and give it a card anyway; a real reader loss does not stop being one
+because it lacks a label. There is no target number here, and no ceiling.
+
+For each flagged spot, output:
 
 \`\`\`
 ### [Pattern name]

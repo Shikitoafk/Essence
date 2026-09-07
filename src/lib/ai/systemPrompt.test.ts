@@ -328,3 +328,14 @@ test("the verbatim spec is not edited in place", () => {
   assert.ok(!ENGINE_SYSTEM_PROMPT.includes("Field Refinements"));
   assert.ok(!ENGINE_SYSTEM_PROMPT.includes("<<<SECTION"));
 });
+
+test("the five patterns are a vocabulary, not the set of things worth a card", () => {
+  // Section 4 used to read "For each flagged spot (using the five patterns
+  // above)", which capped the cards at the pattern list while section H said
+  // the opposite. Reads came back with three cards on drafts holding six or
+  // seven distinct gaps.
+  const normalized = MODE_A_SYSTEM.replace(/\s+/g, " ");
+  assert.match(normalized, /a naming vocabulary, NOT the list of things worth flagging/);
+  assert.match(normalized, /There is no target number here, and no ceiling/);
+  assert.doesNotMatch(normalized, /For each flagged spot \(using the five patterns above\)/);
+});
