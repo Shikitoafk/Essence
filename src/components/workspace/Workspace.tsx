@@ -270,7 +270,7 @@ export default function Workspace({
           way, so "Get feedback" and the word count have to stay reachable
           without a trip back to the top. */}
       <div className="nav-blur sticky top-0 z-30 border-b border-line">
-        <div className="mx-auto flex max-w-[68rem] flex-wrap items-center justify-between gap-3 px-6 py-3">
+        <div className="mx-auto flex max-w-[68rem] flex-wrap items-center justify-between gap-3 px-6 py-3 min-[1500px]:max-w-[82rem]">
           <div className="min-w-0">
             <h1 className="display truncate text-xl">{essay.title}</h1>
             <p className="text-xs uppercase tracking-widest text-muted">
@@ -379,7 +379,20 @@ export default function Workspace({
       {/* The draft sits on a sheet in the measure; the margin runs beside it.
           Neither scrolls internally — the page does — because a note can only
           stay level with its line if the line and the note move together. */}
-      <div className="mx-auto grid w-full max-w-[68rem] gap-8 px-6 py-8 min-[1180px]:grid-cols-[minmax(0,40rem)_23rem]">
+      {/*
+        The draft column is capped on purpose. Line length is the one
+        typographic setting that changes whether a page gets read: at 40rem
+        this serif runs about 75 characters, which is already the top of the
+        comfortable range, and stretching it to fill a 1920px monitor would
+        make the essay harder to read, not easier.
+
+        What the extra width is for instead: past 1500px the page grows to
+        82rem and the margin takes it, going from 23rem to 28rem. The index
+        stops truncating pattern names, the verdict stops wrapping every
+        other word, and the two columns stop looking marooned in the middle
+        of the screen — without moving the text itself.
+      */}
+      <div className="mx-auto grid w-full max-w-[68rem] gap-8 px-6 py-8 min-[1180px]:grid-cols-[minmax(0,40rem)_23rem] min-[1500px]:max-w-[82rem] min-[1500px]:gap-12 min-[1500px]:grid-cols-[minmax(0,44rem)_28rem]">
         <div className="flex flex-col gap-4">
           <div className="rounded-lg border border-line bg-white px-6 py-4 sm:px-8 sm:py-6">
             <DraftEditor
