@@ -134,12 +134,35 @@ export async function POST(request: Request) {
     loadCurrentSpots(supabase, versionB.id),
   ]);
 
+  /*
+   * Which draft the model is shown as "A" is decided by version id, not by the
+   * order the student clicked in. The picker lists essays newest first, so the
+   * newer draft was landing in slot A on nearly every comparison, and a model
+   * that leans toward the first option it reads leans toward the newer draft
+   * for a reason that has nothing to do with the writing. Storage and the
+   * screen keep the student's own A and B; only the prompt is reordered.
+   */
+  const flip = versionA.id > versionB.id;
+  const shownA = flip ? versionB : versionA;
+  const shownB = flip ? versionA : versionB;
+  const shownDraftA = flip ? draftB : draftA;
+  const shownDraftB = flip ? draftA : draftB;
+  const shownSpotsA = flip ? spotsB : spotsA;
+  const shownSpotsB = flip ? spotsA : spotsB;
+
   let parsed: ModelReply;
   try {
     const result = await generate({
       tier: "diagnostic",
       system: COMPARE_SYSTEM,
-      prompt: buildComparePrompt(versionA, draftA, spotsA, versionB, draftB, spotsB),
+      prompt: buildComparePrompt(
+        shownA,
+        shownDraftA,
+        shownSpotsA,
+        shownB,
+        shownDraftB,
+        shownSpotsB,
+      ),
       json: true,
       // Low: a verdict that flips between runs on the same pair is worthless.
       temperature: 0.3,
@@ -154,12 +177,12 @@ export async function POST(request: Request) {
   await recordUsage(supabase, user.id, "feedback");
 
   const winnerSide = parsed.winner?.trim().toUpperCase() === "B" ? "B" : "A";
-  const winner = winnerSide === "B" ? versionB : versionA;
-  const loser = winnerSide === "B" ? versionA : versionB;
-  const loserDraft = winnerSide === "B" ? draftA : draftB;
+  const winner = winnerSide === "B" ? shownB : shownA;
+  const loser = winnerSide === "B" ? shownA : shownB;
+  const loserDraft = winnerSide === "B" ? shownDraftA : shownDraftB;
 
   const sideToId = (side: string | undefined) =>
-    side?.trim().toUpperCase() === "B" ? versionB.id : versionA.id;
+    side?.trim().toUpperCase() === "B" ? shownB.id : shownA.id;
 
   /*
    * Every axis is filled in, in the fixed order. A missing axis defaults to the
@@ -244,9 +267,18 @@ function describeVersion(
     (s) => s.status === "open" || s.status === "answered",
   );
 
+  /*
+   * A version nobody has read has no findings, and deriveReadiness() on an
+   * empty set says "ready_to_submit" - true of the findings, false of the
+   * draft. Printed beside a read version's list of real problems, it handed
+   * the comparison to whichever draft had been examined least, and the newer
+   * draft is usually the one nobody has read yet.
+   */
+  const hasBeenRead = Boolean(essay.last_feedback_at);
+
   const diagnostics =
-    spots.length === 0
-      ? "This version has not been read yet, so there are no stored findings."
+    !hasBeenRead
+      ? "This version has NOT been read, so nothing is listed. That is an absence of examination, not an absence of problems - do not read it as a clean bill of health."
       : live.length === 0
         ? "Every finding on this version has been worked through."
         : live
@@ -257,8 +289,7 @@ function describeVersion(
             .join("\n");
 
   return `--- VERSION ${label}: ${essay.title} ---
-Readiness: ${deriveReadiness(spots)}
-Feedback rounds so far: ${essay.revision_count ?? 0}
+Readiness: ${hasBeenRead ? deriveReadiness(spots) : "not read yet - no verdict"}
 Open findings from earlier reads:
 ${diagnostics}
 
@@ -293,7 +324,10 @@ function buildComparePrompt(
   parts.push(describeVersion("A", versionA, draftA, spotsA));
   parts.push(describeVersion("B", versionB, draftB, spotsB));
   parts.push(
-    "Decide which version this student should submit. Reply using the output contract exactly. Remember: you must pick one, and every quote you carry over must come verbatim from the losing draft.",
+    [
+      "Decide which version this student should submit. Reply using the output contract exactly. Remember: you must pick one, and every quote you carry over must come verbatim from the losing draft.",
+      "Judge the drafts, not their histories. Which one is labelled A and which B carries no information, and neither does how much feedback a version has already had: a draft with a long list of findings has been examined, and one with none may only have been skipped.",
+    ].join("\n\n"),
   );
 
   return parts.join("\n\n");
