@@ -363,7 +363,11 @@ test("the read has to show its scan before it decides what to card", () => {
   assert.match(normalized, /<<<ENDSCAN>>>/);
   assert.match(normalized, /List every candidate before you judge any of them/);
   assert.match(normalized, /this block is the map, not the verdict/);
-  // Dropping a candidate is allowed, but only for stated reasons.
-  assert.match(normalized, /the draft already answers it, or another candidate names the same loss at the same moment/);
-  assert.match(normalized, /Wanting a shorter report is not one of them/);
+  // Dropping a candidate is allowed, but it has to be shown. "The draft
+  // accounts for it" is what a model says when it wants a shorter report, and
+  // two flash models used exactly that to drop real gaps.
+  assert.match(normalized, /then quote the draft's own words that do the answering, verbatim/);
+  assert.match(normalized, /If you cannot point at the sentence that closes the gap, the draft does not close it/);
+  assert.match(normalized, /are claims about the draft, not quotes from it, and they do not drop anything/);
+  assert.match(normalized, /a draft with six gaps gets six cards/);
 });

@@ -809,9 +809,20 @@ the verdict, and nothing is filtered out while you are still writing it.
 
 Then, still inside this block, one line per candidate you are NOT carrying into
 section 4, each reading \`DROPPED: <the gap> — <why>\`. A candidate may be
-dropped for exactly two reasons: the draft already answers it, or another
-candidate names the same loss at the same moment. Wanting a shorter report is
-not one of them.)
+dropped for exactly two reasons, and each has to be shown, not asserted:
+
+- the draft already answers it — then quote the draft's own words that do
+  the answering, verbatim, inside the DROPPED line. If you cannot point at the
+  sentence that closes the gap, the draft does not close it and the candidate
+  gets a card. "The essay uses this deliberately", "this is a framing device"
+  and "the draft accounts for it" are claims about the draft, not quotes from
+  it, and they do not drop anything.
+- another candidate names the same loss at the same moment — then name that
+  other candidate, and check it is the same place in the draft and not merely
+  the same kind of fix.
+
+Wanting a shorter report is not a reason. Neither is a sense that the report is
+getting long: a draft with six gaps gets six cards.)
 <<<ENDSCAN>>>
 
 Then the sections themselves:
