@@ -18,6 +18,37 @@ import {
 const SECTION_RE = /<<<SECTION:(\d)>>>/g;
 const CARD_RE = /<<<CARD>>>([\s\S]*?)<<<ENDCARD>>>/g;
 const KEEP_RE = /<<<KEEP>>>([\s\S]*?)<<<ENDKEEP>>>/g;
+const SCAN_RE = /<<<SCAN>>>([\s\S]*?)<<<ENDSCAN>>>/;
+
+/**
+ * The coverage scan the read writes before its sections: every candidate gap it
+ * saw, then the ones it decided not to card and why.
+ *
+ * It exists to be counted. "Three cards again" has two very different causes —
+ * the read only ever saw three things, or it saw seven and merged them down —
+ * and they need opposite fixes. The scan sits ahead of the section markers, so
+ * nothing downstream stores or displays it.
+ */
+export interface CoverageScan {
+  candidates: string[];
+  dropped: string[];
+}
+
+export function parseCoverageScan(raw: string): CoverageScan {
+  const block = SCAN_RE.exec(raw)?.[1] ?? "";
+  const candidates: string[] = [];
+  const dropped: string[] = [];
+
+  for (const line of block.split(/\r?\n/)) {
+    const text = line.trim().replace(/^[-*•]\s*/, "");
+    if (!text || text.startsWith("(")) continue;
+    const drop = text.match(/^DROPPED\s*:\s*(.+)$/i);
+    if (drop) dropped.push(drop[1].trim());
+    else candidates.push(text);
+  }
+
+  return { candidates, dropped };
+}
 
 function splitSections(raw: string): Record<string, string> {
   const text = raw.replace(/<<<END>>>[\s\S]*$/, "");
@@ -174,6 +205,7 @@ function parseWorkingWell(section: string): WorkingWell[] {
 
 export function parseModeAReport(raw: string): ParsedReport {
   const sections = splitSections(raw);
+  const scan = parseCoverageScan(raw);
   const prose = parseReadinessProse(sections["8"] ?? "");
 
   const spots: ParsedSpot[] = [];
@@ -196,6 +228,7 @@ export function parseModeAReport(raw: string): ParsedReport {
     readiness_why: prose.why,
     readiness_next: prose.next,
     working_well: parseWorkingWell(sections["9"] ?? ""),
+    scan,
   };
 }
 

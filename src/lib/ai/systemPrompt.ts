@@ -339,9 +339,15 @@ Apply checklist point 11 to your own output. Two cards that a single revision
 would close are one finding wearing two pattern names, and they read to a
 student as three problems where there is one.
 
-Before emitting, test every pair: if the student added one scene, or one
-consequence, or one concrete instance, would two or more of these cards close at
-once? If so they are the same finding. Keep the one whose quote sits at the most
+Before emitting, test every pair: do they point at the SAME moment in the
+draft — the same scene, the same sentence, the same turn — so that one
+revision in that one place closes both? If so they are the same finding.
+
+Sharing a KIND of fix is not sharing a finding. "Show the aftermath" applied to
+a childhood scene, to a ruined experiment and to a closing reflection is three
+separate losses in three separate places, and merging them hands the student
+one vague instruction in place of three workable ones. Merge on location, never
+on the shape of the remedy. Keep the one whose quote sits at the most
 load-bearing moment, fold anything the others add into its "what is still
 unexplored", and drop them.
 
@@ -791,7 +797,24 @@ changes none of the rules above.
 Everything above governs *what* you say. This section governs only *how it is
 marked up* so the platform can store it. It changes no rule, adds no rule, and
 removes no rule. Emit the seven sections in the order already specified, wrapped
-in these exact markers, and nothing outside them:
+in these exact markers, and nothing outside them.
+
+Before the sections, emit the coverage scan:
+
+<<<SCAN>>>
+(One line per paragraph of the draft that holds a candidate gap, in the order
+the paragraphs appear, formatted \`<paragraph opening words> — <the gap>\`.
+List every candidate before you judge any of them: this block is the map, not
+the verdict, and nothing is filtered out while you are still writing it.
+
+Then, still inside this block, one line per candidate you are NOT carrying into
+section 4, each reading \`DROPPED: <the gap> — <why>\`. A candidate may be
+dropped for exactly two reasons: the draft already answers it, or another
+candidate names the same loss at the same moment. Wanting a shorter report is
+not one of them.)
+<<<ENDSCAN>>>
+
+Then the sections themselves:
 
 <<<SECTION:1>>>
 (Overall impression — prose, per section 1 above.)
@@ -802,9 +825,11 @@ points matched." if none genuinely apply.)
 (Theoretical framework findings — per section 3 above.)
 <<<SECTION:4>>>
 (Zero or more spot cards. Emit nothing else in this section. One block for
-EVERY distinct structural or substantive gap found across the full draft. Do
-not stop at three or select only the most important ones. If the draft genuinely
-has no flagged spots, emit no cards at all — do not manufacture one.)
+EVERY candidate in the scan above that you did not explicitly drop — the two
+lists must reconcile exactly, and a candidate that is neither carded nor listed
+as DROPPED is a finding you lost. Do not stop at three or select only the most
+important ones. If the scan found nothing, emit no cards at all — do not
+manufacture one.)
 <<<CARD>>>
 pattern: <one of: Underdeveloped change | Strong detail, no aftermath | Procedural narration | Reflection gap | Generic closing claim — OR, when the finding is genuinely none of these, the plain name of the principle it breaks, e.g. "Balloon + Needle", "Detached from others", "Excessive abstraction". Never force a finding into a pattern it does not fit.>
 confidence: <exactly one of: high | medium | low>

@@ -216,12 +216,17 @@ export async function POST(request: Request) {
    * of it so the next unexpected count is diagnosable without a re-run.
    */
   console.info(
-    `[essence] read ${context.round} on essay ${essay.id}: model emitted ${report.spots.length} card(s), ${rows.length} kept, ${ordered.length - rows.length} dropped (quote not in draft, or duplicate)${
+    `[essence] read ${context.round} on essay ${essay.id}: scan saw ${report.scan.candidates.length} candidate(s) and dropped ${report.scan.dropped.length} of them by hand; model emitted ${report.spots.length} card(s), ${rows.length} kept, ${ordered.length - rows.length} dropped (quote not in draft, or duplicate)${
       context.round >= SUPPRESS_POLISH_FROM_ROUND
         ? "; polish-level findings were suppressed for this round"
         : ""
     }.`,
   );
+  if (report.scan.dropped.length > 0) {
+    console.info(
+      `[essence] scan dropped: ${report.scan.dropped.map((d) => `"${d.slice(0, 90)}"`).join("; ")}`,
+    );
+  }
 
   /*
    * Confidence calibration. A field that always reads "high" carries no

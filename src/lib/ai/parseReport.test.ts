@@ -184,3 +184,29 @@ test("every parsed quote from the sample report anchors in the draft", () => {
     );
   }
 });
+
+test("the coverage scan separates candidates from what the read dropped", () => {
+  const raw = `<<<SCAN>>>
+(One line per paragraph.)
+- The carpet blurred — the false rule never connects to DNA's rules.
+- Something did break — the fever turns symbolic with nothing between.
+- Near the practicum's end — the ruined sample has no aftermath.
+DROPPED: The closing paragraph is broad — the ending card already names it.
+<<<ENDSCAN>>>
+<<<SECTION:1>>>
+Reads well.
+<<<END>>>`;
+  const { scan } = parseModeAReport(raw);
+
+  assert.equal(scan.candidates.length, 3);
+  assert.equal(scan.dropped.length, 1);
+  assert.match(scan.candidates[0], /false rule never connects/);
+  assert.match(scan.dropped[0], /ending card already names it/);
+  // The block sits ahead of the section markers and must not leak into prose.
+  assert.doesNotMatch(parseModeAReport(raw).overall_impression, /SCAN/);
+});
+
+test("a report with no scan block still parses", () => {
+  const { scan } = parseModeAReport(REPORT);
+  assert.deepEqual(scan, { candidates: [], dropped: [] });
+});

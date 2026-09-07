@@ -41,9 +41,13 @@ test("the engine must deduplicate its own findings", () => {
   // Checklist point 11 turned on the report itself: three labels for one gap
   // read as three problems and stall the follow-up conversation.
   assert.ok(ENGINE_REFINEMENTS.includes("One card per distinct gap"));
-  assert.ok(
-    ENGINE_REFINEMENTS.includes("would two or more of these cards close at"),
-  );
+  // Merging is by location. The earlier test asked whether one added scene
+  // would close both cards, which merged every gap an essay fixes the same
+  // way — three separate missing aftermaths became one card.
+  const normalized = ENGINE_REFINEMENTS.replace(/\s+/g, " ");
+  assert.match(normalized, /do they point at the SAME moment in the draft/);
+  assert.match(normalized, /Merge on location, never on the shape of the remedy/);
+  assert.match(normalized, /Sharing a KIND of fix is not sharing a finding/);
 });
 
 test("cross-essay memory can never become a criticism", () => {
@@ -177,7 +181,16 @@ test("the full diagnostic covers every distinct gap instead of stopping at three
     normalizedModeA,
     /Do not rank cards, create a top-three list, or introduce a new issue here/i,
   );
-  assert.ok(MODE_A_SYSTEM.includes("EVERY distinct structural or substantive gap"));
+  // Cards now reconcile against the visible scan rather than against a
+  // description of what counts as a gap.
+  assert.match(
+    normalizedModeA,
+    /EVERY candidate in the scan above that you did not explicitly drop/,
+  );
+  assert.match(
+    normalizedModeA,
+    /a candidate that is neither carded nor listed as DROPPED is a finding you lost/,
+  );
 });
 
 test("research calibration reaches diagnostic and both conversation modes after legacy rules", () => {
@@ -338,4 +351,19 @@ test("the five patterns are a vocabulary, not the set of things worth a card", (
   assert.match(normalized, /a naming vocabulary, NOT the list of things worth flagging/);
   assert.match(normalized, /There is no target number here, and no ceiling/);
   assert.doesNotMatch(normalized, /For each flagged spot \(using the five patterns above\)/);
+});
+
+test("the read has to show its scan before it decides what to card", () => {
+  // Restraint rules outnumber and out-specify the coverage rules in this
+  // prompt, so telling the model not to stop at three did not move it off
+  // three. Making the scan an output rather than an intention is what gives
+  // the cards something to reconcile against.
+  const normalized = MODE_A_SYSTEM.replace(/\s+/g, " ");
+  assert.match(normalized, /<<<SCAN>>>/);
+  assert.match(normalized, /<<<ENDSCAN>>>/);
+  assert.match(normalized, /List every candidate before you judge any of them/);
+  assert.match(normalized, /this block is the map, not the verdict/);
+  // Dropping a candidate is allowed, but only for stated reasons.
+  assert.match(normalized, /the draft already answers it, or another candidate names the same loss at the same moment/);
+  assert.match(normalized, /Wanting a shorter report is not one of them/);
 });

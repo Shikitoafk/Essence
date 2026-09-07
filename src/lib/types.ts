@@ -213,6 +213,8 @@ export interface ParsedReport {
   readiness_why: string;
   readiness_next: string;
   working_well: WorkingWell[];
+  /** The read's own map of what it found, before it decided what to card. */
+  scan: { candidates: string[]; dropped: string[] };
 }
 
 /**
