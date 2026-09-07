@@ -96,3 +96,75 @@ export function findProseOnlyDiagnoses(
 
   return found;
 }
+
+/**
+ * Candidates from the read's own scan that never became a card and were never
+ * dropped with a reason.
+ *
+ * The contract says a candidate either gets carded or gets a DROPPED line, and
+ * models break it quietly: one read raised nine candidates, dropped none, and
+ * emitted three cards. Six findings the engine had already made disappeared
+ * between noticing them and reporting them, and nothing in the output said so.
+ * Prompt wording has not stopped this, so it is counted here instead.
+ *
+ * A candidate line reads `<paragraph opening> — <the gap>`, so the part
+ * before the dash locates it in the draft. A candidate counts as carded when a
+ * card is anchored anywhere in the same paragraph: the two describe the same
+ * place in different words, and matching any closer would report matches as
+ * misses.
+ */
+export interface UncardedCandidate {
+  line: string;
+  /** The draft paragraph the candidate points at, for the recovery pass. */
+  paragraph: string;
+}
+
+function paragraphAround(draft: string, index: number): Span {
+  // Drafts arrive with one newline between paragraphs, not a blank line —
+  // splitting on a blank line made the whole essay one paragraph, so any
+  // card at all counted as covering every candidate and nothing was ever
+  // reported lost.
+  const before = draft.lastIndexOf("\n", index);
+  const after = draft.indexOf("\n", index);
+  return {
+    start: before === -1 ? 0 : before + 1,
+    end: after === -1 ? draft.length : after,
+  };
+}
+
+export function findUncardedCandidates(
+  draft: string,
+  candidates: string[],
+  cardQuotes: string[],
+): UncardedCandidate[] {
+  const cardSpans: Span[] = [];
+  for (const quote of cardQuotes) {
+    const located = locateQuote(draft, quote);
+    if (located) cardSpans.push({ start: located.start, end: located.end });
+  }
+
+  const out: UncardedCandidate[] = [];
+  const claimed: Span[] = [];
+
+  for (const line of candidates) {
+    const head = line.split(/[—\-]{1,2}\s/)[0].trim().replace(/\.\.\.$/, "");
+    if (head.length < 12) continue;
+
+    const located = locateQuote(draft, head);
+    if (!located) continue;
+
+    const para = paragraphAround(draft, located.start);
+    const carded = cardSpans.some(
+      (span) => span.start < para.end && para.start < span.end,
+    );
+    if (carded) continue;
+
+    // Two scan lines pointing into one paragraph are one gap to recover.
+    if (claimed.some((c) => c.start === para.start)) continue;
+    claimed.push(para);
+
+    out.push({ line, paragraph: draft.slice(para.start, para.end) });
+  }
+
+  return out;
+}

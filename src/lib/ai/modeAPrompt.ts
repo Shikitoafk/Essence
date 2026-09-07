@@ -133,4 +133,44 @@ Use these only to ask better questions and to avoid re-asking what you already k
   );
 
   return parts.join("\n\n");
-}
+}
+
+/**
+ * The recovery prompt: cards for named paragraphs, and nothing else.
+ *
+ * It restates the card block rather than trusting the model to remember the
+ * one in the output contract, and it says plainly what went wrong — a model
+ * told only "write cards for these" starts hedging about whether they deserve
+ * cards, and the read already decided that when it scanned them.
+ */
+export function buildRecoveryPrompt(
+  draft: string,
+  uncarded: { line: string; paragraph: string }[],
+): string {
+  const findings = uncarded
+    .map((u, i) => `${i + 1}. ${u.line}\n   Paragraph: ${u.paragraph}`)
+    .join("\n\n");
+
+  return [
+    "You have already read this draft and listed the places where a reader loses something. Some of those you neither carded nor dropped, so they are lost. Write the missing cards now.",
+    "",
+    "The full draft, for context:",
+    draft,
+    "",
+    "The findings you made and did not report, each with the paragraph it points at:",
+    findings,
+    "",
+    "Emit one card per finding above, in that order, and NOTHING else — no scan, no sections, no prose before or after. You already judged these worth reporting; do not re-litigate whether they qualify. Every quote must be a verbatim span of the draft above.",
+    "",
+    "<<<CARD>>>",
+    "pattern: <the principle this breaks>",
+    "confidence: <high | medium | low>",
+    "impact: <structural | substantive | polish>",
+    "quote: <exact verbatim span from the draft, on ONE line>",
+    "clear: <what the reader does get as written>",
+    "unexplored: <the specific gap>",
+    "matters: <what it costs this essay>",
+    "question: <one non-leading question, obeying every rule above>",
+    "<<<ENDCARD>>>",
+  ].join("\n");
+}

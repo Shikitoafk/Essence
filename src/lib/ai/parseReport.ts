@@ -203,19 +203,29 @@ function parseWorkingWell(section: string): WorkingWell[] {
   return found.slice(0, MAX_WORKING_WELL);
 }
 
+/**
+ * Every card in a blob of model output, in order.
+ *
+ * Shared with the recovery pass, which asks for cards and nothing else when a
+ * read leaves candidates from its own scan unaccounted for.
+ */
+export function parseSpotCards(source: string): ParsedSpot[] {
+  const found: ParsedSpot[] = [];
+  CARD_RE.lastIndex = 0;
+  let m: RegExpExecArray | null;
+  while ((m = CARD_RE.exec(source)) !== null) {
+    const spot = parseCard(m[1]);
+    if (spot) found.push(spot);
+  }
+  return found;
+}
+
 export function parseModeAReport(raw: string): ParsedReport {
   const sections = splitSections(raw);
   const scan = parseCoverageScan(raw);
   const prose = parseReadinessProse(sections["8"] ?? "");
 
-  const spots: ParsedSpot[] = [];
-  const cardSource = sections["4"] ?? raw;
-  CARD_RE.lastIndex = 0;
-  let m: RegExpExecArray | null;
-  while ((m = CARD_RE.exec(cardSource)) !== null) {
-    const spot = parseCard(m[1]);
-    if (spot) spots.push(spot);
-  }
+  const spots = parseSpotCards(sections["4"] ?? raw);
 
   return {
     overall_impression: sections["1"] ?? "",

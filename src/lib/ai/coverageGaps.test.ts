@@ -1,6 +1,9 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { findProseOnlyDiagnoses } from "./coverageGaps";
+import {
+  findProseOnlyDiagnoses,
+  findUncardedCandidates,
+} from "./coverageGaps";
 
 const DRAFT = `I spent that summer cataloguing beetles in my grandfather's garage.
 The work taught me patience, and I became someone who finishes what he starts.
@@ -122,4 +125,65 @@ test("a card whose quote is not in the draft anchors nothing", () => {
   );
 
   assert.equal(gaps.length, 1);
+});
+
+const LONG = `The carpet blurred beneath me. I was spinning like the ninja in the show. Nothing came, and my brother laughed from the doorway.
+Something did break. I woke with a fever and the room pulled sideways. By morning it was just a fever.
+A few months ago my supervisor gave me two days to screen 347 articles. I did not bring up the pattern I had noticed.`;
+
+test("a candidate with no card in its paragraph is reported", () => {
+  // Measured: a read raised nine candidates, dropped none by hand and emitted
+  // three cards. Six findings vanished between the scan and the report.
+  const uncarded = findUncardedCandidates(
+    LONG,
+    [
+      "The carpet blurred beneath me — the false rule is never connected to anything",
+      "Something did break — the fever turns symbolic with no bridge",
+      "A few months ago my supervisor — the silence is never explained",
+    ],
+    ["I woke with a fever and the room pulled sideways."],
+  );
+
+  assert.equal(uncarded.length, 2);
+  assert.match(uncarded[0].line, /false rule/);
+  assert.match(uncarded[0].paragraph, /spinning like the ninja/);
+  assert.match(uncarded[1].paragraph, /347 articles/);
+});
+
+test("a card anywhere in the paragraph counts as covering it", () => {
+  // The card quotes one sentence and the scan line names another in the same
+  // paragraph. Matching more tightly than the paragraph would report a hit as
+  // a miss and send the recovery pass after a gap that is already carded.
+  const uncarded = findUncardedCandidates(
+    LONG,
+    ["Something did break — the fever turns symbolic with no bridge"],
+    ["By morning it was just a fever."],
+  );
+
+  assert.deepEqual(uncarded, []);
+});
+
+test("two scan lines pointing into one paragraph are one recovery", () => {
+  const uncarded = findUncardedCandidates(
+    LONG,
+    [
+      "The carpet blurred beneath me — the false rule goes nowhere",
+      "Nothing came, and my brother laughed — the brother never returns",
+    ],
+    [],
+  );
+
+  assert.equal(uncarded.length, 1);
+});
+
+test("a scan line that quotes nothing in the draft is left alone", () => {
+  // The model paraphrasing its own candidate is not a finding to recover; it
+  // is a line this check cannot place, and guessing would invent one.
+  const uncarded = findUncardedCandidates(
+    LONG,
+    ["Paragraph four — something about a laboratory in another essay"],
+    [],
+  );
+
+  assert.deepEqual(uncarded, []);
 });

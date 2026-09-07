@@ -16,8 +16,17 @@
 import { readFileSync } from "node:fs";
 import { GoogleGenAI } from "@google/genai";
 import { MODE_A_SYSTEM } from "../src/lib/ai/systemPrompt";
-import { buildModeAPrompt, type SeasonContext } from "../src/lib/ai/modeAPrompt";
-import { locateQuote, parseModeAReport } from "../src/lib/ai/parseReport";
+import {
+  buildModeAPrompt,
+  buildRecoveryPrompt,
+  type SeasonContext,
+} from "../src/lib/ai/modeAPrompt";
+import {
+  locateQuote,
+  parseModeAReport,
+  parseSpotCards,
+} from "../src/lib/ai/parseReport";
+import { findUncardedCandidates } from "../src/lib/ai/coverageGaps";
 import { countWords, type Essay } from "../src/lib/types";
 
 function arg(name: string, fallback: string): string {
@@ -110,6 +119,30 @@ async function main() {
       for (const d of report.scan.dropped) console.log(`    - DROPPED ${d.slice(0, 110)}`);
       for (const s of report.spots) {
         console.log(`    [card] ${s.pattern_name} (${s.impact}/${s.confidence}) "${s.quoted_text.slice(0, 60)}"`);
+      }
+
+      // The same check the read runs on itself: candidates scanned, never
+      // dropped by hand and never carded are findings lost on the way out.
+      const uncarded = findUncardedCandidates(
+        draft,
+        report.scan.candidates,
+        report.spots.map((s) => s.quoted_text),
+      );
+      if (uncarded.length > 0) {
+        console.log(`  LOST: ${uncarded.length} candidate(s) neither carded nor dropped`);
+        for (const u of uncarded) console.log(`    ? ${u.line.slice(0, 100)}`);
+        const rec = await ai.models.generateContent({
+          model,
+          contents: buildRecoveryPrompt(draft, uncarded),
+          config: { systemInstruction: MODE_A_SYSTEM, temperature: 0.4 },
+        });
+        const recovered = parseSpotCards(rec.text ?? "").filter((s) =>
+          locateQuote(draft, s.quoted_text),
+        );
+        console.log(`  RECOVERED: ${recovered.length} of ${uncarded.length}`);
+        for (const s of recovered) {
+          console.log(`    [card] ${s.pattern_name} (${s.impact}) "${s.quoted_text.slice(0, 60)}"`);
+        }
       }
       console.log();
     }

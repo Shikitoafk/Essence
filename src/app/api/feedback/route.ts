@@ -2,10 +2,18 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { MODE_A_SYSTEM } from "@/lib/ai/systemPrompt";
 import { generate, userFacingError } from "@/lib/ai/llm";
-import { locateQuote, parseModeAReport } from "@/lib/ai/parseReport";
-import { findProseOnlyDiagnoses } from "@/lib/ai/coverageGaps";
+import {
+  locateQuote,
+  parseModeAReport,
+  parseSpotCards,
+} from "@/lib/ai/parseReport";
+import {
+  findProseOnlyDiagnoses,
+  findUncardedCandidates,
+} from "@/lib/ai/coverageGaps";
 import {
   buildModeAPrompt,
+  buildRecoveryPrompt,
   type SeasonContext,
 } from "@/lib/ai/modeAPrompt";
 import { checkRateLimit, recordUsage } from "@/lib/rateLimit";
@@ -141,6 +149,53 @@ export async function POST(request: Request) {
    * verdict the model never reached.
    */
   const truncated = !raw.includes("<<<END>>>");
+
+  /*
+   * Recover findings the read lost between its own scan and its cards.
+   *
+   * The contract is that a candidate either becomes a card or gets a DROPPED
+   * line saying why. Models break it silently: one read raised nine
+   * candidates, dropped none by hand, and emitted three cards. Six gaps it had
+   * already found never reached the student, and nothing in the output said
+   * so. Prompt wording has not fixed this across several attempts.
+   *
+   * So the gap is closed here instead. The second call is small and narrow —
+   * it is handed the paragraphs in question and asked for cards and nothing
+   * else, on the cheap tier, rather than reading the essay again.
+   */
+  const uncarded = findUncardedCandidates(
+    draft,
+    report.scan.candidates,
+    report.spots.map((spot) => spot.quoted_text),
+  );
+
+  if (uncarded.length > 0) {
+    console.warn(
+      `[essence] ${uncarded.length} candidate(s) on essay ${essay.id} were scanned, never dropped and never carded — recovering.`,
+    );
+    try {
+      const recovery = await generate({
+        tier: "conversation",
+        system: MODE_A_SYSTEM,
+        prompt: buildRecoveryPrompt(draft, uncarded),
+        temperature: 0.4,
+      });
+      const recovered = parseSpotCards(recovery.text).filter((spot) =>
+        locateQuote(draft, spot.quoted_text),
+      );
+      report.spots.push(...recovered);
+      report.queue = report.spots.map((_, index) => index);
+      console.info(
+        `[essence] recovered ${recovered.length} of ${uncarded.length} lost finding(s).`,
+      );
+    } catch (error) {
+      // A read with most of its cards beats no read at all: the student still
+      // gets what came back the first time.
+      console.warn(
+        `[essence] recovery pass failed: ${(error as Error).message.slice(0, 120)}`,
+      );
+    }
+  }
 
   // Snapshot the draft this report describes, so spots stay anchored to the
   // exact text they were found in even after the student edits.
@@ -437,4 +492,3 @@ async function buildSeasonContext(
     ).map((s) => spotKey(s.pattern_name, s.quoted_text)),
   };
 }
-
