@@ -165,7 +165,7 @@ export interface EssayReport {
   overall_impression: string;
   checklist_findings: string;
   framework_findings: string;
-  priorities: string;
+  coverage_note: string;
   strengths: string;
   readiness: Readiness | null;
   readiness_why: string;
@@ -199,7 +199,12 @@ export interface ParsedReport {
   overall_impression: string;
   checklist_findings: string;
   framework_findings: string;
-  priorities: string;
+  /**
+   * Section 5: the read's own statement that the cards below are everything it
+   * found. It replaced a ranked top-three list, which the model read as a cap
+   * and applied to the cards themselves.
+   */
+  coverage_note: string;
   strengths: string;
   spots: ParsedSpot[];
   /** Indices into `spots`, most structurally important first. */

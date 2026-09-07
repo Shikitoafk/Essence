@@ -189,7 +189,7 @@ export function parseModeAReport(raw: string): ParsedReport {
     overall_impression: sections["1"] ?? "",
     checklist_findings: sections["2"] ?? "",
     framework_findings: sections["3"] ?? "",
-    priorities: sections["5"] ?? "",
+    coverage_note: sections["5"] ?? "",
     strengths: sections["6"] ?? "",
     spots,
     queue: parseQueue(sections["7"] ?? "", spots.length),

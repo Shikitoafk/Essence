@@ -84,7 +84,10 @@ create table if not exists public.essay_reports (
   overall_impression text not null default '',
   checklist_findings text not null default '',
   framework_findings text not null default '',
-  priorities         text not null default '',
+  -- One sentence confirming the flagged spots are the complete set the read
+  -- found. Was a ranked top-three list, which the model applied to the cards
+  -- as a ceiling and left real findings unreported.
+  coverage_note      text not null default '',
   strengths          text not null default '',
   -- How finished the draft is. Gives the process an endpoint so students don't
   -- edit in circles chasing an essay that is already working.

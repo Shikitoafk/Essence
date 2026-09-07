@@ -83,7 +83,7 @@ test("parses every section of a well-formed report", () => {
   assert.match(report.overall_impression, /Narrative essay/);
   assert.match(report.checklist_findings, /Point 3/);
   assert.match(report.framework_findings, /Matryoshka/);
-  assert.match(report.priorities, /present-tense fact/);
+  assert.match(report.coverage_note, /present-tense fact/);
   assert.match(report.strengths, /For a Writing PhD/);
   // Section markers must not bleed into the stored prose.
   assert.doesNotMatch(report.overall_impression, /<<</);

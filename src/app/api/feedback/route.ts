@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { MODE_A_SYSTEM } from "@/lib/ai/systemPrompt";
 import { generate, userFacingError } from "@/lib/ai/llm";
 import { locateQuote, parseModeAReport } from "@/lib/ai/parseReport";
+import { findProseOnlyDiagnoses } from "@/lib/ai/coverageGaps";
 import { checkRateLimit, recordUsage } from "@/lib/rateLimit";
 import { selectCurrentSpots } from "@/lib/currentSpots";
 import {
@@ -245,6 +246,37 @@ export async function POST(request: Request) {
     }
   }
 
+  /*
+   * Coverage check. Only a card gets highlighted in the editor and turned into
+   * a follow-up question, so a passage the read criticises in prose and never
+   * anchors is a criticism the student can read and cannot work on. The prompt
+   * forbids it; this is what notices when the model does it anyway.
+   *
+   * Logged, not surfaced and not grounds for rejecting the read: the student
+   * paid a request for this report, and throwing it away over a check that can
+   * misread an approving quote would cost them more than the gap does. The
+   * sections that praise the draft — strengths, and the passages to leave
+   * alone — are kept out of it for the same reason.
+   */
+  const proseOnly = findProseOnlyDiagnoses(
+    draft,
+    [
+      { section: "overall impression", text: report.overall_impression },
+      { section: "checklist findings", text: report.checklist_findings },
+      { section: "framework findings", text: report.framework_findings },
+      { section: "readiness note", text: report.readiness_next },
+    ],
+    rows.map((row) => row.quoted_text),
+  );
+
+  if (proseOnly.length > 0) {
+    console.warn(
+      `[essence] ${proseOnly.length} passage(s) on essay ${essay.id} were diagnosed in prose with no card to work on: ${proseOnly
+        .map((gap) => `${gap.section} — "${gap.quote.slice(0, 60)}"`)
+        .join("; ")}`,
+    );
+  }
+
   // Written after the cards exist, because the verdict is derived from what was
   // actually flagged — the report and the cards are one statement, not two
   // opinions that can drift apart.
@@ -256,7 +288,7 @@ export async function POST(request: Request) {
     overall_impression: report.overall_impression,
     checklist_findings: report.checklist_findings,
     framework_findings: report.framework_findings,
-    priorities: report.priorities,
+    coverage_note: report.coverage_note,
     strengths: report.strengths,
     readiness,
     readiness_why: report.readiness_why,
@@ -296,6 +328,7 @@ export async function POST(request: Request) {
     carriedOver,
     truncated,
     draftUnchanged: context.draftUnchanged,
+    proseOnlyCount: proseOnly.length,
   });
 }
 
