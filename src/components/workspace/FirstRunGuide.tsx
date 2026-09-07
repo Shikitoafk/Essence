@@ -30,13 +30,16 @@ const STEPS = [
 /**
  * Shown once per browser, dismissible for good.
  *
- * The workspace has three panes and two tabs and does something unusual — it
- * refuses to write for you — so beta testers arrived without a model for what
- * they were looking at. The one thing this must not do is nag: it appears once,
- * and the dismissal sticks.
+ * The workspace does something unusual — it refuses to write for you — so beta
+ * testers arrived without a model for what they were looking at. But five
+ * explanations in a two-column grid is a wall standing between a student and
+ * their own essay, and it was the first thing on the screen every time until
+ * somebody thought to dismiss it. It opens as one line now: the offer stays,
+ * the wall does not, and reading it is a choice rather than a toll.
  */
 export default function FirstRunGuide() {
   const [visible, setVisible] = useState(false);
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     try {
@@ -58,11 +61,32 @@ export default function FirstRunGuide() {
   if (!visible) return null;
 
   return (
-    <section className="border-t border-line bg-accent-soft/40 px-6 py-4">
-      <div className="mx-auto flex max-w-[110rem] flex-wrap items-start justify-between gap-4">
-        <div className="min-w-0 flex-1">
-          <h2 className="font-serif text-base">How this works</h2>
-          <ul className="mt-2 grid gap-x-8 gap-y-2 sm:grid-cols-2">
+    <section className="border-t border-line bg-accent-soft/40 px-6 py-2">
+      <div className="mx-auto max-w-[110rem]">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <p className="text-xs text-muted">
+            First time here?{" "}
+            <button
+              type="button"
+              onClick={() => setOpen((v) => !v)}
+              aria-expanded={open}
+              className="text-ink underline underline-offset-2"
+            >
+              {open ? "Hide how this works" : "How this works"}
+            </button>
+          </p>
+
+          <button
+            type="button"
+            onClick={dismiss}
+            className="shrink-0 text-xs text-muted underline underline-offset-2 hover:text-ink"
+          >
+            Got it
+          </button>
+        </div>
+
+        {open && (
+          <ul className="mt-3 grid gap-x-8 gap-y-2 pb-2 sm:grid-cols-2">
             {STEPS.map((step) => (
               <li key={step.title} className="text-sm">
                 <span className="font-medium">{step.title}.</span>{" "}
@@ -70,15 +94,7 @@ export default function FirstRunGuide() {
               </li>
             ))}
           </ul>
-        </div>
-
-        <button
-          type="button"
-          onClick={dismiss}
-          className="shrink-0 rounded-full border border-line bg-white px-4 py-2 text-sm hover:border-accent"
-        >
-          Got it
-        </button>
+        )}
       </div>
     </section>
   );

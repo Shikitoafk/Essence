@@ -44,6 +44,8 @@ interface Props {
   onStatusChange: (status: SpotStatus) => void;
   /** Opens the conversation on this spot. */
   onAnswer: () => void;
+  /** The first open card in queue order — the one to work on first. */
+  startHere?: boolean;
 }
 
 export default function SpotCard({
@@ -53,6 +55,7 @@ export default function SpotCard({
   onSelect,
   onStatusChange,
   onAnswer,
+  startHere = false,
 }: Props) {
   // `answered` is live work, not settled work — it must not fade out.
   const dimmed = spot.status === "resolved" || spot.status === "skipped";
@@ -97,6 +100,14 @@ export default function SpotCard({
         <span className="min-w-0 flex-1 truncate text-sm text-ink">
           {spot.pattern_name}
         </span>
+
+        {/* The read already ranked these by what a reader loses. Saying so
+            costs a word and saves the student from choosing between three
+            cards that look identical. Only on the closed row: once a card is
+            open it is the one being worked on, and the label is noise. */}
+        {startHere && !active && (
+          <span className="shrink-0 text-[0.7rem] text-accent">Start here</span>
+        )}
 
         {active ? (
           <span

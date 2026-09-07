@@ -257,6 +257,13 @@ export default function Workspace({
     : [];
   const primarySpots = ordered.filter((s) => !minorSpots.includes(s));
 
+  /*
+   * The queue is already ordered by what the reader loses, so the first open
+   * card is the one to start with — but on screen every card looked the same
+   * weight, and choosing between three equals is work the read already did.
+   */
+  const startHereId = primarySpots.find((s) => s.status === "open")?.id ?? null;
+
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       {/* Sticky: a session here runs for an hour and the draft scrolls a long
@@ -324,12 +331,25 @@ export default function Workspace({
         <FirstRunGuide />
 
         {/* When the provider's terms permit training on submitted text, say so
-            where drafts get pasted — not only on a privacy page nobody opens. */}
+            where drafts get pasted — not only on a privacy page nobody opens.
+
+            Deliberately still here, and deliberately no longer red. A warning
+            that shouts on every visit to a room you spend an hour in stops
+            being read after the second day, and this one has to survive being
+            seen daily: it is the difference between a student knowing where
+            their essay goes and not. Quiet and permanent beats loud and
+            tuned out. */}
         {!paidTier && (
-          <p className="border-t border-line bg-flag-high/10 px-6 py-2 text-xs text-flag-high">
-            This app runs on Google&apos;s free Gemini tier: Google may use what
-            you paste to improve its products, and human reviewers may read it.{" "}
-            <Link href="/settings" className="underline underline-offset-2">
+          <p className="border-t border-line bg-paper px-6 py-2 text-xs text-muted">
+            <span aria-hidden="true" className="mr-1.5 text-flag-medium">
+              ●
+            </span>
+            Free Gemini tier: Google may use what you paste to improve its
+            products, and human reviewers may read it.{" "}
+            <Link
+              href="/settings"
+              className="text-ink underline underline-offset-2"
+            >
               What this means
             </Link>
           </p>
@@ -523,6 +543,9 @@ export default function Workspace({
                         key={spot.id}
                         spot={spot}
                         active={false}
+                        startHere={
+                          spot.id === startHereId && spot.id !== activeSpotId
+                        }
                         missingInDraft={!locateQuote(draft, spot.quoted_text)}
                         onSelect={() => setActiveSpotId(spot.id)}
                         onStatusChange={(status) =>
