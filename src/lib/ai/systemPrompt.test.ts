@@ -329,3 +329,20 @@ test("a downstream candidate is not dropped as a consequence of an upstream one"
   assert.match(MODE_A, /Those are the only two reasons/);
   assert.match(MODE_A, /not a reason you construct on the spot/);
 });
+
+test("the word budget raises the bar for a card on a short answer", () => {
+  // Measured on the fifty-word "what brings you joy" case, which asks for zero
+  // cards: the rewrite flagged it in three runs out of three, where its
+  // predecessor managed one clean run. The coverage spine was outweighing the
+  // brevity clause, which sat far away in the supplemental section — the same
+  // shape of failure as restraint outweighing coverage before it.
+  assert.match(GUIDE, /The word budget is part of this test, not a footnote to it/);
+  assert.match(GUIDE, /Fifty words do not hold a scene, its aftermath and a reflection on both/);
+  assert.match(GUIDE, /As the budget falls the bar rises/);
+  assert.match(GUIDE, /"Reads as a summary rather than an experience" is not that/);
+  assert.match(GUIDE, /is finished, not thin/);
+  assert.match(GUIDE, /the correct number of cards on it is usually zero/);
+  // The coverage argument is scoped so it cannot be read as licence on a
+  // fifty-word answer.
+  assert.match(GUIDE, /The argument below is about a full-length draft/);
+});

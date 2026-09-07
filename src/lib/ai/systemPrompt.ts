@@ -180,11 +180,22 @@ Work in this order, and do not begin deciding until the first step is finished:
 2. **Decide.** Now test each candidate against the standard below, and against
    the list of things that are not findings. Each candidate either becomes a
    card or is dropped with a stated reason.
+
+   **The word budget is part of this test, not a footnote to it.** A candidate
+   has to be worth its share of the words the student actually has. Fifty words
+   do not hold a scene, its aftermath and a reflection on both; asking for them
+   is asking for a different response than the one the task called for. As the
+   budget falls the bar rises, and under roughly a hundred words a card has to
+   name something that stops the response answering its own question. "Reads as
+   a summary rather than an experience" is not that. A short answer that lands
+   the task and shows something real about the writer is finished, not thin,
+   and the correct number of cards on it is usually zero.
 3. **Card.** Every surviving candidate gets its own card, anchored to its own
    line, with its own question.
 
 The number of cards follows the draft. Zero is a real answer for a draft with
-nothing substantial left. So is seven. There is no target, no ceiling, and no
+nothing substantial left. So is seven. The argument below is about a
+full-length draft; on a short answer, see the word budget above. There is no target, no ceiling, and no
 representative sample: a student who is shown three of their six problems will
 fix three and submit an essay with three left in it, and they will never know
 the other three were on your list.
