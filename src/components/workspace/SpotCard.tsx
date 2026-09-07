@@ -170,26 +170,21 @@ export default function SpotCard({
             </div>
           )}
 
-          <dl className="mt-4 space-y-2.5 text-sm">
-            <div>
-              <dt className="text-xs uppercase tracking-widest text-muted">
-                What is clear
-              </dt>
-              <dd className="mt-0.5">{spot.what_is_clear}</dd>
-            </div>
-            <div>
-              <dt className="text-xs uppercase tracking-widest text-muted">
-                What is still unexplored
-              </dt>
-              <dd className="mt-0.5">{spot.what_is_unexplored}</dd>
-            </div>
-            <div>
-              <dt className="text-xs uppercase tracking-widest text-muted">
-                Why it matters here
-              </dt>
-              <dd className="mt-0.5">{spot.why_it_matters}</dd>
-            </div>
-          </dl>
+          {/*
+            Order follows what a student needs, not what the model produced.
+            The gap and the question come first: which line, what is missing
+            from it, what to answer. The justification — what already lands,
+            what it costs — is why they should believe the finding, and it
+            belongs under that rather than in front of it.
+
+            Three shouting uppercase labels in a row made every card read as a
+            form to fill in. One quiet label on the gap is enough; the rest is
+            prose, which is what a reader's note actually is.
+          */}
+          <p className="mt-4 text-sm leading-relaxed">
+            <span className="text-muted">Still unexplored — </span>
+            {spot.what_is_unexplored}
+          </p>
 
           {/*
             The question is the only part of a card a student can act on: it is
@@ -204,11 +199,8 @@ export default function SpotCard({
             reads as though it reopened itself.
           */}
           {spot.question && !dimmed && (
-            <div className="mt-4 rounded-md border border-accent/30 bg-accent-soft/40 p-3">
-              <p className="text-xs uppercase tracking-widest text-accent">
-                The question
-              </p>
-              <p className="mt-1.5 text-sm leading-relaxed">{spot.question}</p>
+            <div className="mt-3 rounded-md border border-accent/30 bg-accent-soft/40 p-3">
+              <p className="text-sm leading-relaxed">{spot.question}</p>
               <button
                 type="button"
                 onClick={(e) => {
@@ -221,6 +213,17 @@ export default function SpotCard({
               </button>
             </div>
           )}
+
+          <div className="mt-3 space-y-1.5 border-t border-line pt-3 text-xs leading-relaxed text-muted">
+            <p>
+              <span className="text-ink">What already lands.</span>{" "}
+              {spot.what_is_clear}
+            </p>
+            <p>
+              <span className="text-ink">Why it matters here.</span>{" "}
+              {spot.why_it_matters}
+            </p>
+          </div>
 
           <div className="mt-4 flex flex-wrap gap-2 border-t border-line pt-3 text-xs">
             {spot.status === "open" || awaitingRevision ? (
