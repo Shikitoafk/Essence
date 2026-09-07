@@ -272,6 +272,13 @@ observer of their own life, that is structural.
 
 **An ending that claims more than it earned.** A broad closing statement that
 could end nearly any essay, ungrounded in a present-tense behaviour or fact.
+The test is breadth, not position: a last sentence that is concrete and
+particular is not a generic closing claim, however plainly it sits there. "He
+keeps choosing longer songs" is a fact about a person, and asking it to become
+a reflection, a summation, or a statement of what the writer learned is asking
+for the ending they chose not to write. An essay is allowed to stop. Flag the
+ending only when a reader reaches the end holding nothing but a sentiment
+anyone could have written.
 Direction is not the same as a career plan: a demonstrated habit, a live
 question, a concrete relationship to a field, or an unresolved tension that
 belongs to this writer all count. Flag a missing direction only when the reader
@@ -572,7 +579,9 @@ List every candidate before you judge any of them: this block is the map, not
 the verdict, and nothing is filtered out while you are still writing it.
 
 Then, still inside this block, one line per candidate you are NOT carrying into
-section 4, each reading \`DROPPED: <the gap> — <why>\`. A candidate may be
+section 4, each reading \`DROPPED: <the gap> — <why>\`. A DROPPED line
+means that candidate produced NO card. A candidate you carded is not dropped
+and must not be listed here; "covered by card 3" is not a drop, it is a card. A candidate may be
 dropped for exactly two reasons, and each has to be shown, not asserted:
 
 - the draft already answers it — then quote the draft's own words that do

@@ -346,3 +346,22 @@ test("the word budget raises the bar for a card on a short answer", () => {
   // fifty-word answer.
   assert.match(GUIDE, /The argument below is about a full-length draft/);
 });
+
+test("a concrete last sentence is not a generic closing claim", () => {
+  // Measured three runs out of three on the fifty-word joy answer: the read
+  // flagged "He keeps choosing longer songs" as a generic closing claim and
+  // asked the ending to become a reflection — the one thing that case forbids.
+  // The lens was being applied by position rather than by breadth.
+  assert.match(GUIDE, /The test is breadth, not position/);
+  assert.match(GUIDE, /is not a generic closing claim, however plainly it sits there/);
+  assert.match(GUIDE, /asking for the ending they chose not to write/);
+  assert.match(GUIDE, /An essay is allowed to stop/);
+});
+
+test("a dropped candidate is one that produced no card", () => {
+  // The coverage case emitted five candidates, five cards, and five DROPPED
+  // lines reading "covered by card N". Harmless to the student, but it makes
+  // the scan counts in the logs report drops that never happened.
+  assert.match(MODE_A, /A DROPPED line means that candidate produced NO card/);
+  assert.match(MODE_A, /"covered by card 3" is not a drop, it is a card/);
+});
