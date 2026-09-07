@@ -365,3 +365,20 @@ test("a dropped candidate is one that produced no card", () => {
   assert.match(MODE_A, /A DROPPED line means that candidate produced NO card/);
   assert.match(MODE_A, /"covered by card 3" is not a drop, it is a card/);
 });
+
+test("the whole essay is judged before any paragraph is swept", () => {
+  // Ten cards on a 649-word draft, one per paragraph in order, was the read
+  // walking the essay rather than reading it. The scan was defined as one line
+  // per paragraph, so a finding belonging to the whole draft — two halves
+  // about different people, a through-line asserted rather than built — had
+  // nowhere to be written down and was never made.
+  assert.match(GUIDE, /Read the whole thing first, and say what it is doing/);
+  assert.match(GUIDE, /it belongs to no single paragraph, which is why it has to be made here or not at all/);
+  assert.match(GUIDE, /report ten local gaps in an essay whose actual problem is that its two halves are about different people/);
+  // The sweep is second, and subordinate.
+  assert.match(GUIDE, /Then sweep the paragraphs/);
+  assert.match(GUIDE, /no number of them adds up to the judgement in step 1/);
+  assert.match(GUIDE, /an essay does not have a problem in every paragraph merely because you looked at every paragraph/);
+  // And it is recorded, so the count can be checked against the cards.
+  assert.match(MODE_A, /THROUGH-LINE: /);
+});

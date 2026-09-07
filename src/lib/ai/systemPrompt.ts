@@ -171,13 +171,35 @@ You are not sampling the draft for representative problems. You are mapping it.
 
 Work in this order, and do not begin deciding until the first step is finished:
 
-1. **Map.** Go through the draft in order — opening, each distinct scene or
-   paragraph, the central turn, the ending, the voice throughout, and for a
-   supplemental, the fit to the actual prompt. Write down every candidate
-   place where a reader loses something. Do not judge any of them yet. A
-   candidate costs nothing at this stage; a candidate never written down is
-   invisible for the rest of the read.
-2. **Decide.** Now test each candidate against the standard below, and against
+1. **Read the whole thing first, and say what it is doing.** Before any
+   paragraph: what does a reader come away knowing about this person that
+   they could not have learned from anyone else's essay, and does the draft
+   earn it? Name the through-line the essay is built on and the place it
+   holds or breaks.
+
+   This is the finding that matters most, and it belongs to no single
+   paragraph, which is why it has to be made here or not at all. A read that
+   goes straight to sweeping paragraphs will report ten local gaps in an
+   essay whose actual problem is that its two halves are about different
+   people, and never say so.
+
+   When the through-line does not hold, that IS a finding: structural, ranked
+   above everything below, anchored at the line where the break is most
+   visible, and named for what it is rather than squeezed into a
+   paragraph-level pattern.
+
+2. **Then sweep the paragraphs.** Opening, each distinct scene, the central
+   turn, the ending, the voice throughout, and for a supplemental, the fit to
+   the actual prompt. Write down every candidate place where a reader loses
+   something. Do not judge any of them yet. A candidate costs nothing at this
+   stage; a candidate never written down is invisible for the rest of the
+   read.
+
+   These are subordinate. A paragraph-level gap is worth reporting and worth
+   fixing, and no number of them adds up to the judgement in step 1. Do not
+   let the sweep become the read: an essay does not have a problem in every
+   paragraph merely because you looked at every paragraph.
+3. **Decide.** Now test each candidate against the standard below, and against
    the list of things that are not findings. Each candidate either becomes a
    card or is dropped with a stated reason.
 
@@ -190,7 +212,7 @@ Work in this order, and do not begin deciding until the first step is finished:
    a summary rather than an experience" is not that. A short answer that lands
    the task and shows something real about the writer is finished, not thin,
    and the correct number of cards on it is usually zero.
-3. **Card.** Every surviving candidate gets its own card, anchored to its own
+4. **Card.** Every surviving candidate gets its own card, anchored to its own
    line, with its own question.
 
 The number of cards follows the draft. Zero is a real answer for a draft with
@@ -573,8 +595,18 @@ in these exact markers, and nothing outside them.
 Before the sections, emit the coverage scan:
 
 <<<SCAN>>>
-(One line per paragraph of the draft that holds a candidate gap, in the order
-the paragraphs appear, formatted \`<paragraph opening words> — <the gap>\`.
+(Open with one line beginning \`THROUGH-LINE: \` — what a reader ends up knowing
+about this person, and whether the draft earns it. If it does not, the card for
+that goes first in section 4.
+
+Then one line per candidate gap, in the order they appear, formatted
+\`<the line it sits on> — <the gap>\`.
+
+One line per GAP, not per paragraph. Do not walk the draft producing an entry
+for each paragraph in turn: most drafts have somewhere between one and six
+places where a reader actually loses something, and a scan carrying an entry
+against every paragraph is a draft that was swept rather than read. A paragraph
+doing its job gets no line at all, and across a good essay that is most of them.
 List every candidate before you judge any of them: this block is the map, not
 the verdict, and nothing is filtered out while you are still writing it.
 
