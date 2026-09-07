@@ -1,7 +1,6 @@
 import {
   countWords,
   SUPPRESS_POLISH_FROM_ROUND,
-  DIMINISHING_RETURNS_ROUND,
   type Essay,
 } from "@/lib/types";
 

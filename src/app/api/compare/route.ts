@@ -12,7 +12,6 @@ import { selectCurrentSpots } from "@/lib/currentSpots";
 import {
   COMPARISON_AXES,
   deriveMargin,
-  deriveReadiness,
   MAX_TRANSFERABLE,
   MIN_DRAFT_WORDS,
   countWords,
