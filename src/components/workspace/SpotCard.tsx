@@ -42,6 +42,8 @@ interface Props {
   missingInDraft: boolean;
   onSelect: () => void;
   onStatusChange: (status: SpotStatus) => void;
+  /** Opens the conversation on this spot. */
+  onAnswer: () => void;
 }
 
 export default function SpotCard({
@@ -50,6 +52,7 @@ export default function SpotCard({
   missingInDraft,
   onSelect,
   onStatusChange,
+  onAnswer,
 }: Props) {
   // `answered` is live work, not settled work — it must not fade out.
   const dimmed = spot.status === "resolved" || spot.status === "skipped";
@@ -187,6 +190,37 @@ export default function SpotCard({
               <dd className="mt-0.5">{spot.why_it_matters}</dd>
             </div>
           </dl>
+
+          {/*
+            The question is the only part of a card a student can act on: it is
+            what turns a diagnosis into something they can answer. It used to
+            live on the Follow-up tab, so a card explained the problem in full
+            and then sent them somewhere else to do anything about it — and the
+            two buttons within reach were "resolved" and "set aside", which are
+            both ways of closing it. Put next to the reasoning that earned it,
+            the obvious move is the useful one.
+
+            Hidden once the spot is settled: a resolved card asking a question
+            reads as though it reopened itself.
+          */}
+          {spot.question && !dimmed && (
+            <div className="mt-4 rounded-md border border-accent/30 bg-accent-soft/40 p-3">
+              <p className="text-xs uppercase tracking-widest text-accent">
+                The question
+              </p>
+              <p className="mt-1.5 text-sm leading-relaxed">{spot.question}</p>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onAnswer();
+                }}
+                className="mt-3 rounded-full bg-accent px-3 py-1 text-xs font-medium text-white transition hover:bg-[#4849c8]"
+              >
+                {awaitingRevision ? "Back to the conversation" : "Answer this"}
+              </button>
+            </div>
+          )}
 
           <div className="mt-4 flex flex-wrap gap-2 border-t border-line pt-3 text-xs">
             {spot.status === "open" || awaitingRevision ? (

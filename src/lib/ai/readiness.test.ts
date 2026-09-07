@@ -3,6 +3,7 @@ import { test } from "node:test";
 import { parseModeAReport } from "./parseReport";
 import {
   deriveReadiness,
+  isAtRest,
   isReadyToSubmit,
   type FlaggedSpot,
   type Impact,
@@ -109,4 +110,18 @@ next: This is ready — further edits risk flattening your voice.
   );
   assert.match(report.readiness_why, /taste-level/);
   assert.match(report.readiness_next, /ready/);
+});
+
+test("an essay that has never been read is not at rest", () => {
+  // deriveReadiness([]) is "ready_to_submit" because nothing is open, which is
+  // right. A new essay has nothing open for the opposite reason, and the two
+  // were being treated as the same state: every new essay opened with "Read
+  // again anyway" over a tooltip saying another read was unlikely to help.
+  assert.equal(deriveReadiness([]), "ready_to_submit");
+  assert.equal(isAtRest(deriveReadiness([]), false), false);
+  assert.equal(isAtRest(deriveReadiness([]), true), true);
+  // A read that found something keeps the draft in play either way.
+  assert.equal(isAtRest("needs_work", true), false);
+  assert.equal(isAtRest("strong", true), false);
+  assert.equal(isAtRest(null, true), false);
 });

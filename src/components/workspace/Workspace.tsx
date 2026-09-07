@@ -15,7 +15,7 @@ import { locateQuote } from "@/lib/ai/parseReport";
 import {
   countWords,
   deriveReadiness,
-  isReadyToSubmit,
+  isAtRest,
   DIMINISHING_RETURNS_ROUND,
   SUPPRESS_POLISH_FROM_ROUND,
   minimumWordsForEssay,
@@ -71,7 +71,7 @@ export default function Workspace({
   // Recomputed from the live spots rather than read off the stored report, so
   // resolving the last substantive card updates the verdict immediately.
   const readiness = deriveReadiness(spots);
-  const atRest = isReadyToSubmit(readiness);
+  const atRest = isAtRest(readiness, Boolean(essay.last_feedback_at));
   const rounds = essay.revision_count ?? 0;
   const openCount = spots.filter((s) => s.status === "open").length;
   const resolvedCount = spots.filter((s) => s.status === "resolved").length;
@@ -469,6 +469,10 @@ export default function Workspace({
                         onStatusChange={(status) =>
                           changeStatus(spot.id, status)
                         }
+                        onAnswer={() => {
+                          setActiveSpotId(spot.id);
+                          setTab("followup");
+                        }}
                       />
                     ))}
 
@@ -510,6 +514,10 @@ export default function Workspace({
                                 onStatusChange={(status) =>
                                   changeStatus(spot.id, status)
                                 }
+                                onAnswer={() => {
+                                  setActiveSpotId(spot.id);
+                                  setTab("followup");
+                                }}
                               />
                             ))}
                           </div>

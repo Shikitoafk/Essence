@@ -64,6 +64,22 @@ export function isReadyToSubmit(readiness: Readiness | null): boolean {
 }
 
 /**
+ * Whether the draft has settled — nothing worth reading for again.
+ *
+ * Requires that a read actually happened. deriveReadiness() on an empty set
+ * returns "ready_to_submit", correctly, because nothing is open; but a brand
+ * new essay has nothing open for the opposite reason, and treating the two the
+ * same opened every new essay with "Read again anyway" and a tooltip saying
+ * another read was unlikely to help, before it had been read once.
+ */
+export function isAtRest(
+  readiness: Readiness | null,
+  hasBeenRead: boolean,
+): boolean {
+  return hasBeenRead && isReadyToSubmit(readiness);
+}
+
+/**
  * Past this many rounds, essays usually stop improving and start losing voice.
  * Runs are never blocked — the cost is just made visible.
  */
