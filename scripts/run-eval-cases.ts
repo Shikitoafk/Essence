@@ -12,6 +12,16 @@
  *
  *   npx tsx scripts/run-eval-cases.ts --model gemini-3.6-flash --out ./eval-out
  *   npx tsx scripts/run-eval-cases.ts --cases 1,2,12 --runs 2
+ *
+ * --system points at a frozen prompt in scripts/prompt-baselines, so an older
+ * version can be run against the same cases. Pair it deliberately: the free
+ * tier allows twenty requests per day PER MODEL, so a comparison stays honest
+ * by running both prompts for a given case on the SAME model, while different
+ * cases may sit on different models. Confounding the prompt with the model
+ * would make the whole comparison worthless, and it is the easy mistake to
+ * make when quota is what is scarce.
+ *
+ *   npx tsx scripts/run-eval-cases.ts --cases 1,2,3 --model gemini-3.7-flash  *     --system scripts/prompt-baselines/00b7d53-mode-a.txt --out ./eval-old
  */
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -113,6 +123,16 @@ async function main() {
   const only = arg("cases", "");
   const wanted = only ? new Set(only.split(",").map((n) => Number(n.trim()))) : null;
 
+  const systemPath = arg("system", "");
+  const system = systemPath
+    ? readFileSync(systemPath, "utf8")
+    : MODE_A_SYSTEM;
+  if (systemPath) {
+    console.log(`system prompt: ${systemPath} (${system.length} chars)`);
+  } else {
+    console.log(`system prompt: working tree (${system.length} chars)`);
+  }
+
   const md = readFileSync("docs/research/essay-feedback-eval-cases.md", "utf8");
   const cases = parseCases(md).filter((c) => !wanted || wanted.has(c.number));
   mkdirSync(outDir, { recursive: true });
@@ -152,7 +172,7 @@ async function main() {
           const response = await ai.models.generateContent({
             model,
             contents: `${buildModeAPrompt(essay, c.draft, CONTEXT)}\n\n${note}`,
-            config: { systemInstruction: MODE_A_SYSTEM, temperature: 0.6 },
+            config: { systemInstruction: system, temperature: 0.6 },
           });
           raw = response.text ?? "";
           error = "";
@@ -175,6 +195,7 @@ async function main() {
         [
           `# Case ${c.number}. ${c.title}`,
           `Model: ${model} · run ${run} · ${c.kind}${c.wordLimit ? ` · ${c.wordLimit} words` : ""}`,
+          `Prompt: ${systemPath || "working tree"}`,
           ``,
           `## Draft`,
           c.draft,
