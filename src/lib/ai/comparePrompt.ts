@@ -1,3 +1,10 @@
+import {
+  countWords,
+  deriveReadiness,
+  type Essay,
+  type FlaggedSpot,
+} from "@/lib/types";
+
 /**
  * System instruction for the head-to-head comparison call.
  *
@@ -58,3 +65,79 @@ Hard requirements:
 - "transferable_elements" holds at most three entries, and is an empty array when nothing is genuinely worth moving.
 - "destination_hint" points at a place. It never contains a sentence for the student to use.
 `;
+
+function describeVersion(
+  label: "A" | "B",
+  essay: Essay,
+  draft: string,
+  spots: FlaggedSpot[],
+): string {
+  const live = spots.filter(
+    (s) => s.status === "open" || s.status === "answered",
+  );
+
+  /*
+   * A version nobody has read has no findings, and deriveReadiness() on an
+   * empty set says "ready_to_submit" - true of the findings, false of the
+   * draft. Printed beside a read version's list of real problems, it handed
+   * the comparison to whichever draft had been examined least, and the newer
+   * draft is usually the one nobody has read yet.
+   */
+  const hasBeenRead = Boolean(essay.last_feedback_at);
+
+  const diagnostics =
+    !hasBeenRead
+      ? "This version has NOT been read, so nothing is listed. That is an absence of examination, not an absence of problems - do not read it as a clean bill of health."
+      : live.length === 0
+        ? "Every finding on this version has been worked through."
+        : live
+            .map(
+              (s) =>
+                `- [${s.impact}] ${s.pattern_name} — "${s.quoted_text}" · still unexplored: ${s.what_is_unexplored}`,
+            )
+            .join("\n");
+
+  return `--- VERSION ${label}: ${essay.title} ---
+Readiness: ${hasBeenRead ? deriveReadiness(spots) : "not read yet - no verdict"}
+Open findings from earlier reads:
+${diagnostics}
+
+Draft ${label}:
+${draft}
+--- END VERSION ${label} ---`;
+}
+
+export function buildComparePrompt(
+  versionA: Essay,
+  draftA: string,
+  spotsA: FlaggedSpot[],
+  versionB: Essay,
+  draftB: string,
+  spotsB: FlaggedSpot[],
+): string {
+  const parts: string[] = [];
+
+  if (versionA.prompt_text || versionB.prompt_text) {
+    parts.push(
+      `The prompt being answered:\n${versionA.prompt_text || versionB.prompt_text}`,
+    );
+  }
+
+  const limit = versionA.word_limit ?? versionB.word_limit;
+  if (limit) {
+    parts.push(
+      `Word limit: ${limit}. Version A is ${countWords(draftA)} words, version B is ${countWords(draftB)}.`,
+    );
+  }
+
+  parts.push(describeVersion("A", versionA, draftA, spotsA));
+  parts.push(describeVersion("B", versionB, draftB, spotsB));
+  parts.push(
+    [
+      "Decide which version this student should submit. Reply using the output contract exactly. Remember: you must pick one, and every quote you carry over must come verbatim from the losing draft.",
+      "Judge the drafts, not their histories. Which one is labelled A and which B carries no information, and neither does how much feedback a version has already had: a draft with a long list of findings has been examined, and one with none may only have been skipped.",
+    ].join("\n\n"),
+  );
+
+  return parts.join("\n\n");
+}
