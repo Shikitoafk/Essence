@@ -209,6 +209,21 @@ export async function POST(request: Request) {
   }
 
   /*
+   * Card accounting. "Why did this read only find three things" has three
+   * different answers — the model emitted three, or it emitted more and the
+   * anchoring dropped them, or the round bar suppressed them before it counted
+   * anything — and the student-facing number cannot tell them apart. Print all
+   * of it so the next unexpected count is diagnosable without a re-run.
+   */
+  console.info(
+    `[essence] read ${context.round} on essay ${essay.id}: model emitted ${report.spots.length} card(s), ${rows.length} kept, ${ordered.length - rows.length} dropped (quote not in draft, or duplicate)${
+      context.round >= SUPPRESS_POLISH_FROM_ROUND
+        ? "; polish-level findings were suppressed for this round"
+        : ""
+    }.`,
+  );
+
+  /*
    * Confidence calibration. A field that always reads "high" carries no
    * information, so the distribution is logged: if reads keep coming back
    * unanimous, the scale isn't being used and the prompt needs tightening.
