@@ -401,6 +401,24 @@ export default function Workspace({
             </div>
           )}
 
+          {/*
+            What not to change is prose too, and it was being read out of the
+            margin like everything else. It belongs under the draft with the
+            notes: same column, same measure, read in the same direction.
+
+            Not behind a tab, and not conditional on which one is open — this is
+            the only thing on the screen saying which passages to protect, and a
+            student deciding what to cut needs it in front of them whatever they
+            were doing a moment ago.
+          */}
+          {keepList.length > 0 && (
+            <div className="space-y-3">
+              {keepList.map((item, i) => (
+                <KeepCard key={`keep-${i}`} item={item} />
+              ))}
+            </div>
+          )}
+
           <EssaySettings essay={essay} />
         </div>
 
@@ -515,13 +533,6 @@ export default function Workspace({
                           setTab("followup");
                         }}
                       />
-                    ))}
-
-                    {/* Sits among the spots, not in a separate tab: this is the
-                      only thing on the screen saying what NOT to change, and it
-                      has to be where the changing gets decided. */}
-                    {keepList.map((item, i) => (
-                      <KeepCard key={`keep-${i}`} item={item} />
                     ))}
 
                     {minorSpots.length > 0 && (
