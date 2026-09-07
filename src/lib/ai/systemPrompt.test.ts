@@ -317,3 +317,15 @@ test("asking is not answering, and must not be judged as one", () => {
   assert.ok(!MODE_B_ASK_SYSTEM.includes("<<<SECTION"));
   assert.match(ask, /No JSON, no headings, no markdown structure/);
 });
+
+test("a downstream candidate is not dropped as a consequence of an upstream one", () => {
+  // Measured: on the 100-word Why Maths case the read dropped its own closing
+  // -line candidate because the emptiness earlier "caused" it. Two losses in
+  // two places, and a student fixing one is still left with the other.
+  // The drop rules live in the Mode A contract beside the scan block.
+  assert.match(MODE_A, /One candidate \*\*causing\*\* another is not the same moment/);
+  assert.match(MODE_A, /a student fixing only one still has the other/);
+  assert.match(MODE_A, /Card both, and say in the second card that the first is upstream of it/);
+  assert.match(MODE_A, /Those are the only two reasons/);
+  assert.match(MODE_A, /not a reason you construct on the spot/);
+});

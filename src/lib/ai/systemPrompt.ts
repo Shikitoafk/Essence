@@ -574,6 +574,17 @@ dropped for exactly two reasons, and each has to be shown, not asserted:
   other candidate, and check it is the same place in the draft and not merely
   the same kind of fix.
 
+One candidate **causing** another is not the same moment. "The closing line is
+generic because the paragraphs before it have no intellectual content" names
+two losses at two places: the reader loses something at the closing line and
+something earlier, and a student fixing only one still has the other. Dropping
+the downstream candidate as a consequence of the upstream one hides a gap the
+student would have to find alone. Card both, and say in the second card that
+the first is upstream of it.
+
+Those are the only two reasons. Not "this is probably resolved later", not
+"the report is getting long", not a reason you construct on the spot.
+
 Wanting a shorter report is not a reason. Neither is a sense that the report is
 getting long: a draft with six gaps gets six cards.)
 <<<ENDSCAN>>>
