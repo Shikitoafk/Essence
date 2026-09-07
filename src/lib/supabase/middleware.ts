@@ -3,11 +3,38 @@ import { NextResponse, type NextRequest } from "next/server";
 
 const PROTECTED_PREFIXES = ["/dashboard", "/essays", "/settings"];
 
+/**
+ * True when an OAuth code has landed somewhere that cannot spend it.
+ *
+ * Supabase substitutes the project's Site URL when the `redirect_to` it was
+ * given is not in the redirect allow-list. Sign-in then succeeds, the provider
+ * sends the user back to the site root carrying `?code=...`, and the landing
+ * page renders and drops it: no session is ever created, and every route the
+ * student clicks bounces them back to /login with nothing to show for it.
+ *
+ * The allow-list is the real fix, but it lives in a dashboard rather than in
+ * this repository, so a deployment can lose sign-in entirely without a line of
+ * code changing. Forwarding the code to the callback costs one redirect and
+ * removes that failure mode.
+ */
+export function isStrayOAuthCode(
+  pathname: string,
+  params: URLSearchParams,
+): boolean {
+  return pathname === "/" && params.has("code");
+}
+
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });
 
   const path = request.nextUrl.pathname;
   const isProtected = PROTECTED_PREFIXES.some((p) => path.startsWith(p));
+
+  if (isStrayOAuthCode(path, request.nextUrl.searchParams)) {
+    const callback = request.nextUrl.clone();
+    callback.pathname = "/auth/callback";
+    return NextResponse.redirect(callback);
+  }
 
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
