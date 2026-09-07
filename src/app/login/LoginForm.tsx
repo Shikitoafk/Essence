@@ -17,12 +17,32 @@ export default function LoginForm() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [dismissedCallbackError, setDismissedCallbackError] = useState(false);
+
+  /*
+   * `?error=auth` means the sign-in came back from the provider but the code
+   * could not be exchanged for a session. The callback redirects here, and
+   * without this the page rendered a blank form: a failed sign-in and a fresh
+   * visit looked identical, so the student retried the same thing and landed
+   * back in the same silence.
+   *
+   * Derived during render rather than seeded into state. This page is
+   * statically prerendered, so useSearchParams() is empty on the first render
+   * and fills in afterwards — a useState initializer reads the empty one, runs
+   * only that once, and the message never appears.
+   */
+  const callbackError =
+    params.get("error") === "auth" && !dismissedCallbackError
+      ? "That sign-in didn't finish. Try again — if it keeps happening, use email and password below."
+      : null;
+  const shownError = error ?? callbackError;
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
     setBusy(true);
     setError(null);
     setNotice(null);
+    setDismissedCallbackError(true);
 
     const supabase = createClient();
 
@@ -56,6 +76,7 @@ export default function LoginForm() {
   async function handleGoogle() {
     setBusy(true);
     setError(null);
+    setDismissedCallbackError(true);
     const supabase = createClient();
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
@@ -130,9 +151,9 @@ export default function LoginForm() {
           />
         </label>
 
-        {error && (
+        {shownError && (
           <p className="rounded-md bg-flag-high/10 px-3 py-2 text-sm text-flag-high">
-            {error}
+            {shownError}
           </p>
         )}
         {notice && (
