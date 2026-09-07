@@ -408,17 +408,72 @@ export default function Workspace({
             The margin keeps the collapsed cards, which is what it is good at:
             an index you scan, not prose you read.
           */}
-          {openSpot && (
-            <div ref={openNoteRef}>
-              <SpotCard
-              spot={openSpot}
-              active
-              missingInDraft={!locateQuote(draft, openSpot.quoted_text)}
-              onSelect={() => setActiveSpotId(null)}
-              onStatusChange={(status) => changeStatus(openSpot.id, status)}
-                onAnswer={() => setTab("followup")}
+          {/*
+            Everything with sentences in it reads here, under the draft, at the
+            measure of the text. The margin is the index and the verdict: it is
+            scanned, not read.
+
+            The conversation was the last thing left over there, and it is the
+            part a student spends the most time in — one question at a time,
+            their own answers coming back — in the narrowest column on the page.
+          */}
+          {tab === "followup" ? (
+            <div ref={openNoteRef} className="flex min-h-0 flex-col">
+              <ConversationPanel
+                essayId={essay.id}
+                messages={messages}
+                spots={spots}
+                activeSpotId={activeSpotId}
+                onMessagesChange={setMessages}
+                onSpotResolved={(spotId, status) =>
+                  setSpots((prev) =>
+                    prev.map((s) => (s.id === spotId ? { ...s, status } : s)),
+                  )
+                }
+                onSelectSpot={setActiveSpotId}
               />
             </div>
+          ) : tab === "report" ? (
+            <div ref={openNoteRef}>
+              {report ? (
+                <div className="space-y-5 rounded-lg border border-line bg-white p-5">
+                  <ReportSection
+                    title="Overall impression"
+                    body={report.overall_impression}
+                  />
+                  <ReportSection
+                    title="Checklist findings"
+                    body={report.checklist_findings}
+                  />
+                  <ReportSection
+                    title="Framework findings"
+                    body={report.framework_findings}
+                  />
+                  <ReportSection
+                    title="Why this essay works"
+                    body={report.strengths}
+                  />
+                </div>
+              ) : (
+                <p className="rounded-lg border border-dashed border-line bg-white p-6 text-sm text-muted">
+                  The full structural read appears here after your first
+                  feedback run.
+                </p>
+              )}
+            </div>
+          ) : (
+            openSpot && (
+              <div ref={openNoteRef}>
+                <SpotCard
+                  spot={openSpot}
+                  active
+                  missingInDraft={!locateQuote(draft, openSpot.quoted_text)}
+                  onSelect={() => setActiveSpotId(null)}
+                  onStatusChange={(status) => changeStatus(openSpot.id, status)}
+                  onAnswer={() => setTab("followup")}
+                />
+              </div>
+            )
           )}
 
           {/*
@@ -497,24 +552,7 @@ export default function Workspace({
             ))}
           </div>
 
-          {tab === "followup" ? (
-            <div className="flex min-h-0 flex-1 flex-col">
-              <ConversationPanel
-                essayId={essay.id}
-                messages={messages}
-                spots={spots}
-                activeSpotId={activeSpotId}
-                onMessagesChange={setMessages}
-                onSpotResolved={(spotId, status) =>
-                  setSpots((prev) =>
-                    prev.map((s) => (s.id === spotId ? { ...s, status } : s)),
-                  )
-                }
-                onSelectSpot={setActiveSpotId}
-              />
-            </div>
-          ) : (
-            <div className="space-y-3">
+          <div className="space-y-3">
               {essay.last_feedback_at && (
                 <ReadinessCard readiness={readiness} report={report} />
               )}
@@ -528,8 +566,7 @@ export default function Workspace({
                 </p>
               )}
 
-              {tab === "spots" ? (
-                spots.length === 0 ? (
+              {spots.length === 0 ? (
                   <p className="rounded-lg border border-dashed border-line bg-white p-6 text-sm text-muted">
                     No flagged spots yet. Paste your draft and press{" "}
                     <span className="text-ink">Get feedback</span> — Essence
@@ -543,9 +580,7 @@ export default function Workspace({
                         key={spot.id}
                         spot={spot}
                         active={false}
-                        startHere={
-                          spot.id === startHereId && spot.id !== activeSpotId
-                        }
+                        startHere={spot.id === startHereId}
                         missingInDraft={!locateQuote(draft, spot.quoted_text)}
                         onSelect={() => setActiveSpotId(spot.id)}
                         onStatusChange={(status) =>
@@ -600,34 +635,8 @@ export default function Workspace({
                       </div>
                     )}
                   </>
-                )
-              ) : report ? (
-                <div className="space-y-5 rounded-lg border border-line bg-white p-5">
-                  <ReportSection
-                    title="Overall impression"
-                    body={report.overall_impression}
-                  />
-                  <ReportSection
-                    title="Checklist findings"
-                    body={report.checklist_findings}
-                  />
-                  <ReportSection
-                    title="Framework findings"
-                    body={report.framework_findings}
-                  />
-                  <ReportSection
-                    title="Why this essay works"
-                    body={report.strengths}
-                  />
-                </div>
-              ) : (
-                <p className="rounded-lg border border-dashed border-line bg-white p-6 text-sm text-muted">
-                  The full structural read appears here after your first
-                  feedback run.
-                </p>
-              )}
-            </div>
-          )}
+                )}
+          </div>
         </div>
       </div>
     </div>
