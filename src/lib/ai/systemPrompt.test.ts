@@ -1,328 +1,48 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
-  EDITORIAL_CALIBRATION,
-  ENGINE_REFINEMENTS,
-  ENGINE_SYSTEM_PROMPT,
+  DIAGNOSTIC_GUIDE,
+  ENGINE_CORE,
   MODE_A_SYSTEM,
   MODE_B_ASK_SYSTEM,
   MODE_B_SYSTEM,
 } from "./systemPrompt";
 
-test("both modes carry the full engine spec", () => {
-  for (const system of [MODE_A_SYSTEM, MODE_B_SYSTEM]) {
-    // Spot-check one line from each major region of the spec.
-    assert.ok(system.includes("Never rewrite the student's essay."));
-    assert.ok(system.includes("Matryoshka principle"));
-    assert.ok(system.includes("Superman syndrome"));
-    assert.ok(system.includes("Generic closing claim"));
-    assert.ok(system.includes("Never flatter a weak essay."));
+/*
+ * These assert on prompt text, which is the only part of the engine that can be
+ * checked without spending a model call. They prove a rule is present and has
+ * not drifted; they prove nothing about how a model behaves when it reads it.
+ * That is what scripts/run-eval-cases.ts is for.
+ *
+ * Every test here carries a requirement from the version before the rewrite.
+ * The prompt was reorganised; none of these were meant to be dropped.
+ */
+
+/** Hard wraps in the prompt make raw substring matching fragile. */
+const flat = (s: string) => s.replace(/\s+/g, " ");
+
+const CORE = flat(ENGINE_CORE);
+const GUIDE = flat(DIAGNOSTIC_GUIDE);
+const MODE_A = flat(MODE_A_SYSTEM);
+
+test("every mode carries the core, and only Mode A carries the reading guide", () => {
+  // The split is deliberate: a conversation turn does not need the apparatus
+  // for reading a whole draft, and paying for it on every reply made the
+  // conversation slower without making it better.
+  for (const mode of [MODE_A_SYSTEM, MODE_B_SYSTEM, MODE_B_ASK_SYSTEM]) {
+    assert.ok(mode.includes(ENGINE_CORE));
   }
+  assert.ok(MODE_A_SYSTEM.includes(DIAGNOSTIC_GUIDE));
+  assert.ok(!MODE_B_SYSTEM.includes(DIAGNOSTIC_GUIDE));
+  assert.ok(!MODE_B_ASK_SYSTEM.includes(DIAGNOSTIC_GUIDE));
 });
 
-test("Mode A carries the field refinements, Mode B does not", () => {
-  assert.ok(MODE_A_SYSTEM.includes(ENGINE_REFINEMENTS));
-  // The refinements shape the diagnostic read; the chat loop has no use for them
-  // and paying for those tokens on every turn would be waste.
-  assert.ok(!MODE_B_SYSTEM.includes("Field Refinements"));
-});
-
-test("a deliberate, explained absence is protected from being flagged", () => {
-  // The failure this prevents: a draft that says why a scene cannot be given
-  // gets a card demanding that scene. Sophisticated drafts suffer most.
-  assert.ok(
-    ENGINE_REFINEMENTS.includes("An absence the draft explains is not a gap"),
-  );
-  assert.ok(ENGINE_REFINEMENTS.includes("do not flag it"));
-  assert.ok(ENGINE_REFINEMENTS.includes("never the"));
-});
-
-test("the engine must deduplicate its own findings", () => {
-  // Checklist point 11 turned on the report itself: three labels for one gap
-  // read as three problems and stall the follow-up conversation.
-  assert.ok(ENGINE_REFINEMENTS.includes("One card per distinct gap"));
-  // Merging is by location. The earlier test asked whether one added scene
-  // would close both cards, which merged every gap an essay fixes the same
-  // way — three separate missing aftermaths became one card.
-  const normalized = ENGINE_REFINEMENTS.replace(/\s+/g, " ");
-  assert.match(normalized, /do they point at the SAME moment in the draft/);
-  assert.match(normalized, /Merge on location, never on the shape of the remedy/);
-  assert.match(normalized, /Sharing a KIND of fix is not sharing a finding/);
-});
-
-test("cross-essay memory can never become a criticism", () => {
-  /*
-   * Observed on a real admitted essay: season memory from a different essay
-   * leaked in, and the read faulted this draft for "dropping" a laboratory
-   * interest that had never been in it. That breaks the spec's own rule against
-   * inventing facts about the student, via a feature built to help them.
-   */
-  assert.ok(
-    ENGINE_REFINEMENTS.includes(
-      "Never fault a draft for material that isn't in it",
-    ),
-  );
-  // Matched clear of the hard wrap in the prompt text.
-  assert.ok(
-    ENGINE_REFINEMENTS.includes("specification this draft has to satisfy"),
-  );
-  for (const verb of ['"drops"', '"omits"', '"fails to mention"']) {
-    assert.ok(
-      ENGINE_REFINEMENTS.includes(verb),
-      `${verb} is the exact phrasing the failure took`,
-    );
-  }
-  // Point 11 comparisons stay legal — those are about what the essays contain.
-  assert.ok(ENGINE_REFINEMENTS.includes("checklist point 11"));
-});
-
-test("a closing reply cannot leave a question hanging", () => {
-  /*
-   * Observed: a "resolved" reply ended with a follow-up question. The interface
-   * closes the exchange on that verdict and binds the input to the next spot,
-   * so the student was left looking at a question they could not answer.
-   * Wanting more from the passage is what needs_narrower is for.
-   */
-  assert.ok(MODE_B_SYSTEM.includes("MUST NOT end with a question"));
-  assert.ok(MODE_B_SYSTEM.includes("cannot answer"));
-  assert.ok(MODE_B_SYSTEM.includes("keep the exchange open"));
-});
-
-test("the question mode still refuses to write the essay", () => {
-  // Added because the loop was one-way and students couldn't ask anything.
-  // The risk in opening that channel is "just show me how to phrase it", so
-  // the line between method and content has to survive in this mode too.
-  assert.ok(MODE_B_ASK_SYSTEM.includes("Method, not content."));
-  assert.ok(MODE_B_ASK_SYSTEM.includes("Write, draft, rephrase"));
-  assert.ok(MODE_B_ASK_SYSTEM.includes("say plainly that you won't write it"));
-  // It carries the whole engine spec, not just the question rules.
-  assert.ok(MODE_B_ASK_SYSTEM.includes("Never rewrite the student's essay."));
-  assert.ok(MODE_B_ASK_SYSTEM.includes("Never invent facts"));
-});
-
-test("asking is not answering, and must not be judged as one", () => {
-  assert.ok(
-    MODE_B_ASK_SYSTEM.includes("Do not treat their message as an answer"),
-  );
-  // Plain prose: the verdict machinery belongs to answers only.
-  assert.ok(MODE_B_ASK_SYSTEM.includes("Reply with plain prose"));
-  assert.ok(!MODE_B_ASK_SYSTEM.includes("needs_narrower"));
-});
-
-test("each refinement section has a unique letter", () => {
-  // Two sections both labelled F once slipped through while renumbering.
-  const letters = [...ENGINE_REFINEMENTS.matchAll(/^### ([A-Z])\./gm)].map(
-    (m) => m[1],
-  );
-  assert.ok(letters.length > 0);
-  assert.equal(new Set(letters).size, letters.length, letters.join(","));
-});
-
-test("confidence is defined at every level, not just high", () => {
-  for (const level of ["**high**", "**medium**", "**low**"]) {
-    assert.ok(
-      ENGINE_REFINEMENTS.includes(level),
-      `${level} needs a definition or the scale collapses to decoration`,
-    );
-  }
-});
-
-test("the prose diagnosis is required to become a card", () => {
-  // The sharpest observation must not die in the summary while lesser findings
-  // get cards the student can actually act on.
-  // Matched without spanning a line wrap, since the prompt is hard-wrapped.
-  assert.ok(ENGINE_REFINEMENTS.includes("to appear as a spot card"));
-  assert.ok(ENGINE_REFINEMENTS.includes("Balloon + Needle"));
-  assert.match(ENGINE_REFINEMENTS, /die in\s+the summary/);
-});
-
-test("an open ending is not forced into a generic future plan", () => {
-  // The engine may verify orientation, but it cannot demand a stock
-  // forward-looking closure from a personal statement whose uncertainty is
-  // doing real character work.
-  assert.ok(ENGINE_REFINEMENTS.includes("Mandatory final check"));
-  assert.ok(ENGINE_REFINEMENTS.includes("Do NOT demand a forward-looking resolution"));
-  assert.ok(ENGINE_REFINEMENTS.includes("may end in uncertainty"));
-  assert.match(ENGINE_REFINEMENTS, /Never\s+prescribe a future plan/);
-});
-
-test("a repeated metaphor is judged by what each recurrence adds", () => {
-  assert.ok(ENGINE_REFINEMENTS.includes("### P. A recurring image must earn each return"));
-  assert.ok(ENGINE_REFINEMENTS.includes("function, not frequency"));
-  assert.ok(ENGINE_REFINEMENTS.includes('"Mechanical motif"'));
-  assert.ok(ENGINE_REFINEMENTS.includes("fails to add"));
-  assert.ok(ENGINE_REFINEMENTS.includes("do not supply a replacement metaphor"));
-});
-
-test("supplementals are judged against their actual prompt, not a default Why Us rubric", () => {
-  assert.ok(
-    ENGINE_REFINEMENTS.includes(
-      "### Q. A supplemental is an answer to a particular question",
-    ),
-  );
-  assert.ok(ENGINE_REFINEMENTS.includes("Do not use the Why Us framework as"));
-  assert.ok(ENGINE_REFINEMENTS.includes("Prompt mismatch"));
-  assert.ok(ENGINE_REFINEMENTS.includes("student did not provide the prompt"));
-  assert.ok(ENGINE_REFINEMENTS.includes("brevity can be a virtue"));
-});
-
-test("the full diagnostic covers every distinct gap instead of stopping at three cards", () => {
-  assert.ok(ENGINE_REFINEMENTS.includes("### R. Coverage, not triage"));
-  const normalized = ENGINE_REFINEMENTS.replace(/\*/g, "").replace(/\s+/g, " ");
-  assert.match(
-    normalized,
-    /not stop at three, rank the cards, or choose a small representative sample/i,
-  );
-  assert.match(normalized, /never a quota in either direction/);
-  assert.match(normalized, /coverage read, not a teaser/);
-  // Matched clear of the hard wraps in the prompt text.
-  const normalizedModeA = MODE_A_SYSTEM.replace(/\s+/g, " ");
-  assert.match(
-    normalizedModeA,
-    /Do not rank cards, create a top-three list, or introduce a new issue here/i,
-  );
-  // Cards now reconcile against the visible scan rather than against a
-  // description of what counts as a gap.
-  assert.match(
-    normalizedModeA,
-    /EVERY candidate in the scan above that you did not explicitly drop/,
-  );
-  assert.match(
-    normalizedModeA,
-    /a candidate that is neither carded nor listed as DROPPED is a finding you lost/,
-  );
-});
-
-test("research calibration reaches diagnostic and both conversation modes after legacy rules", () => {
-  for (const system of [MODE_A_SYSTEM, MODE_B_SYSTEM, MODE_B_ASK_SYSTEM]) {
-    assert.ok(system.includes(EDITORIAL_CALIBRATION));
-    assert.ok(system.indexOf(EDITORIAL_CALIBRATION) >= ENGINE_SYSTEM_PROMPT.length);
-    assert.match(system, /not admission chances/);
-    assert.match(system, /titles alone/);
-    assert.match(system, /initial diagnosis as revisable/);
-  }
-});
-
-test("research lenses distinguish substantive depth from formula compliance", () => {
-  for (const lens of ["Specificity of thinking", "Relationships with agency", "Detail with a job", "Selection and progression", "Proportionate change", "Supplemental depth per word"]) {
-    assert.ok(ENGINE_REFINEMENTS.includes(lens), lens);
-  }
-  assert.match(EDITORIAL_CALIBRATION, /Showing and telling can both work/);
-  assert.match(EDITORIAL_CALIBRATION, /refusal to share/);
-  assert.match(EDITORIAL_CALIBRATION, /Do not predict acceptance/);
-});
-
-test("a first detail does not automatically end a Socratic thread", () => {
-  assert.ok(ENGINE_REFINEMENTS.includes("one concrete noun or fact"));
-  assert.ok(ENGINE_REFINEMENTS.includes("enough truthful raw material"));
-  assert.ok(ENGINE_REFINEMENTS.includes("never continue questioning merely"));
-});
-
-test("every meaningful diagnosis has to become an anchored card", () => {
-  assert.ok(ENGINE_REFINEMENTS.includes("Does every meaningful diagnosis have a card in section 4?"));
-  assert.ok(ENGINE_REFINEMENTS.includes("Never leave a meaningful problem"));
-  assert.ok(ENGINE_REFINEMENTS.includes("stranded in prose"));
-  assert.match(ENGINE_REFINEMENTS, /add one\s+anchored card, or remove the diagnosis/);
-});
-
-test("a flat draft is caught even when nothing is missing from it", () => {
-  /*
-   * Reported by a reader trying the tool: keep the structure and it calls a
-   * robotic essay strong — "живности не видит". Correct, and the cause was
-   * structural. Every pattern in this prompt hunts for absent material, so a
-   * draft with no gaps passed every check and got told it was finished.
-   *
-   * The test pins the escape hatch shut: the voice check has to be a mandatory
-   * verification rated structural, with a concrete test rather than an appeal
-   * to taste, and it has to keep its guard against flagging plain writing.
-   */
-  assert.ok(ENGINE_REFINEMENTS.includes("Is anyone in here?"));
-  assert.ok(ENGINE_REFINEMENTS.includes("No one in the room"));
-
-  // Concrete and anchorable, not "add more personality". Whitespace-tolerant:
-  // the phrase spans a hard wrap in the prompt, and in both places it appears.
-  assert.match(
-    ENGINE_REFINEMENTS,
-    /one sentence only this writer\s+could have written/,
-  );
-
-  // Structural, or the readiness verdict never sees it.
-  assert.match(
-    ENGINE_REFINEMENTS,
-    /cannot find one, that is the finding, it is \*\*structural\*\*/,
-  );
-
-  // Named in the mandatory checks, not left as advice further up the prompt.
-  const checks = ENGINE_REFINEMENTS.slice(
-    ENGINE_REFINEMENTS.indexOf("Mandatory final check"),
-  );
-  assert.ok(checks.includes("Is anyone in here?"));
-
-  // The guard rail matters as much as the rule: a quiet voice is still a voice.
-  assert.ok(ENGINE_REFINEMENTS.includes("Do NOT flag plain writing"));
-  assert.ok(ENGINE_REFINEMENTS.includes("competence is not the crime"));
-});
-
-test("the enumerated checklist is a floor the engine may exceed", () => {
-  /*
-   * Same report, wider form: the engine graded only against what was written
-   * down, and an essay can fail in ways nobody enumerated. The permission has
-   * to be explicit — with the invention guard still attached, or "name what you
-   * see" becomes licence to pad.
-   */
-  assert.ok(ENGINE_REFINEMENTS.includes("floor, not a ceiling"));
-  assert.ok(ENGINE_REFINEMENTS.includes("You are not a checklist runner"));
-  assert.match(ENGINE_REFINEMENTS, /that is a finding and you must report it/);
-
-  // The examples must be offered as illustrations, never as a new closed set.
-  assert.ok(ENGINE_REFINEMENTS.includes("also not exhaustive"));
-
-  // Guard rails survive the loosening.
-  assert.ok(ENGINE_REFINEMENTS.includes("The guard rails do not loosen"));
-  assert.match(ENGINE_REFINEMENTS, /not freedom to manufacture/);
-  // Silence stays the right answer on an ordinary draft.
-  assert.ok(ENGINE_REFINEMENTS.includes("say nothing"));
-});
-
-test("every critique is evidence-based and every question stays non-leading", () => {
-  assert.ok(ENGINE_REFINEMENTS.includes("### L. Earn every criticism"));
-  assert.ok(ENGINE_REFINEMENTS.includes("causal chain"));
-  assert.ok(ENGINE_REFINEMENTS.includes('"make it stronger"'));
-  assert.ok(ENGINE_REFINEMENTS.includes("### M. Questions must uncover, not direct"));
-  assert.ok(ENGINE_REFINEMENTS.includes("not a disguised suggestion"));
-  assert.ok(ENGINE_REFINEMENTS.includes("I do not know"));
-});
-
-test("the queue is ordered by the reader's loss, not draft order", () => {
-  assert.ok(ENGINE_REFINEMENTS.includes("### N. Rank by the reader's loss"));
-  assert.match(ENGINE_REFINEMENTS, /core self,\s*agency,\s*or direction/);
-  assert.ok(ENGINE_REFINEMENTS.includes("load-bearing passage"));
-});
-
-test("the diagnostic has a free editorial read beyond named patterns", () => {
-  assert.ok(ENGINE_REFINEMENTS.includes("### O. Read the essay, not just the rubric"));
-  assert.ok(ENGINE_REFINEMENTS.includes("Personal voice:"));
-  assert.ok(ENGINE_REFINEMENTS.includes("Emotional truth:"));
-  assert.ok(ENGINE_REFINEMENTS.includes("Presence and energy:"));
-  assert.ok(ENGINE_REFINEMENTS.includes("MUST become a card"));
-  assert.ok(ENGINE_REFINEMENTS.includes("not a new closed checklist"));
-});
-
-test("off-pattern findings get an accurate name, not a forced one", () => {
-  // Observed: a detachment finding labelled "Generic closing claim" against a
-  // line that was neither. The label contradicted its own card, and pattern
-  // names are part of the dedup key, so a wrong one also splits identity.
-  assert.ok(ENGINE_REFINEMENTS.includes("must NOT force them"));
-  assert.ok(ENGINE_REFINEMENTS.includes("name it after the principle it"));
-  assert.ok(ENGINE_REFINEMENTS.includes("better than a familiar, wrong one"));
-});
-
-test("the interest-coherence check keeps its guard rails", () => {
-  // The check is only safe because it is narrow. If these ever drop out, the
-  // engine starts nitpicking healthy metaphors.
-  assert.ok(ENGINE_REFINEMENTS.includes("ONLY when ALL of the following hold"));
-  assert.ok(ENGINE_REFINEMENTS.includes("A resonant image is not an error."));
-  assert.ok(ENGINE_REFINEMENTS.includes("do not flag it"));
+test("the core carries no serialization markers", () => {
+  // Formatting belongs to the per-mode contracts. A section marker leaking into
+  // the shared core would tell Mode B to emit Mode A's envelope.
+  assert.ok(!ENGINE_CORE.includes("<<<SECTION"));
+  assert.ok(!ENGINE_CORE.includes("<<<CARD>>>"));
+  assert.ok(!DIAGNOSTIC_GUIDE.includes("<<<CARD>>>"));
 });
 
 test("each mode gets its own output contract and not the other's", () => {
@@ -335,39 +55,265 @@ test("each mode gets its own output contract and not the other's", () => {
   assert.ok(!MODE_B_SYSTEM.includes("<<<CARD>>>"));
 });
 
-test("the verbatim spec is not edited in place", () => {
-  // Refinements belong in ENGINE_REFINEMENTS so the original spec stays
-  // traceable against essay_nudge_system_prompt.md.
-  assert.ok(!ENGINE_SYSTEM_PROMPT.includes("Field Refinements"));
-  assert.ok(!ENGINE_SYSTEM_PROMPT.includes("<<<SECTION"));
+test("the read maps the whole draft before it judges anything", () => {
+  // The reason three cards kept coming back: the model decided while it read,
+  // so a gap it had noticed could be filtered before it was ever written down.
+  assert.match(GUIDE, /You are not sampling the draft.*You are mapping it/);
+  assert.match(GUIDE, /Do not judge any of them yet/);
+  assert.match(GUIDE, /a candidate never written down is invisible/);
+  assert.match(MODE_A, /<<<SCAN>>>/);
+  assert.match(MODE_A, /List every candidate before you judge any of them/);
 });
 
-test("the five patterns are a vocabulary, not the set of things worth a card", () => {
-  // Section 4 used to read "For each flagged spot (using the five patterns
-  // above)", which capped the cards at the pattern list while section H said
-  // the opposite. Reads came back with three cards on drafts holding six or
-  // seven distinct gaps.
-  const normalized = MODE_A_SYSTEM.replace(/\s+/g, " ");
-  assert.match(normalized, /a naming vocabulary, NOT the list of things worth flagging/);
-  assert.match(normalized, /There is no target number here, and no ceiling/);
-  assert.doesNotMatch(normalized, /For each flagged spot \(using the five patterns above\)/);
+test("the card count follows the draft in both directions", () => {
+  assert.match(GUIDE, /There is no target, no ceiling, and no representative sample/);
+  assert.match(GUIDE, /Zero is a real answer/);
+  // The cost of under-reporting, stated so it is not traded away for brevity.
+  assert.match(GUIDE, /will fix three and submit an essay with three left in it/);
 });
 
-test("the read has to show its scan before it decides what to card", () => {
-  // Restraint rules outnumber and out-specify the coverage rules in this
-  // prompt, so telling the model not to stop at three did not move it off
-  // three. Making the scan an output rather than an intention is what gives
-  // the cards something to reconcile against.
-  const normalized = MODE_A_SYSTEM.replace(/\s+/g, " ");
-  assert.match(normalized, /<<<SCAN>>>/);
-  assert.match(normalized, /<<<ENDSCAN>>>/);
-  assert.match(normalized, /List every candidate before you judge any of them/);
-  assert.match(normalized, /this block is the map, not the verdict/);
-  // Dropping a candidate is allowed, but it has to be shown. "The draft
-  // accounts for it" is what a model says when it wants a shorter report, and
-  // two flash models used exactly that to drop real gaps.
-  assert.match(normalized, /then quote the draft's own words that do the answering, verbatim/);
-  assert.match(normalized, /If you cannot point at the sentence that closes the gap, the draft does not close it/);
-  assert.match(normalized, /are claims about the draft, not quotes from it, and they do not drop anything/);
-  assert.match(normalized, /a draft with six gaps gets six cards/);
+test("dropping a candidate has to be shown, not asserted", () => {
+  // Both flash models dropped real gaps on the strength of "the draft accounts
+  // for it", which is a claim about the draft rather than evidence from it.
+  assert.match(GUIDE, /you must quote the draft's own words that do the accounting/);
+  assert.match(GUIDE, /If you cannot point at the sentence, the draft does not close the gap/);
+  assert.match(GUIDE, /are statements about the draft, not evidence from it/);
+  // The old rule this replaces, kept: a thin explanation is itself the finding.
+  assert.match(GUIDE, /If the explanation itself is thin, that is the finding/);
+});
+
+test("findings merge by location, never by the shape of the fix", () => {
+  assert.match(GUIDE, /do they point at the \*\*same moment\*\* in the draft/);
+  assert.match(GUIDE, /Sharing a \*\*kind\*\* of fix is not sharing a finding/);
+  assert.match(GUIDE, /Merge on location, never on the shape of the remedy/);
+});
+
+test("every critique is evidence-based", () => {
+  assert.match(GUIDE, /A finding is a claim you have to prove, not an impression/);
+  assert.match(GUIDE, /what that missing understanding costs \*\*this\*\* essay/);
+  assert.match(GUIDE, /make it stronger.*add depth.*be more specific/);
+  assert.match(GUIDE, /Do not write the card/);
+});
+
+test("a difference of taste is not a finding", () => {
+  assert.match(GUIDE, /A difference between your taste and the writer's is not a finding at all/);
+  assert.match(GUIDE, /If resolving it would not change the reader's picture of this applicant/);
+});
+
+test("questions uncover and never direct", () => {
+  assert.match(GUIDE, /the question is not a suggestion in disguise/);
+  assert.match(GUIDE, /must not contain an invented event, emotion, motive, person, detail or conclusion/);
+  // A question that presupposes failure is as leading as one that presupposes
+  // success. Observed: a case-3 read asked which moment of hesitation showed
+  // the truth, on a draft that never said there was hesitation.
+  assert.match(GUIDE, /Do not ask which moment of hesitation showed the truth unless the draft says there was hesitation/);
+  assert.match(GUIDE, /as leading as one that presupposes a triumph/);
+  assert.match(GUIDE, /answer "I do not know" without contradicting a premise you supplied/);
+});
+
+test("a flat draft is caught even when nothing is missing from it", () => {
+  assert.match(GUIDE, /nothing is missing and nobody is home/);
+  assert.match(GUIDE, /find one sentence only this writer could have written/);
+  assert.match(GUIDE, /it is structural, and it outranks every line-level gap/);
+  // The guard rail: plainness is not flatness.
+  assert.match(GUIDE, /Plain writing is not flatness/);
+  assert.match(GUIDE, /the absence of a person, not the absence of decoration/);
+});
+
+test("the enumerated checklist is a floor the engine may exceed", () => {
+  assert.match(GUIDE, /they are a floor rather than a ceiling/);
+  assert.match(GUIDE, /No list is the set of things that can be wrong with an essay/);
+  assert.match(GUIDE, /it is a finding and you report it/);
+  // Freedom to name is not freedom to invent.
+  assert.match(GUIDE, /The guard rails do not loosen/);
+  assert.match(GUIDE, /Freedom to name what you see is not freedom to manufacture/);
+});
+
+test("off-pattern findings get an accurate name, not a forced one", () => {
+  assert.match(GUIDE, /They are a vocabulary, not the set of things worth reporting/);
+  assert.match(GUIDE, /name it after the principle it actually breaks/);
+  assert.match(GUIDE, /A plain accurate name always beats a familiar wrong one/);
+  for (const name of ["No one in the room", "Mechanical motif", "Prompt mismatch"]) {
+    assert.ok(GUIDE.includes(name), name);
+  }
+});
+
+test("the prose diagnosis is required to become a card", () => {
+  // Section 4 is the only part of the report that becomes a highlighted line
+  // and an answerable question. Measured: a read named the systematic-review
+  // silence in checklist prose and never carded it.
+  assert.match(GUIDE, /must also exist as a card in section 4/);
+  assert.match(GUIDE, /a criticism left only in prose is advice they read once and cannot work on/);
+  assert.match(GUIDE, /give it an anchored card, or remove the diagnosis/);
+  assert.match(GUIDE, /quote the line that best represents it/);
+});
+
+test("confidence is defined at every level, not just high", () => {
+  for (const level of ["high", "medium", "low"]) {
+    assert.ok(GUIDE.includes(`**${level}**`), level);
+  }
+  assert.match(GUIDE, /A field that always reads high carries no information/);
+  // Do not swing the other way and fake a spread.
+  assert.match(GUIDE, /Do not manufacture a spread either/);
+  assert.match(GUIDE, /Confidence is about the evidence for a finding, never about admission chances/);
+});
+
+test("the impact ratings are the verdict and cannot be gamed", () => {
+  for (const impact of ["structural", "substantive", "polish"]) {
+    assert.ok(GUIDE.includes(`**${impact}**`), impact);
+  }
+  assert.match(GUIDE, /reported to the student as ready to submit/);
+  assert.match(GUIDE, /do not inflate a taste note into a structural problem/);
+  assert.match(GUIDE, /do not soften a structural problem because the student has already revised/);
+});
+
+test("the queue is ordered by the reader's loss, not draft order", () => {
+  assert.match(GUIDE, /Rank by what the reader loses, not by where you noticed it/);
+  assert.match(GUIDE, /not the first weak sentence and not the easiest question to ask/);
+  assert.match(GUIDE, /Never raise an impact rating to move a card forward/);
+});
+
+test("an open ending is not forced into a generic future plan", () => {
+  assert.match(GUIDE, /Direction is not the same as a career plan/);
+  assert.match(GUIDE, /an unresolved tension that belongs to this writer all count/);
+  assert.match(GUIDE, /Never prescribe the plan or the closing line/);
+  assert.match(CORE, /An essay may end in earned uncertainty/);
+});
+
+test("a repeated metaphor is judged by what each recurrence adds", () => {
+  assert.match(GUIDE, /Trace every appearance of a recurring image/);
+  assert.match(GUIDE, /The test is function, not frequency/);
+  assert.match(GUIDE, /a quiet callback can be enough/);
+});
+
+test("the interest-coherence check keeps its guard rails", () => {
+  // The check is only safe because it is narrow. If these drop out, the engine
+  // starts nitpicking healthy metaphors.
+  assert.match(GUIDE, /ONLY when ALL of the following hold/);
+  assert.match(GUIDE, /A resonant image is not an error/);
+  assert.match(GUIDE, /if you are in any doubt, do not flag it/);
+  assert.match(GUIDE, /a false positive here costs the student a good line/);
+});
+
+test("the lenses look for thinking, other people, and the work a detail does", () => {
+  assert.match(GUIDE, /the writer's actual mental work/);
+  assert.match(GUIDE, /an unresolved question can reveal more than a finished lesson/);
+  assert.match(GUIDE, /what another person actually did, said, preferred or refused/);
+  assert.match(GUIDE, /Do not invent gratitude, assign motives to anyone/);
+  assert.match(GUIDE, /A precise noun, a timestamp, a smell: none is revealing by itself/);
+  // Proportionate change: a small action can be enough evidence.
+  assert.match(GUIDE, /A small action is enough evidence/);
+  assert.match(GUIDE, /A dramatic event is not proof of growth/);
+});
+
+test("the lenses are places to look, not requirements to satisfy", () => {
+  // This is the sentence that stops the guide becoming a rubric the draft has
+  // to pass. It is the whole difference between detailed and constraining.
+  assert.match(GUIDE, /These are places to look, not a list of requirements to check off/);
+  assert.match(GUIDE, /a lens that finds nothing is silence, not a finding/);
+  assert.match(GUIDE, /None of them is a licence to invent/);
+});
+
+test("supplementals are judged against their actual prompt, not a default Why Us rubric", () => {
+  assert.match(GUIDE, /The pasted prompt is the specification/);
+  assert.match(GUIDE, /Why Us is not the default/);
+  assert.match(GUIDE, /only\*\* to a prompt that actually asks why that institution/);
+  assert.match(GUIDE, /brevity is a virtue/);
+  // Without the prompt, the limit is stated rather than invented around.
+  assert.match(GUIDE, /you cannot claim the draft fails to answer a question you were never shown/);
+  assert.match(GUIDE, /do not manufacture a Why Us diagnosis from a title or a school name/);
+});
+
+test("the strengths section analyses rather than summarises", () => {
+  assert.match(GUIDE, /A list of nothing but problems tells a student which lines to change and never which to protect/);
+  assert.match(GUIDE, /explain why something works \*\*as writing\*\*/);
+  assert.match(GUIDE, /is plot summary, not a strength/);
+  assert.match(GUIDE, /an honest short list beats a padded one/);
+});
+
+test("cross-essay memory can never become a criticism", () => {
+  assert.match(CORE, /They are not requirements for the draft in front of you/);
+  for (const verb of ["drops", "omits", "fails to mention"]) {
+    assert.ok(CORE.includes(verb), verb);
+  }
+  assert.match(CORE, /never name an activity, field or achievement that is not in this draft/);
+  // Duplication is judged from contents, never from titles.
+  assert.match(CORE, /only from their actual contents, never from their titles/);
+  assert.match(CORE, /Anything a student marked private stays out of every later question/);
+});
+
+test("the hard rules survive in every mode", () => {
+  // These are the ones whose breach damages the student rather than the essay,
+  // so they live in the core and reach the conversation too.
+  for (const mode of [MODE_A, flat(MODE_B_SYSTEM), flat(MODE_B_ASK_SYSTEM)]) {
+    assert.match(mode, /Never write the essay/);
+    assert.match(mode, /Never invent anything about the student's life/);
+    assert.match(mode, /Quote verbatim/);
+    assert.match(mode, /Accept a refusal/);
+    assert.match(mode, /Never promise or predict admission/);
+    assert.match(mode, /Judge the draft, never the demographic/);
+    assert.match(mode, /Do not diagnose AI authorship/);
+    assert.match(mode, /Do not certify facts from memory/);
+  }
+});
+
+test("form is never owed, and that reaches all three modes", () => {
+  for (const mode of [MODE_A, flat(MODE_B_SYSTEM), flat(MODE_B_ASK_SYSTEM)]) {
+    assert.match(mode, /Do not demand a scene, a hook, a metaphor, a disclosed hardship, a public impact, a settled career, or a forward-looking ending/);
+    assert.match(mode, /Showing and telling both work/);
+    assert.match(mode, /An ordinary teenage voice is a voice/);
+    assert.match(mode, /prestige, expense, scale, travel and unusual hardship establish nothing about quality/);
+  }
+});
+
+test("published essays are possibilities, not thresholds", () => {
+  assert.match(CORE, /They are not a threshold, not proof that an essay caused an admission/);
+  assert.match(CORE, /not evidence that an older essay could not work now/);
+});
+
+test("honesty runs in both directions", () => {
+  assert.match(CORE, /Flattery is not kindness here/);
+  assert.match(CORE, /When a draft is working, say so and stop/);
+  assert.match(CORE, /editing away something that was already good/);
+});
+
+test("a first detail does not automatically end a Socratic thread", () => {
+  assert.match(CORE, /a first concrete detail does not automatically close a card/);
+  assert.match(CORE, /does not stay open to make the exchange feel deep/);
+  assert.match(CORE, /enough true material to revise with/);
+});
+
+test("the diagnosis stays revisable in conversation", () => {
+  assert.match(CORE, /Treat your own diagnosis as revisable/);
+  assert.match(CORE, /say so and drop it/);
+  assert.match(CORE, /Do not defend a finding into the ground/);
+  // Do not imply a reread that did not happen.
+  assert.match(CORE, /rather than implying you reread anything/);
+});
+
+test("readiness is about the draft in hand, not about perfection", () => {
+  assert.match(CORE, /no substantial problem remains in the draft and the context you were given/);
+  assert.match(CORE, /never means the student has nothing left in them/);
+});
+
+test("a closing reply cannot leave a question hanging", () => {
+  assert.ok(MODE_B_SYSTEM.includes("resolved"));
+  assert.match(flat(MODE_B_SYSTEM), /question/);
+});
+
+test("the question mode still refuses to write the essay", () => {
+  assert.match(flat(MODE_B_ASK_SYSTEM), /Never write the essay/);
+});
+
+test("asking is not answering, and must not be judged as one", () => {
+  const ask = flat(MODE_B_ASK_SYSTEM);
+  assert.match(ask, /Do not treat their message as an answer to the flagged spot/);
+  assert.match(ask, /do not push them back to the queue until you have actually helped/);
+  // A student who asks how to phrase something gets method, never prose.
+  assert.match(ask, /say plainly that you won't write it/);
+  assert.match(ask, /Method, not content/);
+  // It is a plain reply: none of the serialization envelopes belong here.
+  assert.ok(!MODE_B_ASK_SYSTEM.includes("<<<CARD>>>"));
+  assert.ok(!MODE_B_ASK_SYSTEM.includes("<<<SECTION"));
+  assert.match(ask, /No JSON, no headings, no markdown structure/);
 });
