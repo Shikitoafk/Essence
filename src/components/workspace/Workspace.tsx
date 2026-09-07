@@ -84,6 +84,21 @@ export default function Workspace({
     if (!activeSpotId) return;
     openNoteRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
   }, [activeSpotId]);
+
+  /*
+   * The switcher sits at the top of the reading column and what it switches
+   * sits under the draft, so pressing a tab on a 600-word essay changed
+   * something two screens below the fold. Not on the first render: arriving
+   * at a draft should show the draft.
+   */
+  const firstRender = useRef(true);
+  useEffect(() => {
+    if (firstRender.current) {
+      firstRender.current = false;
+      return;
+    }
+    openNoteRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [tab]);
   const atRest = isAtRest(readiness, Boolean(essay.last_feedback_at));
   const rounds = essay.revision_count ?? 0;
   const openCount = spots.filter((s) => s.status === "open").length;
@@ -394,6 +409,54 @@ export default function Workspace({
       */}
       <div className="mx-auto grid w-full max-w-[68rem] gap-8 px-6 py-8 min-[1180px]:grid-cols-[minmax(0,40rem)_23rem] min-[1500px]:max-w-[82rem] min-[1500px]:gap-12 min-[1500px]:grid-cols-[minmax(0,44rem)_28rem]">
         <div className="flex flex-col gap-4">
+          {/*
+            The switcher moved here from the margin, because its content did.
+            Pressing a control on the right and watching a different column
+            change on the left is a puzzle a student solves once per session
+            and resents every time; a control belongs above what it controls.
+
+            "Full read" said nothing about what was inside it, so testers kept
+            assuming the framework and strengths had gone missing. The labels
+            name their contents.
+          */}
+          <div className="nav-blur sticky top-[4.5rem] z-20 flex gap-1 rounded-full border border-line p-1 text-sm">
+            {(
+              [
+                [
+                  "spots",
+                  `Spots${spots.length ? ` (${spots.length})` : ""}`,
+                  "Specific lines to work on",
+                ],
+                ["report", "Full read", "Structure and strengths"],
+                [
+                  "followup",
+                  `Follow-up${openCount ? ` (${openCount})` : ""}`,
+                  "Questions and your answers",
+                ],
+              ] as [Tab, string, string][]
+            ).map(([value, label, hint]) => (
+              <button
+                key={value}
+                type="button"
+                onClick={() => setTab(value)}
+                title={hint}
+                className={`flex-1 rounded-full px-3 py-1.5 leading-tight transition ${
+                  tab === value
+                    ? "bg-ink text-paper"
+                    : "text-muted hover:text-ink"
+                }`}
+              >
+                <span className="block">{label}</span>
+                <span
+                  className={`block text-[0.65rem] ${
+                    tab === value ? "text-paper/70" : "text-muted"
+                  }`}
+                >
+                  {hint}
+                </span>
+              </button>
+            ))}
+          </div>
           <div className="rounded-lg border border-line bg-white px-6 py-4 sm:px-8 sm:py-6">
             <DraftEditor
               value={draft}
@@ -421,6 +484,8 @@ export default function Workspace({
             The margin keeps the collapsed cards, which is what it is good at:
             an index you scan, not prose you read.
           */}
+
+
           {/*
             Everything with sentences in it reads here, under the draft, at the
             measure of the text. The margin is the index and the verdict: it is
@@ -519,51 +584,7 @@ export default function Workspace({
             Sticky, with its own scroll, so the notes stay put while a long
             draft moves past them. */}
         <div className="flex flex-col gap-4 min-[1180px]:sticky min-[1180px]:top-[5.5rem] min-[1180px]:max-h-[calc(100vh-7rem)] min-[1180px]:overflow-y-auto min-[1180px]:pr-1">
-          {/* "Full read" said nothing about what was inside it, so testers kept
-              assuming the framework and strengths had gone missing. The labels
-              now name their contents. Follow-up is a third tab rather than a
-              panel below the cards: testers had to scroll past every card to
-              reach the conversation, and gave up before finding it. */}
-          {/* Sticky to the column's own scrollport, so the switcher is still
-              there after scrolling down a long list of notes. */}
-          <div className="nav-blur sticky top-0 z-20 flex gap-1 rounded-full border border-line p-1 text-sm">
-            {(
-              [
-                [
-                  "spots",
-                  `Spots${spots.length ? ` (${spots.length})` : ""}`,
-                  "Specific lines to work on",
-                ],
-                ["report", "Full read", "Structure and strengths"],
-                [
-                  "followup",
-                  `Follow-up${openCount ? ` (${openCount})` : ""}`,
-                  "Questions and your answers",
-                ],
-              ] as [Tab, string, string][]
-            ).map(([value, label, hint]) => (
-              <button
-                key={value}
-                type="button"
-                onClick={() => setTab(value)}
-                title={hint}
-                className={`flex-1 rounded-full px-3 py-1.5 leading-tight transition ${
-                  tab === value
-                    ? "bg-ink text-paper"
-                    : "text-muted hover:text-ink"
-                }`}
-              >
-                <span className="block">{label}</span>
-                <span
-                  className={`block text-[0.65rem] ${
-                    tab === value ? "text-paper/70" : "text-muted"
-                  }`}
-                >
-                  {hint}
-                </span>
-              </button>
-            ))}
-          </div>
+
 
           <div className="space-y-3">
               {essay.last_feedback_at && (
