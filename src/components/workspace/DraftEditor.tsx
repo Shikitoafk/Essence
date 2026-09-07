@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef } from "react";
+import { useMemo, useRef } from "react";
 import { useIsomorphicLayoutEffect } from "@/lib/useIsomorphicLayoutEffect";
 import { locateQuote } from "@/lib/ai/parseReport";
 import { countWords, type FlaggedSpot } from "@/lib/types";
@@ -134,14 +134,13 @@ export default function DraftEditor({
     ta.style.height = `${ta.scrollHeight}px`;
   }, [value]);
 
-  /** Bring the highlighted line into view when a card is selected. */
-  useEffect(() => {
-    if (!activeSpotId) return;
-    const mark = backdropRef.current?.querySelector<HTMLElement>(
-      `[data-spot-id="${activeSpotId}"]`,
-    );
-    mark?.scrollIntoView({ behavior: "smooth", block: "center" });
-  }, [activeSpotId]);
+  /*
+   * Selecting a spot used to scroll its highlighted line to the middle of the
+   * screen, because the note was in the margin beside it. The note now opens
+   * under the draft, so scrolling to the line pushes the note off the bottom
+   * — and the note repeats the line anyway. The workspace scrolls to the note
+   * instead; this keeps the mark painted where it is.
+   */
 
   return (
     <div className="flex flex-col">

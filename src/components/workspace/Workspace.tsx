@@ -71,6 +71,19 @@ export default function Workspace({
   // Recomputed from the live spots rather than read off the stored report, so
   // resolving the last substantive card updates the verdict immediately.
   const readiness = deriveReadiness(spots);
+
+  /** The one note being worked on, rendered under the draft rather than beside it. */
+  const openSpot = spots.find((s) => s.id === activeSpotId) ?? null;
+
+  /*
+   * A long draft puts the open note far below the fold, so choosing one in the
+   * margin index would otherwise appear to do nothing at all.
+   */
+  const openNoteRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!activeSpotId) return;
+    openNoteRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [activeSpotId]);
   const atRest = isAtRest(readiness, Boolean(essay.last_feedback_at));
   const rounds = essay.revision_count ?? 0;
   const openCount = spots.filter((s) => s.status === "open").length;
@@ -360,6 +373,34 @@ export default function Workspace({
               minimumWords={minimumWords}
             />
           </div>
+
+          {/*
+            The open note sits under the draft, in the same column and at the
+            same measure as the text it is about.
+
+            It used to open in the margin. Notes there are stacked rather than
+            level with their lines — aligning them left gaps between cards
+            bigger than the cards — so the column was neither beside its line
+            nor in the reading path, and following a note meant crossing the
+            full width of the screen and coming back. Underneath, the eye
+            travels the way it already reads.
+
+            The margin keeps the collapsed cards, which is what it is good at:
+            an index you scan, not prose you read.
+          */}
+          {openSpot && (
+            <div ref={openNoteRef}>
+              <SpotCard
+              spot={openSpot}
+              active
+              missingInDraft={!locateQuote(draft, openSpot.quoted_text)}
+              onSelect={() => setActiveSpotId(null)}
+              onStatusChange={(status) => changeStatus(openSpot.id, status)}
+                onAnswer={() => setTab("followup")}
+              />
+            </div>
+          )}
+
           <EssaySettings essay={essay} />
         </div>
 
@@ -463,7 +504,7 @@ export default function Workspace({
                       <SpotCard
                         key={spot.id}
                         spot={spot}
-                        active={spot.id === activeSpotId}
+                        active={false}
                         missingInDraft={!locateQuote(draft, spot.quoted_text)}
                         onSelect={() => setActiveSpotId(spot.id)}
                         onStatusChange={(status) =>
@@ -506,7 +547,7 @@ export default function Workspace({
                               <SpotCard
                                 key={spot.id}
                                 spot={spot}
-                                active={spot.id === activeSpotId}
+                                active={false}
                                 missingInDraft={
                                   !locateQuote(draft, spot.quoted_text)
                                 }
