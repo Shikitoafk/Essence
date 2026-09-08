@@ -61,3 +61,21 @@ test("both model chains carry a fallback, so one dead model isn't an outage", as
     assert.match(chain[0], /gemini/);
   }
 });
+
+test("a comparison is never served by a model that answers it by position", async () => {
+  // Measured on two drafts of one essay: gemini-3.5-flash-lite picked whichever
+  // was presented second, six times out of six, with the writing playing no
+  // part. gemini-3.6-flash chose the same draft in both orders. A verdict is
+  // one word the student acts on, and it carries nothing they could use to
+  // tell a real judgement from a coin toss — so the comparison chain has no
+  // lite fallback and fails instead of guessing.
+  const { modelChain } = await load();
+  const chain = modelChain("comparison");
+  assert.ok(chain.length > 0);
+  for (const model of chain) {
+    assert.doesNotMatch(model, /lite/, `${model} is in the comparison chain`);
+  }
+  // The diagnostic read keeps its lite fallback: a card names its own line and
+  // carries its own question, so a weaker read is visibly weaker.
+  assert.ok(modelChain("diagnostic").some((m) => /lite/.test(m)));
+});

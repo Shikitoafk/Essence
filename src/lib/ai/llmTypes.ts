@@ -26,7 +26,7 @@ export class LlmCallError extends Error {
  *  - `conversation` runs on every chat turn with a short context. Wants a fast,
  *    cheap model with generous limits, because it fires constantly.
  */
-export type ModelTier = "diagnostic" | "conversation";
+export type ModelTier = "diagnostic" | "conversation" | "comparison";
 
 export interface GenerateRequest {
   tier: ModelTier;

@@ -32,13 +32,33 @@ const DEFAULT_CHAINS: Record<ModelTier, string[]> = {
     "gemini-2.5-flash-lite",
     "gemini-2.5-flash",
   ],
+  /*
+   * Comparison has its own chain, and it is the diagnostic one without the
+   * lite fallback.
+   *
+   * Measured: asked to choose between two drafts of the same essay,
+   * gemini-3.5-flash-lite picked whichever was presented second, six times out
+   * of six. Not a lean — the writing played no part. gemini-3.6-flash showed
+   * none of it, choosing the same draft in both orders.
+   *
+   * A verdict is a single word the student acts on: submit this one. Falling
+   * back to a model that answers it by position produces a coin toss wearing
+   * the sentence "you should submit Version B", and there is nothing in the
+   * output for the student to tell the difference by. Better to fail and say
+   * the comparison is unavailable.
+   */
+  comparison: [
+    "gemini-3.6-flash",
+    "gemini-3.5-flash",
+    "gemini-2.5-flash",
+  ],
 };
 
 export function geminiChain(tier: ModelTier): string[] {
   const override =
-    tier === "diagnostic"
-      ? process.env.GEMINI_MODEL_DIAGNOSTIC
-      : process.env.GEMINI_MODEL_CONVERSATION;
+    tier === "conversation"
+      ? process.env.GEMINI_MODEL_CONVERSATION
+      : process.env.GEMINI_MODEL_DIAGNOSTIC;
   return resolveChain(override, DEFAULT_CHAINS[tier]);
 }
 

@@ -155,7 +155,7 @@ export async function POST(request: Request) {
   let parsed: ModelReply;
   try {
     const result = await generate({
-      tier: "diagnostic",
+      tier: "comparison",
       system: COMPARE_SYSTEM,
       prompt: buildComparePrompt(
         shownA,
