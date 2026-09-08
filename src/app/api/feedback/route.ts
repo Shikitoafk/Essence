@@ -372,12 +372,31 @@ export async function POST(request: Request) {
     readiness,
     readiness_why: report.readiness_why,
     readiness_next: report.readiness_next,
-    // Same anchoring rule as the spot cards: a passage the student is told to
-    // protect has to actually be in their draft.
+    /*
+     * Same anchoring rule as the spot cards: a passage the student is told to
+     * protect has to actually be in their draft.
+     *
+     * And it must not be a passage the same read flagged. Observed once in
+     * thirty reads: "Our group fell apart after a disagreement" carried a card
+     * saying the decision behind it is missing, and a keep card saying to
+     * leave the line alone. Rare, and unusable when it happens — the student
+     * is handed the same sentence as the thing to fix and the thing to
+     * protect, and nothing tells them which to believe. The finding wins: it
+     * is the one with a question attached.
+     */
     working_well: report.working_well
       .map((item) => {
         const located = locateQuote(draft, item.quote);
-        return located ? { quote: located.text, why: item.why } : null;
+        if (!located) return null;
+        const clashes = rows.some((row) => {
+          const flagged = locateQuote(draft, row.quoted_text);
+          return (
+            flagged !== null &&
+            located.start < flagged.end &&
+            flagged.start < located.end
+          );
+        });
+        return clashes ? null : { quote: located.text, why: item.why };
       })
       .filter((item): item is NonNullable<typeof item> => item !== null),
   });
