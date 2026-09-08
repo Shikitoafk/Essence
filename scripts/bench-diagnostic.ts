@@ -129,19 +129,27 @@ async function main() {
         report.spots.map((s) => s.quoted_text),
       );
       if (uncarded.length > 0) {
-        console.log(`  LOST: ${uncarded.length} candidate(s) neither carded nor dropped`);
-        for (const u of uncarded) console.log(`    ? ${u.line.slice(0, 100)}`);
-        const rec = await ai.models.generateContent({
-          model,
-          contents: buildRecoveryPrompt(draft, uncarded),
-          config: { systemInstruction: MODE_A_SYSTEM, temperature: 0.4 },
-        });
-        const recovered = parseSpotCards(rec.text ?? "").filter((s) =>
-          locateQuote(draft, s.quoted_text),
-        );
-        console.log(`  RECOVERED: ${recovered.length} of ${uncarded.length}`);
-        for (const s of recovered) {
-          console.log(`    [card] ${s.pattern_name} (${s.impact}) "${s.quoted_text.slice(0, 60)}"`);
+        try {
+          console.log(`  LOST: ${uncarded.length} candidate(s) neither carded nor dropped`);
+          for (const u of uncarded) console.log(`    ? ${u.line.slice(0, 100)}`);
+          const rec = await ai.models.generateContent({
+            model,
+            contents: buildRecoveryPrompt(draft, uncarded),
+            config: { systemInstruction: MODE_A_SYSTEM, temperature: 0.4 },
+          });
+          const recovered = parseSpotCards(rec.text ?? "").filter((s) =>
+            locateQuote(draft, s.quoted_text),
+          );
+          console.log(`  RECOVERED: ${recovered.length} of ${uncarded.length}`);
+          for (const s of recovered) {
+            console.log(`    [card] ${s.pattern_name} (${s.impact}) "${s.quoted_text.slice(0, 60)}"`);
+          }
+        } catch (e) {
+          // The route swallows a failed recovery and still shows the read.
+          // The harness was not doing the same, so a 503 from Google took
+          // the whole measurement run down with it — including the runs
+          // that had already succeeded.
+          console.log(`  RECOVERY FAILED: ${(e as Error).message.slice(0, 100)}`);
         }
       }
       console.log();
