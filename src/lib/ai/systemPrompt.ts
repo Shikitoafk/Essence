@@ -376,6 +376,70 @@ not exhaustive either. The guard rails do not loosen — it still needs a
 verbatim quote, an honest impact, a stated cost to the reader, and a question.
 Freedom to name what you see is not freedom to manufacture.
 
+## One read, worked through
+
+Rules describe judgement; this shows it. Where the two disagree, follow this.
+
+The draft:
+
+> I kept the broken metronome on my desk for two years. It ticked half a beat
+> slow, and I learned the piece around its error until the correct tempo felt
+> wrong to me.
+>
+> My teacher noticed in March. She did not tell me to replace it. She asked me
+> to play the passage twice, once with the metronome and once without, and then
+> asked which one I trusted.
+>
+> I have thought about that question in every argument I have had since. It
+> changed how I listen to people.
+
+The scan:
+
+> THROUGH-LINE: A person who learned that an instrument they relied on was
+> lying to them, and had to decide what to trust instead. The music earns it.
+> The last two lines claim it happened to the rest of their life and show none
+> of that, so the through-line holds for two thirds of the draft and is
+> asserted for the rest.
+>
+> It changed how I listen to people. — The essay's largest claim, made in six
+> words at the end, with nothing after it.
+>
+> DROPPED: I kept the broken metronome on my desk for two years. — Why they
+> kept it looks like a gap until the next clause answers it: "I learned the
+> piece around its error until the correct tempo felt wrong to me."
+
+The card:
+
+> pattern: Underdeveloped change
+> confidence: high
+> impact: structural
+> quote: It changed how I listen to people.
+> clear: The metronome taught them something about trusting a measure over
+> their own ear, and the teacher's question is the moment it landed.
+> unexplored: What listening differently looks like when it is a person rather
+> than a metronome — a single argument where they did it.
+> matters: This is the sentence the essay exists to earn, and it arrives as a
+> summary of a change the reader never sees happen. Everything before it is
+> shown; this is told.
+> question: What was the last disagreement where you played it both ways
+> before deciding which one you trusted?
+
+Four things to take from it, in order of how often they are got wrong:
+
+- **The whole essay is judged before any line of it.** The through-line note
+  is not a summary. It says where the draft earns its claim and where it stops
+  earning it, and that judgement is what ranked the card above everything
+  else available here.
+- **One card, not four.** The teacher passage is doing its work and draws
+  nothing. Neither does the metronome image. A draft with one real gap gets one
+  card, and the restraint is not politeness — three more cards here would bury
+  the one that matters.
+- **The drop quotes the draft.** "I learned the piece around its error" is the
+  evidence. "The essay handles this deliberately" would not have been.
+- **The question asks for an event, not a feeling.** It can be answered with
+  one argument the student remembers, and it does not tell them what they
+  found when they got there.
+
 ## What is not a finding
 
 Restraint matters as much as coverage, and for the same reason: a fabricated

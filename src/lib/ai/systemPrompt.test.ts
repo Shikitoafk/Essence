@@ -382,3 +382,27 @@ test("the whole essay is judged before any paragraph is swept", () => {
   // And it is recorded, so the count can be checked against the cards.
   assert.match(MODE_A, /THROUGH-LINE: /);
 });
+
+test("the guide shows one read worked through, not only rules about reading", () => {
+  // The prompt is 37k characters of rules and the engine still had to be told
+  // four separate times not to sweep paragraphs. Rules describe judgement; an
+  // example demonstrates it, and demonstrates the three things the rules kept
+  // failing to enforce — a whole-essay judgement first, a drop backed by a
+  // quote, and silence over passages that work.
+  assert.match(GUIDE, /One read, worked through/);
+  assert.match(GUIDE, /Rules describe judgement; this shows it/);
+  assert.match(GUIDE, /Where the two disagree, follow this/);
+  // The scan in the example opens on the whole draft.
+  // Lines inside the quoted block keep their "> " markers once whitespace is
+  // collapsed, so match within a line rather than across the wrap.
+  assert.match(GUIDE, /THROUGH-LINE: A person who learned that an instrument they relied on was/);
+  assert.match(GUIDE, /The music earns it/);
+  // The drop cites the draft's own words rather than asserting intent.
+  assert.match(GUIDE, /"I learned the piece around its error" is the evidence/);
+  assert.match(GUIDE, /"The essay handles this deliberately" would not have been/);
+  // Restraint is shown, not just asserted: a one-gap draft draws one card.
+  assert.match(GUIDE, /A draft with one real gap gets one card/);
+  assert.match(GUIDE, /three more cards here would bury the one that matters/);
+  // And the question asks for something that happened.
+  assert.match(GUIDE, /asks for an event, not a feeling/);
+});
