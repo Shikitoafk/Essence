@@ -126,6 +126,7 @@ async function main() {
       const uncarded = findUncardedCandidates(
         draft,
         report.scan.candidates,
+        report.scan.dropped,
         report.spots.map((s) => s.quoted_text),
       );
       if (uncarded.length > 0) {

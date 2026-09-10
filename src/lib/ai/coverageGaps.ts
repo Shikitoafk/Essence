@@ -132,9 +132,25 @@ function paragraphAround(draft: string, index: number): Span {
   };
 }
 
+/**
+ * The draft paragraph a scan line points at, or null when the line quotes
+ * nothing the draft contains. Candidates and DROPPED lines share a shape —
+ * `<paragraph opening> — <the reason>` — so they are placed the same way.
+ */
+function paragraphOf(draft: string, line: string): Span | null {
+  const head = line.split(/[—\-]{1,2}\s/)[0].trim().replace(/\.\.\.$/, "");
+  if (head.length < 12) return null;
+
+  const located = locateQuote(draft, head);
+  if (!located) return null;
+
+  return paragraphAround(draft, located.start);
+}
+
 export function findUncardedCandidates(
   draft: string,
   candidates: string[],
+  dropped: string[],
   cardQuotes: string[],
 ): UncardedCandidate[] {
   const cardSpans: Span[] = [];
@@ -143,17 +159,26 @@ export function findUncardedCandidates(
     if (located) cardSpans.push({ start: located.start, end: located.end });
   }
 
+  // A candidate the read dropped by hand was considered and rejected with a
+  // reason. Recovering it overrides the judgement the contract asked for and
+  // hands the student back the weakest finding of the read — the one the
+  // engine looked at and decided against. Measured on one draft: both
+  // "recovered" cards in a run were passages that run had dropped.
+  const droppedParas: Span[] = [];
+  for (const line of dropped) {
+    const para = paragraphOf(draft, line);
+    if (para) droppedParas.push(para);
+  }
+
   const out: UncardedCandidate[] = [];
   const claimed: Span[] = [];
 
   for (const line of candidates) {
-    const head = line.split(/[—\-]{1,2}\s/)[0].trim().replace(/\.\.\.$/, "");
-    if (head.length < 12) continue;
+    const para = paragraphOf(draft, line);
+    if (!para) continue;
 
-    const located = locateQuote(draft, head);
-    if (!located) continue;
+    if (droppedParas.some((d) => d.start === para.start)) continue;
 
-    const para = paragraphAround(draft, located.start);
     const carded = cardSpans.some(
       (span) => span.start < para.end && para.start < span.end,
     );

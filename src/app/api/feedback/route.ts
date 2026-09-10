@@ -166,6 +166,7 @@ export async function POST(request: Request) {
   const uncarded = findUncardedCandidates(
     draft,
     report.scan.candidates,
+    report.scan.dropped,
     report.spots.map((spot) => spot.quoted_text),
   );
 

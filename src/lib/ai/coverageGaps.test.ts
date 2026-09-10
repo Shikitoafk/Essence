@@ -141,6 +141,7 @@ test("a candidate with no card in its paragraph is reported", () => {
       "Something did break — the fever turns symbolic with no bridge",
       "A few months ago my supervisor — the silence is never explained",
     ],
+    [],
     ["I woke with a fever and the room pulled sideways."],
   );
 
@@ -157,6 +158,7 @@ test("a card anywhere in the paragraph counts as covering it", () => {
   const uncarded = findUncardedCandidates(
     LONG,
     ["Something did break — the fever turns symbolic with no bridge"],
+    [],
     ["By morning it was just a fever."],
   );
 
@@ -171,6 +173,7 @@ test("two scan lines pointing into one paragraph are one recovery", () => {
       "Nothing came, and my brother laughed — the brother never returns",
     ],
     [],
+    [],
   );
 
   assert.equal(uncarded.length, 1);
@@ -182,6 +185,21 @@ test("a scan line that quotes nothing in the draft is left alone", () => {
   const uncarded = findUncardedCandidates(
     LONG,
     ["Paragraph four — something about a laboratory in another essay"],
+    [],
+    [],
+  );
+
+  assert.deepEqual(uncarded, []);
+});
+
+test("a candidate the read dropped by hand is not recovered", () => {
+  // Measured on a real draft: a run listed two passages as candidates, dropped
+  // both with a reason, and the recovery pass carded both anyway — handing the
+  // student the two findings that read had judged and rejected.
+  const uncarded = findUncardedCandidates(
+    LONG,
+    ["Something did break — the fever turns symbolic with no bridge"],
+    ["Something did break — the draft already accounts for this"],
     [],
   );
 
