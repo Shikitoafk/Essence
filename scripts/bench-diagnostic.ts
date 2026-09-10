@@ -13,7 +13,8 @@
  *
  * Keep the draft outside the repository: it is someone's personal essay.
  */
-import { readFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { basename } from "node:path";
 import { GoogleGenAI } from "@google/genai";
 import { MODE_A_SYSTEM } from "../src/lib/ai/systemPrompt";
 import {
@@ -84,6 +85,16 @@ const ai = new GoogleGenAI({ apiKey: key });
 console.log(`draft: ${countWords(draft)} words`);
 console.log(`system prompt: ${MODE_A_SYSTEM.length} chars\n`);
 
+/**
+ * Counting cards says whether the engine is stable, never whether it is right,
+ * and the card body is where "right" lives: the question the student is asked
+ * and the words the finding is put in. A whole day of runs went past with only
+ * names and quotes on screen, so every judgement about wording needed a fresh
+ * call. `--dump <dir>` keeps the raw reads instead.
+ */
+const dumpDir = arg("dump", "");
+if (dumpDir) mkdirSync(dumpDir, { recursive: true });
+
 async function main() {
   for (const model of models) {
     for (let run = 1; run <= runs; run++) {
@@ -103,6 +114,11 @@ async function main() {
 
       const seconds = ((Date.now() - started) / 1000).toFixed(1);
       const report = parseModeAReport(raw);
+
+      if (dumpDir) {
+        const stem = basename(essayPath).replace(/\.[^.]+$/, "");
+        writeFileSync(`${dumpDir}/${stem}-${model}-run${run}.md`, raw, "utf8");
+      }
       const anchored = report.spots.filter((s) => locateQuote(draft, s.quoted_text));
       const truncated = !raw.includes("<<<END>>>");
 
@@ -119,6 +135,10 @@ async function main() {
       for (const d of report.scan.dropped) console.log(`    - DROPPED ${d.slice(0, 110)}`);
       for (const s of report.spots) {
         console.log(`    [card] ${s.pattern_name} (${s.impact}/${s.confidence}) "${s.quoted_text.slice(0, 60)}"`);
+        // The question is the part of a card a student actually acts on, and
+        // its defects — a menu of options, two questions joined by "and" —
+        // are invisible in a pattern name.
+        console.log(`      Q(${s.question.split(/\s+/).length}w): ${s.question}`);
       }
 
       // The same check the read runs on itself: candidates scanned, never
