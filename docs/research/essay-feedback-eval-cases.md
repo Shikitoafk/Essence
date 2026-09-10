@@ -118,6 +118,34 @@ Task: personal statement. Deliberately incomplete synthetic draft:
 
 Expected: identify independently missing group-repair action, home responsibilities, intellectual reasoning, nonfunctional metaphor, and unsupported impact claim if the reviewer judges each substantive. Prioritize the larger coherence problem without letting it erase distinct evidence gaps. Merge genuinely overlapping findings. Do not use this artificial case to require five cards for every essay. Parser regression separately verifies retention of seven arbitrary valid cards; that is a serialization test, not an editorial target.
 
+## 13. An asserted link, an interior draft
+
+Personal-statement excerpt:
+
+> In second grade I answered a question wrong and the class laughed. I stopped raising my hand that year.
+>
+> That is why I take notes instead of speaking. In seminars I write down every word and say nothing, and afterwards I know the material better than the people who talked.
+>
+> The habit protects me, and it has cost me things too.
+
+Expected: the draft asserts a chain — laughter, silence, note-taking, protection, cost — and shows no link in it. Ask for an event on one side: what happened the last time the writer decided not to say something, or what the cost was when it was paid. Do not ask how being laughed at shaped their approach to seminars, and do not ask what they thought or felt when the class laughed: a question that supplies the connection leaves the writer confirming it, and a question about an interior state cannot be answered with a fact. Rationale: measured on a real draft, questions of the form "how did A shape B" appeared in 11% of questions and questions asking for a thought or a feeling in another 11%, while both were 0% across cases 1-12. The twelve cases are about activities; this one is about a state, which is where the fault lives.
+
+## 14. A draft over its limit, with something to remove
+
+Task: why this major? 150-word limit.
+
+> I want to study civil engineering because a bridge is an argument about load.
+>
+> My grandfather kept a tin of washers on the windowsill. The tin was green, dented on one side, with a lighthouse on the lid worn almost away. I sorted them by size on the kitchen table while he worked, and the kitchen smelled like cut metal. I remember the light in that kitchen better than most rooms I have lived in.
+>
+> Last year our school footbridge closed for repairs and the detour added eleven minutes to my walk. I started timing it, then started asking why a bridge built in 1998 needed steel plates bolted under its supports in 2025. The city inspection report was public. I read it twice and understood about half.
+>
+> What I understood was that the report described a problem in the deck and a fix in the supports, and never explained the connection between them. I want to read that document and know whether the answer is right.
+>
+> The tin is still on the windowsill.
+
+Expected: the response is 174 words against a 150-word limit, and the strongest finding is that the tin paragraph and its closing callback are the 68 words that pay for the overrun twice over — they are the only passage that does not bear on the question asked. A read that asks what the grandfather taught the writer, or for more of the kitchen, has proposed spending words the draft does not have. At least one finding must be answerable by deleting rather than adding, and any finding that asks for new material must name what it displaces. Rationale: across about thirty reads of six drafts of one essay, no card ever proposed removing anything, and a read of a 781-word draft against a 650-word limit raised no card about the overrun. Every named pattern the engine has means something is missing.
+
 ## Scoring sheet
 
 For each output record: case/version/model/run; expected findings hit/missed; unsupported findings; quote accuracy; non-leading usefulness; task fit; stopping correctness; critical failures; reviewer rationale. Compare old/new blind as described in the evidence review. These cases have not yet been run against a live model; no pass rate or quality gain is claimed.
