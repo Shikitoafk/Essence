@@ -34,6 +34,16 @@ const MENU = /,[^,?]*\bor\b/;
 const HEDGE = /\b(specific|concrete)\b/i;
 /** Two questions joined into one; the student answers whichever is easier. */
 const COMPOUND = /,\s*and\s+(what|how|why|who|when)\b|\band\s+(what|how)\s+did\b/;
+/**
+ * "How did A shape B", "How does A protect you from C" — the link is the
+ * engine's, and the student is left confirming it. A question they cannot
+ * answer "it didn't" without arguing with its grammar is not a question.
+ */
+const PRESUPPOSED = /\bhow (did|does|has)\b[^?]*\b(shape|shaped|connect|connects|connected|protect|protects|inform|informs|change|changed|lead|led|prepare|prepares)\b/i;
+/** Asks for an interior state where the prompt asks for an event. */
+const INTERIOR = /what (was|were) (the|that|your) (thought|thoughts|feeling|feelings|emotion)|what did it feel like|how did (it|that|you) feel/i;
+/** Supplies the candidate answers inside the question: "was it X, or Y". */
+const SUPPLIED = /\bwas it (that )?[^?]*\bor\b[^?]*\?/i;
 
 interface Question {
   file: string;
@@ -76,6 +86,9 @@ console.log(`words: median ${median}, range ${lengths[0]}–${lengths[lengths.le
 console.log(`menu of options:  ${rate(menu.length)}`);
 console.log(`"specific"/"concrete": ${rate(hedge.length)}`);
 console.log(`two questions in one:  ${rate(compound.length)}`);
+console.log(`presupposes the link:  ${rate(questions.filter((q) => PRESUPPOSED.test(q.text)).length)}`);
+console.log(`asks for a feeling:    ${rate(questions.filter((q) => INTERIOR.test(q.text)).length)}`);
+console.log(`supplies the answers:  ${rate(questions.filter((q) => SUPPLIED.test(q.text)).length)}`);
 
 console.log(`\nlongest, worst first:`);
 for (const q of [...questions].sort((a, b) => b.words - a.words).slice(0, 8)) {
