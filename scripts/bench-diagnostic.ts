@@ -13,6 +13,7 @@
  *
  * Keep the draft outside the repository: it is someone's personal essay.
  */
+import { createHash } from "node:crypto";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { basename } from "node:path";
 import { GoogleGenAI } from "@google/genai";
@@ -97,7 +98,17 @@ const systemPath = arg("system", "");
 const system = systemPath ? readFileSync(systemPath, "utf8") : MODE_A_SYSTEM;
 
 console.log(`draft: ${countWords(draft)} words`);
-console.log(`system prompt: ${system.length} chars${systemPath ? ` (${systemPath})` : ""}\n`);
+/*
+ * Two agents edit this repository, and both of them edit the prompt. A
+ * comparison whose two sides ran against different text is worse than no
+ * comparison, because it still looks like a result. The digest makes that
+ * detectable afterwards: if the side that was meant to be held fixed does not
+ * print the same one twice, the numbers go in the bin.
+ */
+const systemDigest = createHash("sha256").update(system).digest("hex").slice(0, 8);
+console.log(
+  `system prompt: ${system.length} chars, sha ${systemDigest}${systemPath ? ` (${systemPath})` : ""}\n`,
+);
 
 /**
  * Counting cards says whether the engine is stable, never whether it is right,
@@ -131,7 +142,11 @@ async function main() {
 
       if (dumpDir) {
         const stem = basename(essayPath).replace(/\.[^.]+$/, "");
-        writeFileSync(`${dumpDir}/${stem}-${model}-run${run}.md`, raw, "utf8");
+        writeFileSync(
+          `${dumpDir}/${stem}-${model}-run${run}.md`,
+          `<!-- system sha ${systemDigest}, ${system.length} chars -->\n${raw}`,
+          "utf8",
+        );
       }
       const anchored = report.spots.filter((s) => locateQuote(draft, s.quoted_text));
       const truncated = !raw.includes("<<<END>>>");

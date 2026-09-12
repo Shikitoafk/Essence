@@ -23,6 +23,7 @@
  *
  *   npx tsx scripts/run-eval-cases.ts --cases 1,2,3 --model gemini-3.7-flash  *     --system scripts/prompt-baselines/00b7d53-mode-a.txt --out ./eval-old
  */
+import { createHash } from "node:crypto";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { GoogleGenAI } from "@google/genai";
@@ -127,10 +128,19 @@ async function main() {
   const system = systemPath
     ? readFileSync(systemPath, "utf8")
     : MODE_A_SYSTEM;
+  // Two agents edit this repository and both edit the prompt. A comparison
+  // whose sides ran against different text still looks like a result, so the
+  // digest is printed and written into every saved read: if the side meant to
+  // be held fixed does not show the same one twice, the numbers go in the bin.
+  const systemDigest = createHash("sha256").update(system).digest("hex").slice(0, 8);
   if (systemPath) {
-    console.log(`system prompt: ${systemPath} (${system.length} chars)`);
+    console.log(
+      `system prompt: ${systemPath} (${system.length} chars, sha ${systemDigest})`,
+    );
   } else {
-    console.log(`system prompt: working tree (${system.length} chars)`);
+    console.log(
+      `system prompt: working tree (${system.length} chars, sha ${systemDigest})`,
+    );
   }
 
   const md = readFileSync("docs/research/essay-feedback-eval-cases.md", "utf8");
@@ -195,7 +205,7 @@ async function main() {
         [
           `# Case ${c.number}. ${c.title}`,
           `Model: ${model} · run ${run} · ${c.kind}${c.wordLimit ? ` · ${c.wordLimit} words` : ""}`,
-          `Prompt: ${systemPath || "working tree"}`,
+          `Prompt: ${systemPath || "working tree"} · sha ${systemDigest}`,
           ``,
           `## Draft`,
           c.draft,

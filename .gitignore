@@ -21,3 +21,4 @@ desktop.ini
 
 # Eval runs: model output, regenerated on demand
 eval-out/
+supabase/.temp/
