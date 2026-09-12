@@ -105,13 +105,12 @@ test("questions uncover and never direct", () => {
   assert.match(GUIDE, /answer "I do not know" without contradicting a premise you supplied/);
 });
 
-test("a flat draft is caught even when nothing is missing from it", () => {
-  assert.match(GUIDE, /nothing is missing and nobody is home/);
-  assert.match(GUIDE, /find one sentence only this writer could have written/);
-  assert.match(GUIDE, /it is structural, and it outranks every line-level gap/);
-  // The guard rail: plainness is not flatness.
+test("a personal portrait needs evidence, not an unprecedented sentence", () => {
+  assert.match(GUIDE, /Describe the writer's actual perspective with evidence/);
+  assert.match(GUIDE, /A topic or a list of virtues is not yet a portrait/);
   assert.match(GUIDE, /Plain writing is not flatness/);
-  assert.match(GUIDE, /the absence of a person, not the absence of decoration/);
+  assert.ok(!GUIDE.includes("find one sentence only this writer could have written"));
+  assert.match(CORE, /Judge the development of the writer's idea, not its novelty/);
 });
 
 test("the enumerated checklist is a floor the engine may exceed", () => {

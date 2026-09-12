@@ -1,0 +1,27 @@
+[
+  {
+    "id": "repair-montage",
+    "draft": "I mend things people have already replaced. My brother's bag has three different kinds of thread because he likes each repair to look like a badge. My mother wants the stitches on her coat hidden. The same neat seam cannot be right for both.\n\nAt the school play I repaired a cardboard window with tape. The actor asked me to leave one corner loose so it would rattle when he slammed the door. I had been about to make it silent.\n\nI used to call all this fixing. Now I ask what the person wants to keep. Sometimes it is the flaw.",
+    "expected": "Recognize distinct episodes accumulating a coherent, nuanced view of repair. Preserve explicit reflection and the quiet ending. No forced adversity, public impact, additional reaction or rare topic. Zero substantive findings is defensible."
+  },
+  {
+    "id": "repair-claims",
+    "draft": "I mend things people have already replaced. Mending taught me patience, resilience and leadership. I repaired my brother's bag, my mother's coat and a window for the school play. Each item was different and required different skills. Through these experiences, I became a person who appreciates imperfection. I will bring that mindset to college.",
+    "expected": "Same topic as the montage, weaker development. Identify unsupported interpretation of imperfection or choices hidden behind labels. Ask what the writer means or how their decisions differed; don't demand a more original topic, senses, hardship or a preselected moral."
+  },
+  {
+    "id": "interior-contradiction",
+    "draft": "I like the hour after rehearsal when everyone has gone home. In an empty room, I can try the part badly without stopping to explain why. I also keep a recording of our messiest rehearsal on my phone. When I practise alone too long, I listen to it. I can hear myself slowing down to wait for Ana and laughing when she speeds past me.\n\nI want privacy to experiment and people who interrupt what I had planned. I used to think one of those wishes had to be dishonest. Listening to that recording, I no longer think they cancel each other out.",
+    "expected": "Read the two wishes as an earned tension, not broken coherence. Internal interpretation is real material. Do not demand a later public action, a single trait, or artificial resolution. Preserve telling that clarifies the coexistence."
+  },
+  {
+    "id": "mentor-perspective",
+    "draft": "On Sundays I sit behind the counter at my uncle's bicycle shop. He keeps a tin of bent spokes. I thought he was saving metal until a customer came back with a wheel he had straightened the week before. My uncle took the old spoke out of the tin and laid it beside the new one. The bends were in different places.\n\nI had been keeping score: another broken wheel meant a bad repair. He was trying to tell two failures apart. I still like deciding whether something worked. What interests me at that counter is how often I decide before I have worked out what happened. I do not repair the wheels. I watch where he looks first.",
+    "expected": "The uncle acts, but the writer's initial interpretation and revised way of looking make this a portrait of the writer too. Observation is not automatic lack of agency. Do not demand that the writer take over a repair, teach someone, or add a later event. Evaluate any actual weakness on its own merits."
+  },
+  {
+    "id": "mentor-biography",
+    "draft": "On Sundays I sit behind the counter at my uncle's bicycle shop. He keeps a tin of bent spokes. He opened the shop twenty years ago and still works there six days a week. He remembers every customer's name. When someone cannot afford a repair, he lets them pay later. He can straighten a wheel, replace a chain and find a puncture without asking anyone for help.\n\nHis first workshop had no heating. He saved until he could move into the current building. Last year he trained two apprentices. Customers come from other towns because they trust him. I admire his patience and generosity. His life has taught me important lessons that I will carry into the future.",
+    "expected": "The uncle is clear but the writer's interpretation of the claimed lessons is not developed. Identify what remains unknown about the writer, anchored to that claim. Ask about their understanding or relationship without prescribing generosity, transformation, a repair scene, or a future career. More facts about the uncle would not solve the loss."
+  }
+]
