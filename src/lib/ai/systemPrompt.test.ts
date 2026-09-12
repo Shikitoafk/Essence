@@ -72,20 +72,14 @@ test("the card count follows the draft in both directions", () => {
   assert.match(GUIDE, /will fix three and submit an essay with three left in it/);
 });
 
-test("dropping a candidate has to be shown, not asserted", () => {
-  // Both flash models dropped real gaps on the strength of "the draft accounts
-  // for it", which is a claim about the draft rather than evidence from it.
-  assert.match(GUIDE, /you must quote the draft's own words that do the accounting/);
-  assert.match(GUIDE, /If you cannot point at the sentence, the draft does not close the gap/);
-  assert.match(GUIDE, /are statements about the draft, not evidence from it/);
-  // The old rule this replaces, kept: a thin explanation is itself the finding.
-  assert.match(GUIDE, /If the explanation itself is thin, that is the finding/);
+test("dropping a candidate requires a reason but not a defense of every omission", () => {
+  assert.match(MODE_A, /Drop it with a quote and a reason/);
+  assert.match(MODE_A, /The writer does not owe a defense of every omission/);
+  assert.match(GUIDE, /Curiosity alone is not a cost/);
 });
-
-test("findings merge by location, never by the shape of the fix", () => {
-  assert.match(GUIDE, /do they point at the \*\*same moment\*\* in the draft/);
-  assert.match(GUIDE, /Sharing a \*\*kind\*\* of fix is not sharing a finding/);
-  assert.match(GUIDE, /Merge on location, never on the shape of the remedy/);
+test("findings merge only when one actual revision resolves both", () => {
+  assert.match(GUIDE, /Compare the actual revision each card requires/);
+  assert.match(GUIDE, /If losses need independent changes, retain both/);
 });
 
 test("every critique is evidence-based", () => {
@@ -318,16 +312,10 @@ test("asking is not answering, and must not be judged as one", () => {
   assert.match(ask, /No JSON, no headings, no markdown structure/);
 });
 
-test("a downstream candidate is not dropped as a consequence of an upstream one", () => {
-  // Measured: on the 100-word Why Maths case the read dropped its own closing
-  // -line candidate because the emptiness earlier "caused" it. Two losses in
-  // two places, and a student fixing one is still left with the other.
-  // The drop rules live in the Mode A contract beside the scan block.
-  assert.match(MODE_A, /One candidate \*\*causing\*\* another is not the same moment/);
-  assert.match(MODE_A, /a student fixing only one still has the other/);
-  assert.match(MODE_A, /Card both, and say in the second card that the first is upstream of it/);
-  assert.match(MODE_A, /Those are the only two reasons/);
-  assert.match(MODE_A, /not a reason you construct on the spot/);
+test("coverage retains independent losses without turning curiosity into homework", () => {
+  assert.match(MODE_A, /A candidate is a hypothesis, not a debt/);
+  assert.match(MODE_A, /Keep independent losses even when they share a cause/);
+  assert.match(MODE_A, /Never silently lose a candidate/);
 });
 
 test("the word budget raises the bar for a card on a short answer", () => {
@@ -404,5 +392,5 @@ test("the guide shows one read worked through, not only rules about reading", ()
   assert.match(GUIDE, /A draft with one real gap gets one card/);
   assert.match(GUIDE, /three more cards here would bury the one that matters/);
   // And the question asks for something that happened.
-  assert.match(GUIDE, /asks for an event, not a feeling/);
+  assert.match(GUIDE, /The question fits this claim/);
 });

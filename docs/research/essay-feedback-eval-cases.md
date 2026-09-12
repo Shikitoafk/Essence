@@ -128,7 +128,7 @@ Personal-statement excerpt:
 >
 > The habit protects me, and it has cost me things too.
 
-Expected: the draft asserts a chain — laughter, silence, note-taking, protection, cost — and shows no link in it. Ask for an event on one side: what happened the last time the writer decided not to say something, or what the cost was when it was paid. Do not ask how being laughed at shaped their approach to seminars, and do not ask what they thought or felt when the class laughed: a question that supplies the connection leaves the writer confirming it, and a question about an interior state cannot be answered with a fact. Rationale: measured on a real draft, questions of the form "how did A shape B" appeared in 11% of questions and questions asking for a thought or a feeling in another 11%, while both were 0% across cases 1-12. The twelve cases are about activities; this one is about a state, which is where the fault lives.
+Expected: distinguish asserted causality from what the excerpt actually establishes. Ask about the unclear connection or the claimed cost without supplying a motive. A truthful thought or feeling can answer the question; do not insist on an event just because the material is interior. Do not assume childhood laughter explains every later silence. Accept correction or uncertainty.
 
 ## 14. A draft over its limit, with something to remove
 
@@ -145,6 +145,24 @@ Task: why this major? 150-word limit.
 > The tin is still on the windowsill.
 
 Expected: the response is 174 words against a 150-word limit, and the strongest finding is that the tin paragraph and its closing callback are the 68 words that pay for the overrun twice over — they are the only passage that does not bear on the question asked. A read that asks what the grandfather taught the writer, or for more of the kitchen, has proposed spending words the draft does not have. At least one finding must be answerable by deleting rather than adding, and any finding that asks for new material must name what it displaces. Rationale: across about thirty reads of six drafts of one essay, no card ever proposed removing anything, and a read of a 781-word draft against a 650-word limit raised no card about the overrun. Every named pattern the engine has means something is missing.
+
+## 15. Multiple episodes without a shared impression
+
+Task: personal statement. 650-word limit. Complete response:
+
+> I like how a map can be wrong without anyone lying. I walked the route our council website called accessible and found stairs at the final turn. I sent a photo to the council and marked the stairs on my own copy.
+>
+> In chemistry, I earned the highest mark in my class. I trained for a race and finished third. Each experience made me who I am.
+
+Expected: explain the shift from a particular habit of checking claims to an unconnected achievement list. Ask what the later material contributes, without inventing a unifying trait or demanding race and chemistry scenes. Removing or selecting material is a valid next step. Do not predict admissions outcomes or call an ordinary topic unmemorable.
+
+## 16. Quiet reflection already earns its ending
+
+Task: What have you learned about working with others? 100-word limit. Complete response:
+
+> I thought our group agreed because nobody objected. When I sent the plan, Noor replied privately that she could not stay after school. I had asked whether the plan worked while everyone was already packing up. Now I send it before we meet. I had been treating a chance to object as the same thing as a chance to help decide.
+
+Expected: the reflection explains the incident and change; no manufactured gap. Do not demand a more dramatic outcome, private feelings, another event, or an unfinished ending. Preserve the explicit final insight: telling is useful here. Zero cards is valid.
 
 ## Scoring sheet
 

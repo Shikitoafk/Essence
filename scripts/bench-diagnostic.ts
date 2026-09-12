@@ -56,10 +56,14 @@ const essay: Essay = {
   id: "bench",
   user_id: "bench",
   title: "Bench draft",
-  prompt_text: null,
-  word_limit: 650,
+  // A supplemental read as a 650-word personal statement is judged against a
+  // question nobody asked and a budget it does not have, and task fit is the
+  // finding that outranks every other one on a supplemental. Both were
+  // hardcoded here, so every supplemental measured so far was measured wrong.
+  prompt_text: arg("prompt", "") || null,
+  word_limit: Number(arg("limit", "650")),
   current_draft: draft,
-  essay_kind: "personal_statement",
+  essay_kind: arg("prompt", "") ? "supplemental" : "personal_statement",
   school: null,
   last_feedback_at: null,
   revision_count: 0,

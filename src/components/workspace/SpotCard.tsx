@@ -15,12 +15,6 @@ const IMPACT_STYLE: Record<Impact, string> = {
   polish: "bg-line/60 text-muted",
 };
 
-const CONFIDENCE_STYLE: Record<string, string> = {
-  high: "text-flag-high",
-  medium: "text-flag-medium",
-  low: "text-flag-low",
-};
-
 const STATUS_LABEL: Record<SpotStatus, string> = {
   open: "Open",
   answered: "Material ready — not in the draft yet",
@@ -89,17 +83,39 @@ export default function SpotCard({
         type="button"
         onClick={onSelect}
         aria-expanded={active}
-        className="flex w-full items-center gap-2 text-left"
+        className={`flex w-full gap-2 text-left ${active ? "items-start" : "items-center"}`}
       >
-        <span
-          className={`shrink-0 rounded-full px-2 py-0.5 text-[0.7rem] font-medium ${IMPACT_STYLE[spot.impact]}`}
-          title={IMPACT_BLURB[spot.impact]}
-        >
-          {IMPACT_LABEL[spot.impact]}
-        </span>
-        <span className="min-w-0 flex-1 truncate text-sm text-ink">
-          {spot.pattern_name}
-        </span>
+        {/*
+          Shut, the card is an index entry and needs a name to be found by.
+          Open, it leads with the line it is about.
+
+          Measured across six drafts of one essay: the anchor is the stable
+          part of a read — the same passage comes back run after run — while
+          the name put on it does not. One paragraph drew "Procedural
+          narration", then "A claimed link to a field that does not hold",
+          then "Intellectual transition gap" on three runs of the same draft,
+          and impact moved between structural/high and substantive/medium on
+          passages that had not changed. The card was setting the unstable
+          layer in the largest type on the page and the reliable one in small
+          grey below it.
+        */}
+        {!active && (
+          <span
+            className={`shrink-0 rounded-full px-2 py-0.5 text-[0.7rem] font-medium ${IMPACT_STYLE[spot.impact]}`}
+            title={IMPACT_BLURB[spot.impact]}
+          >
+            {IMPACT_LABEL[spot.impact]}
+          </span>
+        )}
+        {active ? (
+          <span className="min-w-0 flex-1 border-l-2 border-accent/40 pl-3 font-serif text-base leading-relaxed text-ink">
+            {spot.quoted_text}
+          </span>
+        ) : (
+          <span className="min-w-0 flex-1 truncate text-sm text-ink">
+            {spot.pattern_name}
+          </span>
+        )}
 
         {/* The read already ranked these by what a reader loses. Saying so
             costs a word and saves the student from choosing between three
@@ -110,11 +126,22 @@ export default function SpotCard({
         )}
 
         {active ? (
-          <span
-            className={`shrink-0 text-xs ${CONFIDENCE_STYLE[spot.confidence] ?? "text-muted"}`}
+          <svg
+            width="11"
+            height="11"
+            viewBox="0 0 12 12"
+            fill="none"
+            aria-hidden="true"
+            className="mt-1 shrink-0 rotate-180 text-muted"
           >
-            {spot.confidence} confidence
-          </span>
+            <path
+              d="M2.5 4.5L6 8l3.5-3.5"
+              stroke="currentColor"
+              strokeWidth="1.4"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
         ) : spot.status !== "open" ? (
           <span className="shrink-0 text-[0.7rem] text-muted">
             {STATUS_SHORT[spot.status]}
@@ -146,10 +173,6 @@ export default function SpotCard({
               {STATUS_LABEL[spot.status]}
             </p>
           )}
-
-          <blockquote className="mt-3 border-l-2 border-accent/40 pl-3 font-serif text-sm leading-relaxed">
-            {spot.quoted_text}
-          </blockquote>
 
           {missingInDraft && (
             <p className="mt-2 text-xs text-flag-medium">
@@ -226,6 +249,12 @@ export default function SpotCard({
           )}
 
           <div className="mt-3 space-y-1.5 border-t border-line pt-3 text-xs leading-relaxed text-muted">
+            {/* The read's own labels, kept where they can be checked and not
+                where they set the tone: the name is a handle, not a verdict. */}
+            <p>
+              {spot.pattern_name} · {IMPACT_LABEL[spot.impact]} ·{" "}
+              {spot.confidence} confidence
+            </p>
             <p>
               <span className="text-ink">What already lands.</span>{" "}
               {spot.what_is_clear}
