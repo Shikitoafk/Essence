@@ -86,8 +86,18 @@ const context: SeasonContext = {
 
 const ai = new GoogleGenAI({ apiKey: key });
 
+/**
+ * A frozen prompt from scripts/prompt-baselines, so both sides of a change can
+ * be run against the same draft on the same model in one sitting. The eval
+ * cases are short excerpts and do not reproduce everything a full draft does:
+ * the strengths section fell into three age-based headings on real essays and
+ * never once on the cases, so a change aimed at that cannot be measured there.
+ */
+const systemPath = arg("system", "");
+const system = systemPath ? readFileSync(systemPath, "utf8") : MODE_A_SYSTEM;
+
 console.log(`draft: ${countWords(draft)} words`);
-console.log(`system prompt: ${MODE_A_SYSTEM.length} chars\n`);
+console.log(`system prompt: ${system.length} chars${systemPath ? ` (${systemPath})` : ""}\n`);
 
 /**
  * Counting cards says whether the engine is stable, never whether it is right,
@@ -108,7 +118,7 @@ async function main() {
         const response = await ai.models.generateContent({
           model,
           contents: buildModeAPrompt(essay, draft, context),
-          config: { systemInstruction: MODE_A_SYSTEM, temperature: 0.6 },
+          config: { systemInstruction: system, temperature: 0.6 },
         });
         raw = response.text ?? "";
       } catch (error) {
@@ -160,7 +170,7 @@ async function main() {
           const rec = await ai.models.generateContent({
             model,
             contents: buildRecoveryPrompt(draft, uncarded),
-            config: { systemInstruction: MODE_A_SYSTEM, temperature: 0.4 },
+            config: { systemInstruction: system, temperature: 0.4 },
           });
           const recovered = parseSpotCards(rec.text ?? "").filter((s) =>
             locateQuote(draft, s.quoted_text),

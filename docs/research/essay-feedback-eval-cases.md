@@ -164,6 +164,34 @@ Task: What have you learned about working with others? 100-word limit. Complete 
 
 Expected: the reflection explains the incident and change; no manufactured gap. Do not demand a more dramatic outcome, private feelings, another event, or an unfinished ending. Preserve the explicit final insight: telling is useful here. Zero cards is valid.
 
+## 17. A full draft, at its limit
+
+Personal-statement, complete response, 650-word limit. 640 words:
+
+> My mother kept a whiteboard by the door, and I have kept lists since I could write. Not chores — counts. Pages read, minutes run, days since I last argued with my sister. By fourteen I had a notebook where every day got a mark out of ten, and I handed out sevens the way other people say fine.
+> A day with a number on it could not be argued with. When my aunt asked how school was going I did not have to decide what I thought, because I had already decided, in pen, before dinner. The number was not a judgement. It was a way of closing the day so that nobody, including me, could open it again.
+> In October the physics teacher put me on the regional team with three others. We met on Saturdays in a room with a broken blind. Dias talked through every problem out loud, badly, changing his mind twice a sentence, and I found it unbearable. I solved on paper, quietly, and read out the answer when I had it, and I told myself this was efficient.
+> We lost the qualifier by one place. On the bus back Dias said he had learned more from the Saturdays than from the exam, and I remember thinking that was a strange thing to be pleased about.
+> I gave that day a four.
+> My father was the one who noticed. He asked to see the notebook, which I let him do because I was proud of it, and he read three weeks and handed it back and said only that the numbers were all very close together. That was true. Almost everything was a six or a seven. Two years of days, and I had spent them inside one point of each other.
+> I would like to say I stopped keeping the notebook. I did not. I kept it through the spring and most of the summer, the marks stayed in the same narrow band, and I noticed that they did.
+> What changed first was smaller than the notebook. In April a girl in my class asked me to explain a problem, and instead of writing out the answer I said I did not know yet, which was true, and we sat with it for twenty minutes and got nowhere. I did not give that afternoon a number. I could not think what the number would be for something unfinished.
+> By June I was doing it on purpose. I would stop a problem halfway and leave it. I began to notice which ones I wanted to come back to, which is not the same as which ones I could finish, and it turned out these were rarely the same problem.
+> In the autumn our school ran a week of open sessions for younger students. I signed up to help and I was not good at it. I explained too fast and I interrupted twice, and a boy called Aibek said, kindly, that I was going quickly. I slowed down. He worked the rest out himself, and I sat there with nothing to do, which was the point, and which I did not enjoy.
+> I still keep lists. My phone has four of them. But the notebook with the marks stopped somewhere in September, and I did not decide to stop it; I found, one evening, that I had not written in it for eleven days and that I did not know what most of those days would have scored.
+> I used to think a day I could not rate was a day I had wasted. Now I think a day I can rate is usually a day I did not let anything happen in.
+> I have no idea what Dias would have given that bus ride. I suspect he would have found the question funny.
+
+Expected: name the unexplained mark — "I gave that day a four" never says which failure it scores, the qualifier or the bus ride — and, at most, that the week of open sessions is summarised where the rest of the draft is shown.
+
+Do not ask what the writer felt when the father handed the notebook back, or at any other moment; ask what happened. Do not put two motives in one question for the writer to choose between. Do not require that the notebook stop for a reason, that the writer win something, or that the scene with Aibek acquire an aftermath — the draft closes it deliberately and says so. "I would like to say I stopped keeping the notebook. I did not" is the essay's argument, not a missing transformation.
+
+The draft sits ten words under its limit, so any card asking for new material has to say what it displaces.
+
+The strengths section is under test here as well: one paragraph of prose, no headings, no superlatives, every sentence naming an effect and what produces it.
+
+Rationale: length, not subject. Cases 13 to 16 already cover interior material, a draft over its limit, scattered episodes and an ending that needs nothing added — but every draft in this file runs 35 to 174 words, and a personal statement runs 650. Three defects measured on real drafts do not appear on short excerpts at all: questions asking for a feeling rather than an event (11% against 0%), questions offering the writer both answers to choose between (4% against 0%), and a strengths section that breaks into "For a 10-year-old / For a 17-year-old applicant / For a Writing PhD" headings, seen on five full-draft reads and on none of the cases. On sixty words there is too little for the read to spread out over. This case is the one that gives it room.
+
 ## Scoring sheet
 
 For each output record: case/version/model/run; expected findings hit/missed; unsupported findings; quote accuracy; non-leading usefulness; task fit; stopping correctness; critical failures; reviewer rationale. Compare old/new blind as described in the evidence review. These cases have not yet been run against a live model; no pass rate or quality gain is claimed.
