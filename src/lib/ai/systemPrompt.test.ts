@@ -221,7 +221,12 @@ test("the strengths section analyses rather than summarises", () => {
   assert.match(GUIDE, /A list of nothing but problems tells a student which lines to change and never which to protect/);
   assert.match(GUIDE, /explain why something works \*\*as writing\*\*/);
   assert.match(GUIDE, /is plot summary, not a strength/);
-  assert.match(GUIDE, /an honest short list beats a padded one/);
+  assert.match(GUIDE, /two honest sentences\s+beat a padded page/);
+  // The ban on age-based headings was producing them: five reads in a row
+  // emitted "For a 10-year-old" under a line forbidding it by name. The
+  // section is specified by a worked register now, not by a prohibition.
+  assert.ok(!GUIDE.includes("age-based headings"));
+  assert.match(GUIDE, /Both sentences name an effect and say what produces it/);
 });
 
 test("cross-essay memory can never become a criticism", () => {
