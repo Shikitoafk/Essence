@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { selectCurrentSpots } from "./currentSpots";
+import { deriveReadiness } from "./types";
 import type { FlaggedSpot } from "./types";
 
 let seq = 0;
@@ -78,4 +79,21 @@ test("ordering of the input does not matter", () => {
   const current = selectCurrentSpots(shuffled);
   assert.equal(current.length, 2);
   assert.ok(current.every((s) => s.version_id === "v2"));
+});
+
+test("dashboard metadata preserves the workspace verdict without loading card text", () => {
+  const old = { ...spot("v1", "2026-07-01T10:00:00Z"), impact: "structural" as const };
+  const latest = [
+    { ...spot("v2", "2026-07-02T10:00:00Z"), status: "resolved" as const },
+    spot("v2", "2026-07-02T10:00:01Z"),
+  ];
+  const all = [old, ...latest];
+  const metadata = all.map(({ version_id, created_at, status, impact }) => ({
+    version_id, created_at, status, impact,
+  }));
+  const current = selectCurrentSpots(metadata);
+  assert.equal(current.length, 2);
+  assert.equal(current.filter((s) => s.status === "resolved").length, 1);
+  assert.equal(deriveReadiness(current), "strong");
+  assert.equal(deriveReadiness(current), deriveReadiness(selectCurrentSpots(all)));
 });

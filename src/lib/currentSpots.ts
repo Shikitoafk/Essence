@@ -13,8 +13,10 @@ import type { FlaggedSpot } from "@/lib/types";
  * blank the worklist and hide everything the student was mid-way through. A
  * barren read has to leave the previous cards standing.
  */
-export function selectCurrentSpots(allSpots: FlaggedSpot[]): FlaggedSpot[] {
-  const newest = allSpots.reduce<FlaggedSpot | null>(
+export function selectCurrentSpots<
+  T extends Pick<FlaggedSpot, "version_id" | "created_at">,
+>(allSpots: T[]): T[] {
+  const newest = allSpots.reduce<T | null>(
     (best, spot) =>
       !best || spot.created_at > best.created_at ? spot : best,
     null,

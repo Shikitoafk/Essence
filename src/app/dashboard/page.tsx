@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import AppHeader from "@/components/AppHeader";
+import NavigationLink from "@/components/NavigationLink";
 import NewEssayForm from "./NewEssayForm";
 import ArchivedList from "./ArchivedList";
 import { createClient } from "@/lib/supabase/server";
@@ -52,8 +53,11 @@ const READINESS_TONE: Record<Readiness, string> = {
   ready_to_submit: "text-flag-low",
 };
 
-interface EssayRow extends Essay {
-  flagged_spots: FlaggedSpot[];
+interface EssayRow extends Pick<Essay,
+  "id" | "title" | "essay_kind" | "school" | "word_limit" | "current_draft" |
+  "last_feedback_at" | "archived_at" | "archived_reason" | "updated_at"
+> {
+  flagged_spots: Pick<FlaggedSpot, "version_id" | "created_at" | "status" | "impact">[];
 }
 
 export default async function DashboardPage() {
@@ -63,11 +67,14 @@ export default async function DashboardPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const { data } = await supabase
+  // The index needs status metadata, not every quote/question from every read.
+  const { data, error } = await supabase
     .from("essays")
-    .select("*, flagged_spots(*)")
+    .select("id, title, essay_kind, school, word_limit, current_draft, last_feedback_at, archived_at, archived_reason, updated_at, flagged_spots(version_id, created_at, status, impact)")
     .eq("user_id", user.id)
     .order("updated_at", { ascending: false });
+
+  if (error) throw new Error("Could not load your essays. Please try again.");
 
   const all = (data ?? []) as EssayRow[];
   // Archived versions stay readable but leave the main list: two equally
@@ -160,7 +167,7 @@ export default async function DashboardPage() {
 
                   return (
                     <li key={essay.id} className="border-b border-line last:border-b-0">
-                      <Link
+                      <NavigationLink
                         href={`/essays/${essay.id}`}
                         className="group flex flex-wrap items-baseline gap-x-6 gap-y-2 px-5 py-5 transition-colors hover:bg-accent-soft/30 sm:px-6"
                       >
@@ -221,14 +228,18 @@ export default async function DashboardPage() {
                             />
                           </div>
                         )}
-                      </Link>
+                      </NavigationLink>
                     </li>
                   );
                 })}
               </ul>
             )}
 
-            {archived.length > 0 && <ArchivedList essays={archived} />}
+            {archived.length > 0 && (
+              <ArchivedList essays={archived.map(({ id, title, archived_reason }) => ({
+                id, title, archived_reason,
+              }))} />
+            )}
           </div>
         </div>
       </main>

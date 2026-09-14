@@ -26,15 +26,14 @@ export default async function EssayPage({
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const { data: essay } = await supabase
-    .from("essays")
-    .select("*")
-    .eq("id", id)
-    .single<Essay>();
-
-  if (!essay) notFound();
-
-  const [spotsResult, messagesResult, reportResult] = await Promise.all([
+  // All four reads depend on the ID, not on the essay query completing first.
+  const [essayResult, spotsResult, messagesResult, reportResult] = await Promise.all([
+    supabase
+      .from("essays")
+      .select("*")
+      .eq("id", id)
+      .eq("user_id", user.id)
+      .maybeSingle<Essay>(),
     supabase
       .from("flagged_spots")
       .select("*")
@@ -54,6 +53,13 @@ export default async function EssayPage({
       .maybeSingle<EssayReport>(),
   ]);
 
+  if (essayResult.error) throw new Error("Could not load this essay. Please try again.");
+  const essay = essayResult.data;
+  if (!essay) notFound();
+  if (spotsResult.error || messagesResult.error || reportResult.error) {
+    throw new Error("Could not load this essay's feedback. Please try again.");
+  }
+
   const report = reportResult.data ?? null;
   const allSpots = (spotsResult.data ?? []) as FlaggedSpot[];
 
@@ -65,6 +71,7 @@ export default async function EssayPage({
     <div className="flex min-h-screen flex-col">
       <AppHeader email={user.email ?? undefined} />
       <Workspace
+        key={essay.id}
         essay={essay}
         initialSpots={currentSpots}
         initialMessages={(messagesResult.data ?? []) as ConversationMessage[]}

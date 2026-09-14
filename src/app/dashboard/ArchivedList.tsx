@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+import NavigationLink from "@/components/NavigationLink";
 import { restoreEssay } from "@/app/actions";
 import type { Essay } from "@/lib/types";
 
@@ -10,7 +10,9 @@ import type { Essay } from "@/lib/types";
  * restorable, but keeping them as visible as the winner is exactly what turns a
  * settled decision back into an open one.
  */
-export default function ArchivedList({ essays }: { essays: Essay[] }) {
+export default function ArchivedList({ essays }: {
+  essays: Pick<Essay, "id" | "title" | "archived_reason">[];
+}) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -32,12 +34,12 @@ export default function ArchivedList({ essays }: { essays: Essay[] }) {
               className="flex flex-wrap items-center justify-between gap-3 px-5 py-3"
             >
               <div>
-                <Link
+                <NavigationLink
                   href={`/essays/${essay.id}`}
                   className="font-serif text-base hover:text-accent"
                 >
                   {essay.title}
-                </Link>
+                </NavigationLink>
                 <p className="text-xs text-muted">
                   {essay.archived_reason === "lost_comparison"
                     ? "Not chosen in a comparison"
