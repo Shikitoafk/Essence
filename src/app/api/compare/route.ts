@@ -6,9 +6,12 @@ import {
 } from "@/lib/ai/comparePrompt";
 import { generate, parseJsonBody, userFacingError } from "@/lib/ai/llm";
 import { locateQuote } from "@/lib/ai/parseReport";
+import {
+  validateComparisonReply,
+  type ModelComparisonReply,
+} from "@/lib/ai/comparisonReply";
 import { isNearIdentical } from "@/lib/similarity";
 import { checkRateLimit, recordUsage } from "@/lib/rateLimit";
-import { selectCurrentSpots } from "@/lib/currentSpots";
 import {
   COMPARISON_AXES,
   deriveMargin,
@@ -18,29 +21,11 @@ import {
   type AxisScore,
   type ComparisonAxis,
   type Essay,
-  type FlaggedSpot,
   type TransferableElement,
 } from "@/lib/types";
 
 export const runtime = "nodejs";
 export const maxDuration = 120;
-
-interface ModelAxis {
-  axis?: string;
-  winner?: string;
-  justification?: string;
-}
-
-interface ModelReply {
-  winner?: string;
-  verdict_summary?: string;
-  axis_scores?: ModelAxis[];
-  transferable_elements?: {
-    quote?: string;
-    destination_hint?: string;
-    why?: string;
-  }[];
-}
 
 /**
  * Head-to-head comparison. One call: both drafts and their stored diagnostics go
@@ -131,11 +116,6 @@ export async function POST(request: Request) {
     );
   }
 
-  const [spotsA, spotsB] = await Promise.all([
-    loadCurrentSpots(supabase, versionA.id),
-    loadCurrentSpots(supabase, versionB.id),
-  ]);
-
   /*
    * Which draft the model is shown as "A" is decided by version id, not by the
    * order the student clicked in. The picker lists essays newest first, so the
@@ -149,10 +129,8 @@ export async function POST(request: Request) {
   const shownB = flip ? versionA : versionB;
   const shownDraftA = flip ? draftB : draftA;
   const shownDraftB = flip ? draftA : draftB;
-  const shownSpotsA = flip ? spotsB : spotsA;
-  const shownSpotsB = flip ? spotsA : spotsB;
 
-  let parsed: ModelReply;
+  let parsed: ModelComparisonReply;
   try {
     const result = await generate({
       tier: "comparison",
@@ -160,17 +138,15 @@ export async function POST(request: Request) {
       prompt: buildComparePrompt(
         shownA,
         shownDraftA,
-        shownSpotsA,
         shownB,
         shownDraftB,
-        shownSpotsB,
       ),
       json: true,
       // Low: a verdict that flips between runs on the same pair is worthless.
       temperature: 0.3,
     });
     console.info(`[essence] comparison served by ${result.model}`);
-    parsed = parseJsonBody<ModelReply>(result.text);
+    parsed = parseJsonBody<ModelComparisonReply>(result.text);
   } catch (error) {
     const safe = userFacingError(error, "comparison");
     return NextResponse.json({ error: safe.message }, { status: safe.status });
@@ -178,27 +154,32 @@ export async function POST(request: Request) {
 
   await recordUsage(supabase, user.id, "feedback");
 
-  const winnerSide = parsed.winner?.trim().toUpperCase() === "B" ? "B" : "A";
+  const decision = validateComparisonReply(parsed);
+  if (!decision) {
+    return NextResponse.json(
+      {
+        error:
+          "The model did not produce a complete comparison, so Essence refused to guess. Try the comparison again.",
+        code: "invalid_comparison",
+      },
+      { status: 502 },
+    );
+  }
+
+  const winnerSide = decision.winner;
   const winner = winnerSide === "B" ? shownB : shownA;
   const loser = winnerSide === "B" ? shownA : shownB;
   const loserDraft = winnerSide === "B" ? shownDraftA : shownDraftB;
 
-  const sideToId = (side: string | undefined) =>
-    side?.trim().toUpperCase() === "B" ? shownB.id : shownA.id;
+  const sideToId = (side: "A" | "B") =>
+    side === "B" ? shownB.id : shownA.id;
 
-  /*
-   * Every axis is filled in, in the fixed order. A missing axis defaults to the
-   * overall winner rather than being dropped: an axis table with holes in it
-   * reads as a tie, and a tie is the one output this feature exists to refuse.
-   */
   const axisScores: AxisScore[] = COMPARISON_AXES.map((axis) => {
-    const row = (parsed.axis_scores ?? []).find(
-      (a) => a.axis?.trim().toLowerCase() === axis,
-    );
+    const row = decision.axes.get(axis)!;
     return {
       axis: axis as ComparisonAxis,
-      winner_id: row ? sideToId(row.winner) : winner.id,
-      justification: (row?.justification ?? "").trim(),
+      winner_id: sideToId(row.winner),
+      justification: row.justification!.trim(),
     };
   });
 
@@ -247,16 +228,4 @@ export async function POST(request: Request) {
 
   return NextResponse.json({ ok: true, comparisonId: saved.id });
 }
-
-async function loadCurrentSpots(
-  supabase: Awaited<ReturnType<typeof createClient>>,
-  essayId: string,
-): Promise<FlaggedSpot[]> {
-  const { data } = await supabase
-    .from("flagged_spots")
-    .select("*")
-    .eq("essay_id", essayId);
-  return selectCurrentSpots((data ?? []) as FlaggedSpot[]);
-}
-
 

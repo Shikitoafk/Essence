@@ -12,7 +12,7 @@
 import { readFileSync } from "node:fs";
 import { GoogleGenAI } from "@google/genai";
 import { COMPARE_SYSTEM, buildComparePrompt } from "../src/lib/ai/comparePrompt";
-import type { Essay, FlaggedSpot } from "../src/lib/types";
+import type { Essay } from "../src/lib/types";
 
 function arg(name: string, fallback: string): string {
   const i = process.argv.indexOf(`--${name}`);
@@ -60,7 +60,6 @@ async function main() {
 
   // The older draft is the one that has been read and carries findings; the
   // newer one has none. That is the shape the bug appeared in.
-  const spotsOld: FlaggedSpot[] = [];
   const ai = new GoogleGenAI({ apiKey: key });
 
   const tally: Record<string, number> = { OLD: 0, NEW: 0, "?": 0 };
@@ -77,10 +76,8 @@ async function main() {
       const prompt = buildComparePrompt(
         essayFrom(firstName, firstDraft, firstName === "OLD"),
         firstDraft,
-        spotsOld,
         essayFrom(second, secondDraft, second === "OLD"),
         secondDraft,
-        spotsOld,
       );
       try {
         const r = await ai.models.generateContent({

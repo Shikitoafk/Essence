@@ -1,8 +1,6 @@
 import {
   countWords,
-  deriveReadiness,
   type Essay,
-  type FlaggedSpot,
 } from "@/lib/types";
 
 /**
@@ -15,17 +13,20 @@ import {
  */
 export const COMPARE_SYSTEM = `You are comparing two versions of the same college application essay by the same student. Your job is to decide which one they should submit. You are a decision-maker, not a reviewer.
 
-You will receive: both full drafts, and for each, its previously flagged spots with impact ratings and its readiness verdict.
+You will receive two anonymous full drafts. You receive no dates, titles, revision numbers, prior feedback, or readiness verdicts. Neither label tells you which draft is newer. Judge only the words supplied in this call.
 
 Rules:
 
 - You MUST pick one version. Refusing to pick, or concluding that both are strong in different ways, is not an acceptable output. If the margin is narrow, pick anyway and name the single tiebreaker that decided it.
-- Score both versions on exactly these five axes — core self (matryoshka), texture, voice, structural soundness, risk — and no others. For each axis name the winner and justify in one sentence anchored to a specific passage.
+- Before choosing, read each draft as a whole and form its single strongest case for submission and its single most consequential liability. Do this independently: do not assume that smoother prose, greater length, or more explicit reflection means improvement.
+- Score both versions on exactly these five axes — core self (matryoshka), texture, voice, structural soundness, risk — and no others. For each axis name the winner and justify it with a direct contrast between specific evidence in A and specific evidence in B. A justification that discusses only the winner is incomplete.
 - Weight core self, voice, and risk above texture and structural soundness. A structurally tidy essay with no identifiable person in it loses to a rougher essay with a real person in it.
 - Identify at most THREE elements from the losing version worth carrying into the winner. Each must be: an exact verbatim quote from the losing draft, a specific destination in the winning draft, and one sentence on what it adds. If fewer than three are genuinely worth moving, list fewer. If none are, say so plainly.
 - Never write new sentences, never rewrite a quoted element to fit its destination, and never propose merging the two versions wholesale. The student is submitting one essay, optionally enriched by up to three specific borrowings.
 - Do not hedge, do not soften, and do not pad the losing version with consolation praise. Say which one to submit and why, in plain language.
 - If both versions share the same weakness, say so once and move on — this is a comparison, not a fresh diagnostic.
+- Newer is not better. More polished is not automatically better. Extra explanation can clarify an essay or flatten its voice; deleted material can sharpen an arc or remove the detail that made it memorable. Decide what the actual change did.
+- Do not reward a version for stating its lesson more explicitly when the other version makes the same insight legible through scene, choice, or implication.
 
 ## What each axis means
 
@@ -40,14 +41,14 @@ Rules:
 Reply with a single JSON object and nothing else — no markdown fence, no prose outside it:
 
 {
-  "winner": "<exactly "A" or "B">",
+  "winner": "<A|B>",
   "verdict_summary": "<2-3 sentences addressed to the student: which to submit and why it won. If the margin is narrow, name the single tiebreaker here.>",
   "axis_scores": [
-    { "axis": "core_self", "winner": "<A|B>", "justification": "<one sentence, anchored to a specific passage>" },
-    { "axis": "texture", "winner": "<A|B>", "justification": "<one sentence>" },
-    { "axis": "voice", "winner": "<A|B>", "justification": "<one sentence>" },
-    { "axis": "structural_soundness", "winner": "<A|B>", "justification": "<one sentence>" },
-    { "axis": "risk", "winner": "<A|B>", "justification": "<one sentence — the version carrying less risk wins>" }
+    { "axis": "core_self", "winner": "<A|B>", "justification": "<one sentence directly contrasting specific evidence from A and B>" },
+    { "axis": "texture", "winner": "<A|B>", "justification": "<one sentence directly contrasting A and B>" },
+    { "axis": "voice", "winner": "<A|B>", "justification": "<one sentence directly contrasting A and B>" },
+    { "axis": "structural_soundness", "winner": "<A|B>", "justification": "<one sentence directly contrasting A and B>" },
+    { "axis": "risk", "winner": "<A|B>", "justification": "<one sentence directly contrasting A and B — the version carrying less risk wins>" }
   ],
   "transferable_elements": [
     {
@@ -61,6 +62,7 @@ Reply with a single JSON object and nothing else — no markdown fence, no prose
 Hard requirements:
 - All five axes appear exactly once, in that order, using those exact axis names.
 - "winner" on every axis is "A" or "B" — never "tie", never "both", never empty. An axis you find genuinely even still goes to whichever version edges it.
+- Every axis justification must contain evidence about both A and B. Do not infer chronology from style and do not use the words older, newer, revision, or improved unless they appear inside the drafts themselves.
 - Every "quote" MUST be a verbatim substring of the LOSING draft. Never quote from the winner, never normalise punctuation or spelling, never trim a phrase into something tidier.
 - "transferable_elements" holds at most three entries, and is an empty array when nothing is genuinely worth moving.
 - "destination_hint" points at a place. It never contains a sentence for the student to use.
@@ -68,52 +70,18 @@ Hard requirements:
 
 function describeVersion(
   label: "A" | "B",
-  essay: Essay,
   draft: string,
-  spots: FlaggedSpot[],
 ): string {
-  const live = spots.filter(
-    (s) => s.status === "open" || s.status === "answered",
-  );
-
-  /*
-   * A version nobody has read has no findings, and deriveReadiness() on an
-   * empty set says "ready_to_submit" - true of the findings, false of the
-   * draft. Printed beside a read version's list of real problems, it handed
-   * the comparison to whichever draft had been examined least, and the newer
-   * draft is usually the one nobody has read yet.
-   */
-  const hasBeenRead = Boolean(essay.last_feedback_at);
-
-  const diagnostics =
-    !hasBeenRead
-      ? "This version has NOT been read, so nothing is listed. That is an absence of examination, not an absence of problems - do not read it as a clean bill of health."
-      : live.length === 0
-        ? "Every finding on this version has been worked through."
-        : live
-            .map(
-              (s) =>
-                `- [${s.impact}] ${s.pattern_name} — "${s.quoted_text}" · still unexplored: ${s.what_is_unexplored}`,
-            )
-            .join("\n");
-
-  return `--- VERSION ${label}: ${essay.title} ---
-Readiness: ${hasBeenRead ? deriveReadiness(spots) : "not read yet - no verdict"}
-Open findings from earlier reads:
-${diagnostics}
-
-Draft ${label}:
+  return `--- ANONYMOUS DRAFT ${label} ---
 ${draft}
---- END VERSION ${label} ---`;
+--- END ANONYMOUS DRAFT ${label} ---`;
 }
 
 export function buildComparePrompt(
   versionA: Essay,
   draftA: string,
-  spotsA: FlaggedSpot[],
   versionB: Essay,
   draftB: string,
-  spotsB: FlaggedSpot[],
 ): string {
   const parts: string[] = [];
 
@@ -130,12 +98,12 @@ export function buildComparePrompt(
     );
   }
 
-  parts.push(describeVersion("A", versionA, draftA, spotsA));
-  parts.push(describeVersion("B", versionB, draftB, spotsB));
+  parts.push(describeVersion("A", draftA));
+  parts.push(describeVersion("B", draftB));
   parts.push(
     [
       "Decide which version this student should submit. Reply using the output contract exactly. Remember: you must pick one, and every quote you carry over must come verbatim from the losing draft.",
-      "Judge the drafts, not their histories. Which one is labelled A and which B carries no information, and neither does how much feedback a version has already had: a draft with a long list of findings has been examined, and one with none may only have been skipped.",
+      "The labels are anonymous and carry no chronology. Base the verdict on a direct reading of both drafts. Each axis justification must contrast concrete evidence from A with concrete evidence from B.",
     ].join("\n\n"),
   );
 
