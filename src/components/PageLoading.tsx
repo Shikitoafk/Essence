@@ -1,6 +1,6 @@
 import AppHeader from "@/components/AppHeader";
 
-export default function PageLoading({ kind }: { kind: "dashboard" | "essay" }) {
+export default function PageLoading({ kind }: { kind: "dashboard" | "essay" | "comparison" }) {
   const dashboard = kind === "dashboard";
   return (
     <div className="min-h-screen">
@@ -10,7 +10,7 @@ export default function PageLoading({ kind }: { kind: "dashboard" | "essay" }) {
         className="mx-auto max-w-[68rem] px-6 py-10 sm:py-14"
       >
         <p role="status" className="mb-6 text-sm text-muted">
-          {dashboard ? "Loading your essays…" : "Opening your essay…"}
+          {dashboard ? "Loading your essays…" : kind === "comparison" ? "Opening your comparison…" : "Opening your essay…"}
         </p>
         <div aria-hidden="true" className="space-y-4 motion-safe:animate-pulse">
           <div className="h-10 w-56 rounded-xl bg-line" />

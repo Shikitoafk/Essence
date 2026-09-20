@@ -17,7 +17,7 @@ const IMPACT_STYLE: Record<Impact, string> = {
 
 const STATUS_LABEL: Record<SpotStatus, string> = {
   open: "Open",
-  answered: "Material ready — not in the draft yet",
+  answered: "Conversation complete — review your draft",
   resolved: "Resolved",
   skipped: "Set aside",
 };
@@ -25,7 +25,7 @@ const STATUS_LABEL: Record<SpotStatus, string> = {
 /** The collapsed line has room for a word or two, not a sentence. */
 const STATUS_SHORT: Record<SpotStatus, string> = {
   open: "",
-  answered: "Ready to work in",
+  answered: "Ready to review",
   resolved: "Resolved",
   skipped: "Set aside",
 };
@@ -187,7 +187,7 @@ export default function SpotCard({
           {awaitingRevision && spot.new_material.length > 0 && (
             <div className="mt-4 rounded-md border border-flag-medium/40 bg-flag-medium/10 p-3">
               <p className="text-xs uppercase tracking-widest text-flag-medium">
-                What you turned up — not in the draft yet
+                Your notes for this passage
               </p>
               <ul className="mt-2 space-y-1.5 text-sm">
                 {spot.new_material.map((item, i) => (
@@ -198,8 +198,8 @@ export default function SpotCard({
                 ))}
               </ul>
               <p className="mt-3 text-xs text-muted">
-                Your words, not ours. Work them into the quoted line above
-                however you want — this closes itself once that passage changes.
+                Use only what helps. You can clarify the passage, shorten it,
+                or remove a claim. These notes do not all need to enter the essay.
               </p>
             </div>
           )}
@@ -216,7 +216,7 @@ export default function SpotCard({
             prose, which is what a reader's note actually is.
           */}
           <p className="mt-4 text-sm leading-relaxed">
-            <span className="text-muted">Still unexplored — </span>
+            <span className="text-muted">The reader’s question — </span>
             {spot.what_is_unexplored}
           </p>
 
@@ -243,7 +243,7 @@ export default function SpotCard({
                 }}
                 className="mt-3 rounded-full bg-accent px-3 py-1 text-xs font-medium text-white transition hover:bg-[#4849c8]"
               >
-                {awaitingRevision ? "Back to the conversation" : "Answer this"}
+                {awaitingRevision ? "Back to the conversation" : "Think it through"}
               </button>
             </div>
           )}

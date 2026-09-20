@@ -58,7 +58,9 @@ export function geminiChain(tier: ModelTier): string[] {
   const override =
     tier === "conversation"
       ? process.env.GEMINI_MODEL_CONVERSATION
-      : process.env.GEMINI_MODEL_DIAGNOSTIC;
+      : tier === "comparison"
+        ? process.env.GEMINI_MODEL_COMPARISON
+        : process.env.GEMINI_MODEL_DIAGNOSTIC;
   return resolveChain(override, DEFAULT_CHAINS[tier]);
 }
 

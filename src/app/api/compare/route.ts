@@ -3,13 +3,11 @@ import { createClient } from "@/lib/supabase/server";
 import {
   COMPARE_SYSTEM,
   buildComparePrompt,
+  comparisonContextConflict,
 } from "@/lib/ai/comparePrompt";
 import { generate, parseJsonBody, userFacingError } from "@/lib/ai/llm";
 import { locateQuote } from "@/lib/ai/parseReport";
-import {
-  validateComparisonReply,
-  type ModelComparisonReply,
-} from "@/lib/ai/comparisonReply";
+import { validateComparisonReply } from "@/lib/ai/comparisonReply";
 import { isNearIdentical } from "@/lib/similarity";
 import { checkRateLimit, recordUsage } from "@/lib/rateLimit";
 import {
@@ -28,8 +26,7 @@ export const runtime = "nodejs";
 export const maxDuration = 120;
 
 /**
- * Head-to-head comparison. One call: both drafts and their stored diagnostics go
- * in together, and no fresh analysis of either version is run.
+ * Head-to-head comparison of anonymous drafts, without prior diagnostic labels.
  */
 export async function POST(request: Request) {
   const supabase = await createClient();
@@ -48,8 +45,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Malformed request." }, { status: 400 });
   }
 
-  const { versionAId, versionBId } = body;
-  if (!versionAId || !versionBId || versionAId === versionBId) {
+  const { versionAId, versionBId } = body ?? {};
+  if (typeof versionAId !== "string" || typeof versionBId !== "string" || !versionAId || !versionBId || versionAId === versionBId) {
     return NextResponse.json(
       { error: "Pick two different essays to compare." },
       { status: 400 },
@@ -76,6 +73,10 @@ export async function POST(request: Request) {
 
   const draftA = (versionA.current_draft ?? "").trim();
   const draftB = (versionB.current_draft ?? "").trim();
+  const conflict = comparisonContextConflict(versionA, versionB);
+  if (conflict) {
+    return NextResponse.json({ error: conflict, code: "different_assignments" }, { status: 400 });
+  }
 
   if (
     countWords(draftA) < MIN_DRAFT_WORDS ||
@@ -121,8 +122,8 @@ export async function POST(request: Request) {
    * order the student clicked in. The picker lists essays newest first, so the
    * newer draft was landing in slot A on nearly every comparison, and a model
    * that leans toward the first option it reads leans toward the newer draft
-   * for a reason that has nothing to do with the writing. Storage and the
-   * screen keep the student's own A and B; only the prompt is reordered.
+   * for a reason that has nothing to do with the writing. Store this same order
+   * so references to A and B in the model's prose remain attached to their text.
    */
   const flip = versionA.id > versionB.id;
   const shownA = flip ? versionB : versionA;
@@ -130,7 +131,7 @@ export async function POST(request: Request) {
   const shownDraftA = flip ? draftB : draftA;
   const shownDraftB = flip ? draftA : draftB;
 
-  let parsed: ModelComparisonReply;
+  let parsed: unknown;
   try {
     const result = await generate({
       tier: "comparison",
@@ -146,7 +147,7 @@ export async function POST(request: Request) {
       temperature: 0.3,
     });
     console.info(`[essence] comparison served by ${result.model}`);
-    parsed = parseJsonBody<ModelComparisonReply>(result.text);
+    parsed = parseJsonBody<unknown>(result.text);
   } catch (error) {
     const safe = userFacingError(error, "comparison");
     return NextResponse.json({ error: safe.message }, { status: safe.status });
@@ -188,7 +189,7 @@ export async function POST(request: Request) {
    * that nothing here was written for the student. Anything that can't be found
    * in their own losing text is dropped rather than shown.
    */
-  const transferable: TransferableElement[] = (parsed.transferable_elements ?? [])
+  const transferable: TransferableElement[] = decision.transferable_elements
     .map((item) => {
       const located = locateQuote(loserDraft, (item.quote ?? "").trim());
       if (!located) return null;
@@ -208,11 +209,11 @@ export async function POST(request: Request) {
     .from("essay_comparisons")
     .insert({
       user_id: user.id,
-      version_a_id: versionA.id,
-      version_b_id: versionB.id,
+      version_a_id: shownA.id,
+      version_b_id: shownB.id,
       winner_id: winner.id,
       margin,
-      verdict_summary: (parsed.verdict_summary ?? "").trim(),
+      verdict_summary: decision.verdict_summary,
       axis_scores: axisScores,
       transferable_elements: transferable,
     })
@@ -228,4 +229,3 @@ export async function POST(request: Request) {
 
   return NextResponse.json({ ok: true, comparisonId: saved.id });
 }
-

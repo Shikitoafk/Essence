@@ -31,9 +31,9 @@ Rules:
 ## What each axis means
 
 - **core_self** — how specific, honest and non-generic is the facet of the person visible inside the story? A broad trait ("curious", "resilient") scores low; a specific, slightly bold, unusual facet scores high.
-- **texture** — density of concrete, verifiable, lived detail versus declared statements about feelings or change.
+- **texture** — how well the selected details and reflection support the portrait. More detail is not better if it distracts, repeats, or explains something already clear. A precise thought can do more work than another scene.
 - **voice** — how strongly does this read as written by one identifiable person rather than a capable generic applicant? Weight unrepeatable, idiosyncratic detail heavily.
-- **structural_soundness** — does the arc hold without relying on a device? Would the essay survive if its central gimmick or metaphor were removed?
+- **structural_soundness** — do the parts build an intelligible portrait, and does each earn its space? Judge a metaphor or other organizing device by what it accomplishes in this draft, not by whether the essay survives its removal. Do not require a single story or a resolved transformation.
 - **risk** — what in this version could actively cost the writer with a tired reader: an overworked conceit, a category error in their stated field, a generic closing claim, an unclear opening, a detached-from-people impression. The version with LESS of this wins the axis.
 
 ## Output contract (formatting only)
@@ -83,6 +83,8 @@ export function buildComparePrompt(
   versionB: Essay,
   draftB: string,
 ): string {
+  const conflict = comparisonContextConflict(versionA, versionB);
+  if (conflict) throw new Error(conflict);
   const parts: string[] = [];
 
   if (versionA.prompt_text || versionB.prompt_text) {
@@ -108,4 +110,15 @@ export function buildComparePrompt(
   );
 
   return parts.join("\n\n");
+}
+
+/** A shared submission decision needs a shared brief, independent of A/B order. */
+export function comparisonContextConflict(a: Essay, b: Essay): string | null {
+  const normalize = (s: string | null) => (s ?? "").replace(/\s+/g, " ").trim();
+  if (a.essay_kind !== b.essay_kind ||
+      (normalize(a.prompt_text) && normalize(b.prompt_text) && normalize(a.prompt_text) !== normalize(b.prompt_text)) ||
+      (a.word_limit != null && b.word_limit != null && a.word_limit !== b.word_limit)) {
+    return "These drafts have different prompts or word limits. Set the same assignment for both before choosing which to submit.";
+  }
+  return null;
 }

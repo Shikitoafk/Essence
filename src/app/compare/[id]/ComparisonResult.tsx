@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
+import Link from "@/components/NavigationLink";
 import { acceptComparison } from "@/app/actions";
 import {
   AXIS_BLURB,
@@ -28,14 +28,19 @@ export default function ComparisonResult({ comparison, winner, loser }: Props) {
   async function accept() {
     setAccepting(true);
     setError(null);
-    const result = await acceptComparison(comparison.id);
-    if (!result.ok) {
-      setError(result.error);
+    try {
+      const result = await acceptComparison(comparison.id);
+      if (!result.ok) {
+        setError(result.error);
+        setAccepting(false);
+        return;
+      }
+      router.push(`/essays/${result.winnerId}`);
+      router.refresh();
+    } catch {
+      setError("Couldn't save your choice. Try again.");
       setAccepting(false);
-      return;
     }
-    router.push(`/essays/${result.winnerId}`);
-    router.refresh();
   }
 
   const nameFor = (id: string) => (id === winner.id ? winner.title : loser.title);
@@ -45,7 +50,7 @@ export default function ComparisonResult({ comparison, winner, loser }: Props) {
       {/* The verdict is the product. Everything below it is supporting evidence. */}
       <section className="rounded-lg border border-line bg-white p-6">
         <p className="text-xs uppercase tracking-widest text-muted">
-          Submit this one
+          Recommended starting point
         </p>
         <h1 className="mt-1 font-serif text-3xl leading-tight">
           {winner.title}
@@ -69,6 +74,10 @@ export default function ComparisonResult({ comparison, winner, loser }: Props) {
         {comparison.verdict_summary && (
           <p className="mt-4 leading-relaxed">{comparison.verdict_summary}</p>
         )}
+        <div className="mt-4 flex flex-wrap gap-4 text-sm text-accent">
+          <Link href={`/essays/${winner.id}`}>Read {winner.title}</Link>
+          <Link href={`/essays/${loser.id}`}>Read {loser.title}</Link>
+        </div>
       </section>
 
       <section className="mt-8">
@@ -108,8 +117,8 @@ export default function ComparisonResult({ comparison, winner, loser }: Props) {
         <h2 className="font-serif text-lg">What to carry over</h2>
         {comparison.transferable_elements.length === 0 ? (
           <p className="mt-2 rounded-lg border border-dashed border-line bg-white p-5 text-sm text-muted">
-            Nothing from {loser.title} is worth moving across. Submit the winner
-            as it stands.
+            No passages were selected to carry over. This comparison does not
+            establish that either draft is ready to submit.
           </p>
         ) : (
           <>
@@ -145,8 +154,7 @@ export default function ComparisonResult({ comparison, winner, loser }: Props) {
             <h2 className="font-serif text-lg">Settle it</h2>
             <p className="mt-1 text-sm text-muted">
               Accepting archives {loser.title} and takes you to the winner.
-              Keeping both live is what turns this into an endless loop — you can
-              still restore it later.
+              You can also keep both drafts, or restore the archived one later.
             </p>
             {error && (
               <p className="mt-3 rounded-md bg-flag-high/10 px-3 py-2 text-sm text-flag-high">
@@ -159,7 +167,7 @@ export default function ComparisonResult({ comparison, winner, loser }: Props) {
               disabled={accepting}
               className="mt-4 rounded-full bg-accent px-5 py-2.5 text-sm text-paper transition hover:opacity-90 disabled:opacity-50"
             >
-              {accepting ? "Settling…" : `Accept — submit ${winner.title}`}
+              {accepting ? "Saving your choice…" : `Keep ${winner.title} and archive the other`}
             </button>
           </>
         )}

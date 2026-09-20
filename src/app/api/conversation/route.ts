@@ -101,7 +101,7 @@ export async function POST(request: Request) {
       .from("conversation_messages")
       .select("role, content")
       .eq("flagged_spot_id", spotId)
-      .order("created_at", { ascending: true })
+      .order("created_at", { ascending: false })
       .limit(20),
     supabase
       .from("essay_facts")
@@ -114,7 +114,9 @@ export async function POST(request: Request) {
 
   const prompt = buildModeBPrompt(
     spot,
-    (history ?? []) as Pick<ConversationMessage, "role" | "content">[],
+    // Take the most recent turns, then present them chronologically. Taking
+    // the first twenty silently hid the student's latest answer in long chats.
+    [...(history ?? [])].reverse() as Pick<ConversationMessage, "role" | "content">[],
     (facts ?? []).map((f) => f.fact as string),
     essay.word_limit,
     essay.essay_kind,

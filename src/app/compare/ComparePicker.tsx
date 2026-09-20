@@ -95,6 +95,8 @@ export default function ComparePicker({
             <li key={candidate.id}>
               <button
                 type="button"
+                disabled={running}
+                aria-pressed={selected}
                 onClick={() => toggle(candidate.id)}
                 className={`flex w-full items-center justify-between gap-4 rounded-lg border bg-white p-4 text-left transition ${
                   selected
@@ -138,12 +140,12 @@ export default function ComparePicker({
       {alreadySettled && !confirmedReopen && (
         <div className="mt-4 rounded-lg border border-flag-high/40 bg-flag-high/10 p-4 text-sm">
           <p className="font-medium text-flag-high">
-            You already settled this one.
+            You have compared these essays before.
           </p>
           <p className="mt-1">
             The verdict was <strong>{alreadySettled.winnerTitle}</strong>.
-            Re-running the same matchup is how a settled decision turns back into
-            an open one.
+            If you have edited either draft since then, that verdict may no
+            longer apply.
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
             <Link
@@ -157,7 +159,7 @@ export default function ComparePicker({
               onClick={() => setConfirmedReopen(true)}
               className="rounded-full border border-line px-4 py-2 text-xs hover:border-flag-high"
             >
-              Re-open it anyway
+              Compare current drafts
             </button>
           </div>
         </div>

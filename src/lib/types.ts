@@ -276,9 +276,9 @@ export const AXIS_LABEL: Record<ComparisonAxis, string> = {
 
 export const AXIS_BLURB: Record<ComparisonAxis, string> = {
   core_self: "How specific and non-generic the person inside the story is.",
-  texture: "Concrete lived detail against declared feeling.",
+  texture: "How well details and reflection support the portrait.",
   voice: "Whether one identifiable person wrote this.",
-  structural_soundness: "Whether the arc holds without its device.",
+  structural_soundness: "Whether the parts belong together and earn their space.",
   risk: "What could cost the writer with a tired reader.",
 };
 

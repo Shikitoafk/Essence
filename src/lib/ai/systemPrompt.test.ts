@@ -275,10 +275,13 @@ test("honesty runs in both directions", () => {
   assert.match(CORE, /editing away something that was already good/);
 });
 
-test("a first detail does not automatically end a Socratic thread", () => {
-  assert.match(CORE, /a first concrete detail does not automatically close a card/);
-  assert.match(CORE, /does not stay open to make the exchange feel deep/);
-  assert.match(CORE, /enough true material to revise with/);
+test("follow-up resolves the diagnosed loss rather than collecting details", () => {
+  assert.match(CORE, /Ask again only when you can name what remains unclear about the original finding/);
+  assert.match(CORE, /Abstract language is not itself a reason to keep questioning/);
+  const conversation = flat(MODE_B_SYSTEM);
+  assert.match(conversation, /If cutting the claim solves the loss, resolve that decision/);
+  assert.match(conversation, /Reflection made now must not become a realization or change of behavior back then/);
+  assert.doesNotMatch(conversation, /the student gave real, specific, lived material for this spot/);
 });
 
 test("the diagnosis stays revisable in conversation", () => {
