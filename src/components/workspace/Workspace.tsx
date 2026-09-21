@@ -50,7 +50,7 @@ export default function Workspace({
   const [draft, setDraft] = useState(essay.current_draft ?? "");
   const [spots, setSpots] = useState(initialSpots);
   const [messages, setMessages] = useState(initialMessages);
-  const [report, setReport] = useState(initialReport);
+  const report = initialReport;
   const [activeSpotId, setActiveSpotId] = useState<string | null>(
     initialSpots.find((s) => s.status === "open")?.id ?? null,
   );
@@ -191,17 +191,6 @@ export default function Workspace({
     }
   }, [analysing, tooShort, essay.id, draft, router, spots.length]);
 
-  // Re-sync when router.refresh() brings new server data down.
-  useEffect(() => setSpots(initialSpots), [initialSpots]);
-  useEffect(() => setMessages(initialMessages), [initialMessages]);
-  useEffect(() => setReport(initialReport), [initialReport]);
-  useEffect(() => {
-    setActiveSpotId((current) => {
-      if (current && initialSpots.some((s) => s.id === current)) return current;
-      return initialSpots.find((s) => s.status === "open")?.id ?? null;
-    });
-  }, [initialSpots]);
-
   /*
    * Closes the loop on revision rather than conversation.
    *
@@ -230,13 +219,20 @@ export default function Workspace({
   }, [draft, spots]);
 
   async function changeStatus(spotId: string, status: SpotStatus) {
+    const previousStatus = spots.find((spot) => spot.id === spotId)?.status;
     setSpots((prev) =>
       prev.map((s) => (s.id === spotId ? { ...s, status } : s)),
     );
     const result = await setSpotStatus(spotId, status);
     if (!result.ok) {
+      if (previousStatus) {
+        setSpots((prev) =>
+          prev.map((s) =>
+            s.id === spotId ? { ...s, status: previousStatus } : s,
+          ),
+        );
+      }
       setBanner({ kind: "error", text: result.error });
-      router.refresh();
     }
   }
 

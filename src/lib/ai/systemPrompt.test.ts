@@ -110,7 +110,7 @@ test("a personal portrait needs evidence, not an unprecedented sentence", () => 
   assert.match(GUIDE, /A topic or a list of virtues is not yet a portrait/);
   assert.match(GUIDE, /Plain writing is not flatness/);
   assert.ok(!GUIDE.includes("find one sentence only this writer could have written"));
-  assert.match(CORE, /Judge the development of the writer's idea, not its novelty/);
+  assert.match(CORE, /Judge the development of the writer's perspective, not its novelty/);
 });
 
 test("the enumerated checklist is a floor the engine may exceed", () => {
@@ -194,8 +194,9 @@ test("the lenses look for thinking, other people, and the work a detail does", (
   assert.match(GUIDE, /what another person actually did, said, preferred or refused/);
   assert.match(GUIDE, /Do not invent gratitude, assign motives to anyone/);
   assert.match(GUIDE, /A precise noun, a timestamp, a smell: none is revealing by itself/);
-  // Proportionate change: a small action can be enough evidence.
-  assert.match(GUIDE, /A small action is enough evidence/);
+  // Proportionate change: evidence can stay inside the central scene.
+  assert.match(GUIDE, /support can be a choice already inside the central scene/);
+  assert.match(GUIDE, /A second episode is one option, not the default/);
   assert.match(GUIDE, /A dramatic event is not proof of growth/);
 });
 
@@ -321,7 +322,8 @@ test("asking is not answering, and must not be judged as one", () => {
 
 test("coverage retains independent losses without turning curiosity into homework", () => {
   assert.match(MODE_A, /A candidate is a hypothesis, not a debt/);
-  assert.match(MODE_A, /Keep independent losses even when they share a cause/);
+  assert.match(MODE_A, /A whole-draft selection problem dominates local requests for detail/);
+  assert.match(MODE_A, /Retain a local card now only when it needs an independent repair/);
   assert.match(MODE_A, /Never silently lose a candidate/);
 });
 
@@ -367,7 +369,7 @@ test("the whole essay is judged before any paragraph is swept", () => {
   // per paragraph, so a finding belonging to the whole draft — two halves
   // about different people, a through-line asserted rather than built — had
   // nowhere to be written down and was never made.
-  assert.match(GUIDE, /Read the whole thing first, and say what it is doing/);
+  assert.match(GUIDE, /Read the whole thing first, and name the reader's afterimage/);
   assert.match(GUIDE, /it belongs to no single paragraph, which is why it has to be made here or not at all/);
   assert.match(GUIDE, /report ten local gaps in an essay whose actual problem is that its two halves are about different people/);
   // The sweep is second, and subordinate.
@@ -376,6 +378,45 @@ test("the whole essay is judged before any paragraph is swept", () => {
   assert.match(GUIDE, /an essay does not have a problem in every paragraph merely because you looked at every paragraph/);
   // And it is recorded, so the count can be checked against the cards.
   assert.match(MODE_A, /THROUGH-LINE: /);
+});
+
+test("a personal statement is judged by its human afterimage, not an admissions pitch", () => {
+  assert.match(CORE, /supported \*\*afterimage of a person\*\*/);
+  assert.match(GUIDE, /A sequence of virtues is not an afterimage/);
+  assert.match(CORE, /not a closing argument for admission/);
+  assert.match(CORE, /never claim that the essay adds nothing new to it/);
+  assert.match(GUIDE, /Four episodes followed by four admirable labels may be one selection problem/);
+  assert.match(GUIDE, /Offer cutting the rest/);
+  assert.match(GUIDE, /A whole-draft selection problem dominates local requests for detail/);
+  assert.match(GUIDE, /Do not interrogate four compressed episodes/);
+  assert.match(GUIDE, /Retain a local card now only when it needs an independent repair/);
+});
+
+test("reports describe effects without ranking the writer", () => {
+  assert.match(CORE, /Describe before you evaluate/);
+  assert.match(CORE, /applause without information/);
+  assert.match(CORE, /Do not score the writer's maturity, intelligence or character/);
+  assert.match(CORE, /"Afterimage" is an internal test, not language for the student/);
+  assert.match(GUIDE, /Use descriptive language, not praise words or the term/);
+  assert.match(MODE_A, /Do not use "afterimage" or evaluative intensifiers/);
+  assert.match(MODE_A, /exceptional, remarkable, rare/);
+});
+
+test("the card contract puts selection before requests for detail", () => {
+  assert.match(MODE_A, /pattern: <one of: Replaceable portrait/);
+  assert.match(MODE_A, /If this is a whole-draft portrait or selection problem/);
+  assert.match(MODE_A, /ask which EXISTING material carries the perspective/);
+  assert.match(MODE_A, /do not ask for a specific challenge, a new anecdote/);
+  assert.match(MODE_A, /Ask for an event only when this card proved that an event is the missing unit/);
+  assert.match(MODE_A, /Never seed a school, project, relationship, emotion or setting/);
+});
+
+test("the guide protects retrospective honesty", () => {
+  assert.match(GUIDE, /Keep separate what the writer felt or understood then/);
+  assert.match(GUIDE, /what they understand only now/);
+  assert.match(GUIDE, /makes the earlier self implausibly empty, foolish or uncaring/);
+  assert.match(GUIDE, /the old view made sense with the information available/);
+  assert.match(GUIDE, /soften or remove the false contrast rather than add a new proving scene/);
 });
 
 test("the guide shows one read worked through, not only rules about reading", () => {
@@ -390,14 +431,16 @@ test("the guide shows one read worked through, not only rules about reading", ()
   // The scan in the example opens on the whole draft.
   // Lines inside the quoted block keep their "> " markers once whitespace is
   // collapsed, so match within a line rather than across the wrap.
-  assert.match(GUIDE, /THROUGH-LINE: A person who learned that an instrument they relied on was/);
-  assert.match(GUIDE, /The music earns it/);
+  assert.match(GUIDE, /THROUGH-LINE: Four competent activities are arranged to certify four good/);
+  assert.match(GUIDE, /This is one selection problem across the draft/);
   // The drop cites the draft's own words rather than asserting intent.
-  assert.match(GUIDE, /"I learned the piece around its error" is the evidence/);
-  assert.match(GUIDE, /"The essay handles this deliberately" would not have been/);
+  assert.match(GUIDE, /Why the robot/);
+  assert.match(GUIDE, /would collect detail for material they may remove/);
+  assert.match(GUIDE, /The same reason drops >? ?local questions about the boxes/);
   // Restraint is shown, not just asserted: a one-gap draft draws one card.
-  assert.match(GUIDE, /A draft with one real gap gets one card/);
-  assert.match(GUIDE, /three more cards here would bury the one that matters/);
-  // And the question asks for something that happened.
-  assert.match(GUIDE, /The question fits this claim/);
+  assert.match(GUIDE, /One card, not five/);
+  assert.match(GUIDE, /Separate cards would disguise one repair as five problems/);
+  // And the question asks the writer to select rather than fabricate.
+  assert.match(GUIDE, /The question asks for a decision, not a hidden story/);
+  assert.match(GUIDE, /Which challenge was hardest/);
 });

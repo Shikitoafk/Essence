@@ -71,7 +71,10 @@ export default async function EssayPage({
     <div className="flex min-h-screen flex-col">
       <AppHeader email={user.email ?? undefined} />
       <Workspace
-        key={essay.id}
+        // A new read replaces the complete feedback session. Remounting on the
+        // report id gives the client authoritative spots/messages without
+        // copying server props into local state from effects.
+        key={`${essay.id}:${report?.id ?? "unread"}`}
         essay={essay}
         initialSpots={currentSpots}
         initialMessages={(messagesResult.data ?? []) as ConversationMessage[]}

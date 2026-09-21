@@ -40,18 +40,31 @@ async function main() {
   const fixtures = JSON.parse(readFileSync("scripts/fixtures/author-perspective.json", "utf8")) as Array<{
     id: string; draft: string; expected: string;
   }>;
+  const selectedIds = new Set(arg("cases").split(",").map((id) => id.trim()).filter(Boolean));
+  const selectedFixtures = selectedIds.size
+    ? fixtures.filter((fixture) => selectedIds.has(fixture.id))
+    : fixtures;
+  if (selectedIds.size && selectedFixtures.length !== selectedIds.size) {
+    throw new Error("--cases includes an unknown fixture id");
+  }
   const attachment = arg("attachment");
-  if (attachment) fixtures.unshift({
+  if (attachment) selectedFixtures.unshift({
     id: "supplied-baking",
     draft: readFileSync(attachment, "utf8").split("Admissions Committee Comments")[0].trim(),
     expected: "Explain cumulative characterization through experimentation, accommodation and mutual exchange. Do not demand unrelated growth, a novel topic or a hidden ending. Admission status does not imply perfection.",
   });
   const systems = { before: readFileSync(before, "utf8"), after: MODE_A_SYSTEM };
+  const requestedVersions = arg("versions", "before,after")
+    .split(",")
+    .map((version) => version.trim())
+    .filter((version): version is keyof typeof systems => version === "before" || version === "after");
+  if (requestedVersions.length === 0) throw new Error("--versions must include before or after");
   writeFileSync(join(out, "after.txt"), systems.after);
   const manifest: unknown[] = [];
   const ai = new GoogleGenAI({ apiKey: key, httpOptions: { timeout: 90000 } });
-  for (const [index, fixture] of fixtures.entries()) {
-    const order: Array<keyof typeof systems> = index % 2 ? ["after", "before"] : ["before", "after"];
+  for (const [index, fixture] of selectedFixtures.entries()) {
+    const pairedOrder: Array<keyof typeof systems> = index % 2 ? ["after", "before"] : ["before", "after"];
+    const order = pairedOrder.filter((version) => requestedVersions.includes(version));
     const essay: Essay = {
       id: fixture.id, user_id: "eval", title: "Untitled", prompt_text: null,
       word_limit: 650, current_draft: fixture.draft, essay_kind: "personal_statement",
@@ -69,8 +82,9 @@ async function main() {
         const raw = result.text ?? "";
         if (!raw.trim()) throw new Error("Empty response");
         const report = parseModeAReport(raw);
-        writeFileSync(join(out, `${fixture.id}-${version}.json`), JSON.stringify({ ...metadata, draft: fixture.draft, expected: fixture.expected, raw, report }, null, 2));
-        manifest.push({ ...metadata, status: "complete", cards: report.spots.length });
+        const servedModel = result.modelVersion ?? null;
+        writeFileSync(join(out, `${fixture.id}-${version}.json`), JSON.stringify({ ...metadata, servedModel, draft: fixture.draft, expected: fixture.expected, raw, report }, null, 2));
+        manifest.push({ ...metadata, servedModel, status: "complete", cards: report.spots.length });
         console.log(`${fixture.id} ${version}: ${report.spots.length} cards`);
         for (const spot of report.spots) console.log(`  ${spot.impact}: ${spot.question}`);
       } catch (error) {

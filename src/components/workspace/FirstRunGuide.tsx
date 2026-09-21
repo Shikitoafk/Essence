@@ -1,8 +1,32 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 
 const STORAGE_KEY = "essence.workspace-guide-dismissed";
+const STORAGE_EVENT = "essence:workspace-guide-changed";
+
+function subscribeToDismissal(onStoreChange: () => void) {
+  window.addEventListener("storage", onStoreChange);
+  window.addEventListener(STORAGE_EVENT, onStoreChange);
+  return () => {
+    window.removeEventListener("storage", onStoreChange);
+    window.removeEventListener(STORAGE_EVENT, onStoreChange);
+  };
+}
+
+function getDismissedSnapshot() {
+  try {
+    return localStorage.getItem(STORAGE_KEY) === "1";
+  } catch {
+    // Private mode or blocked storage: skip the guide rather than nag.
+    return true;
+  }
+}
+
+/** Keep the server and hydration pass identical; React reads storage after it connects. */
+function getServerDismissedSnapshot() {
+  return true;
+}
 
 const STEPS = [
   {
@@ -38,27 +62,23 @@ const STEPS = [
  * the wall does not, and reading it is a choice rather than a toll.
  */
 export default function FirstRunGuide() {
-  const [visible, setVisible] = useState(false);
   const [open, setOpen] = useState(false);
-
-  useEffect(() => {
-    try {
-      if (!localStorage.getItem(STORAGE_KEY)) setVisible(true);
-    } catch {
-      // Private mode or blocked storage: skip the guide rather than nag.
-    }
-  }, []);
+  const dismissed = useSyncExternalStore(
+    subscribeToDismissal,
+    getDismissedSnapshot,
+    getServerDismissedSnapshot,
+  );
 
   function dismiss() {
-    setVisible(false);
     try {
       localStorage.setItem(STORAGE_KEY, "1");
     } catch {
       // Not remembering is better than blocking dismissal.
     }
+    window.dispatchEvent(new Event(STORAGE_EVENT));
   }
 
-  if (!visible) return null;
+  if (dismissed) return null;
 
   return (
     <section className="border-t border-line bg-accent-soft/40 px-6 py-2">

@@ -21,6 +21,7 @@ const config = [
     // that happen to live under scripts/.
     ignores: [
       ".next/**",
+      "eval-out/**",
       "node_modules/**",
       "next-env.d.ts",
       "scripts/prompt-baselines/**",

@@ -1,4 +1,5 @@
 export const NUDGE_PATTERNS = [
+  "Replaceable portrait",
   "Underdeveloped change",
   "Strong detail, no aftermath",
   "Procedural narration",
