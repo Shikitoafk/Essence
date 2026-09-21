@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { trackProductEvent } from "@/lib/productAnalytics";
 
 type Mode = "signin" | "signup";
 
@@ -43,6 +44,7 @@ export default function LoginForm() {
     setError(null);
     setNotice(null);
     setDismissedCallbackError(true);
+    trackProductEvent("auth_started", { method: "email", mode });
 
     const supabase = createClient();
 
@@ -77,6 +79,7 @@ export default function LoginForm() {
     setBusy(true);
     setError(null);
     setDismissedCallbackError(true);
+    trackProductEvent("auth_started", { method: "google", mode });
     const supabase = createClient();
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",

@@ -9,9 +9,11 @@ import KeepCard from "./KeepCard";
 import FirstRunGuide from "./FirstRunGuide";
 import ConversationPanel from "./ConversationPanel";
 import EssaySettings from "./EssaySettings";
+import GrowthPanel from "./GrowthPanel";
 import Markdown from "@/components/Markdown";
 import { saveDraft, saveVersion, setSpotStatus } from "@/app/actions";
 import { locateQuote } from "@/lib/ai/parseReport";
+import { trackProductEvent } from "@/lib/productAnalytics";
 import {
   countWords,
   deriveReadiness,
@@ -143,6 +145,12 @@ export default function Workspace({
         return;
       }
 
+      trackProductEvent("feedback_completed", {
+        spot_count: Number(payload.spotCount ?? 0),
+        draft_unchanged: Boolean(payload.draftUnchanged),
+        revision_round: rounds + (payload.draftUnchanged ? 0 : 1),
+      });
+
       if (payload.truncated) {
         // Never let a cut-off read masquerade as a clean bill of health.
         setBanner({
@@ -189,7 +197,7 @@ export default function Workspace({
     } finally {
       setAnalysing(false);
     }
-  }, [analysing, tooShort, essay.id, draft, router, spots.length]);
+  }, [analysing, tooShort, essay.id, draft, router, spots.length, rounds]);
 
   /*
    * Closes the loop on revision rather than conversation.
@@ -586,6 +594,8 @@ export default function Workspace({
               {essay.last_feedback_at && (
                 <ReadinessCard readiness={readiness} report={report} />
               )}
+
+              {essay.last_feedback_at && <GrowthPanel spotCount={spots.length} />}
 
               {/* Rounds are never blocked — the cost is just made visible. */}
               {rounds >= DIMINISHING_RETURNS_ROUND && (

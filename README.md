@@ -77,6 +77,10 @@ Create a project at [supabase.com](https://supabase.com), then:
 - If your database predates the readiness verdict, also run
   [`supabase/migrations/002_readiness.sql`](supabase/migrations/002_readiness.sql).
   New projects get those columns from `schema.sql` already.
+- Existing deployments should run later files in `supabase/migrations` in
+  numeric order. `008_growth_foundation.sql` adds the privacy-safe product
+  funnel; until it is applied, writing and feedback still work but growth
+  events are discarded.
 - For Google sign-in: **Authentication → Providers → Google**, enable it, and add
   your OAuth client ID/secret. Set the redirect URL to
   `https://<your-domain>/auth/callback` (and `http://localhost:3000/auth/callback`

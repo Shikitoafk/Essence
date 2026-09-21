@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useFormStatus } from "react-dom";
 import { createEssay } from "@/app/actions";
+import { trackProductEvent } from "@/lib/productAnalytics";
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -56,7 +57,13 @@ export default function NewEssayForm() {
         </button>
       </div>
 
-      <form action={createEssay} className="mt-5 grid gap-4 sm:grid-cols-2">
+      <form
+        action={createEssay}
+        onSubmit={() =>
+          trackProductEvent("essay_creation_started", { essay_kind: kind })
+        }
+        className="mt-5 grid gap-4 sm:grid-cols-2"
+      >
         <label className="block">
           <span className="text-sm font-medium">Title</span>
           <input

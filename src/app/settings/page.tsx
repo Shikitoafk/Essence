@@ -116,6 +116,12 @@ export default async function SettingsPage() {
               sites.
             </li>
             <li>
+              <span className="text-ink">Product events</span> — record small
+              milestones such as completing the sample, requesting feedback,
+              answering a question, rating a read or copying an invite. They
+              contain no essay text, quoted passage, answer, name or email.
+            </li>
+            <li>
               There is no advertising, no ad tracking, and no other
               data-sharing integration in this app.
             </li>

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { askNextQuestion } from "@/app/actions";
+import { trackProductEvent } from "@/lib/productAnalytics";
 import type { ConversationMessage, FlaggedSpot } from "@/lib/types";
 
 interface Props {
@@ -164,6 +165,11 @@ export default function ConversationPanel({
         return;
       }
 
+      trackProductEvent("question_answered", {
+        verdict: String(payload.verdict ?? "unknown"),
+        answer_length: Math.min(text.length, 500),
+      });
+
       if (payload.verdict !== "needs_narrower") {
         onSpotResolved(spotId, payload.verdict);
         setAffirmation({
@@ -218,6 +224,9 @@ export default function ConversationPanel({
     // Clearing this hands the screen over to the new question.
     setAffirmation(null);
     onSelectSpot(result.spotId);
+    trackProductEvent("question_started", {
+      queue_position: currentSpot.queue_position,
+    });
     setAsking(false);
   }
 
