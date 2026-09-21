@@ -392,6 +392,24 @@ test("a personal statement is judged by its human afterimage, not an admissions 
   assert.match(GUIDE, /Retain a local card now only when it needs an independent repair/);
 });
 
+test("the guide tests reader residue without inventing an elite-pool contest", () => {
+  assert.match(CORE, /reader-residue check/);
+  assert.match(CORE, /two or three draft-specific handles/);
+  assert.match(CORE, /A number, proper noun or unusual event is not a handle by itself/);
+  assert.match(CORE, /If only the thesis or a set of admirable labels survives/);
+  assert.match(CORE, /Do not compare the draft with an imagined elite applicant pool/);
+  assert.match(GUIDE, /not a speculative "two-hour memory" score/);
+  assert.match(GUIDE, /When the handles already carry the person, preserve them/);
+  assert.match(GUIDE, /do not demand spectacle/);
+});
+
+test("a ceiling read does not turn clean prose or reflection into a scene quota", () => {
+  assert.match(GUIDE, /Clean prose is not over-polished by default/);
+  assert.match(GUIDE, /repeated explanation leaves less room for the person already visible/);
+  assert.match(GUIDE, /A reflection can be earned by a choice, relationship/);
+  assert.match(GUIDE, /does not automatically owe a dramatized scene/);
+});
+
 test("reports describe effects without ranking the writer", () => {
   assert.match(CORE, /Describe before you evaluate/);
   assert.match(CORE, /applause without information/);

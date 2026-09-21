@@ -124,3 +124,30 @@ praise intensifiers even after the prompt told it to describe effects rather
 than applaud them. No broad text-rewriting filter was added because it could
 damage otherwise precise feedback. Repeated runs on the production model are
 still needed before treating the smoke result as a regression benchmark.
+
+## Ceiling without imaginary competition
+
+A later review proposed grading against the strongest selective-admissions
+pool and asking whether a reader would remember the essay after fifty others.
+The useful concern is real: absence of conventional flaws does not prove that
+the draft has selected and developed its most revealing material. The proposed
+comparison is not measurable from one draft, however, and would encourage the
+engine to manufacture novelty demands after a good essay is already finished.
+
+The guide therefore uses a reader-residue check instead. It sets aside the
+essay's stated thesis and identifies two or three text-specific handles that
+carry the person: a choice, observation, relationship, contradiction or detail
+with meaning. If only the lesson survives, the ceiling constraint is a
+replaceable portrait. If the handles already converge on a particular person,
+the engine preserves them and does not demand spectacle, a rarer topic or an
+additional scene. This tests whether the person outlives the message without
+pretending to rank the writer against an unseen applicant pool.
+
+The first paired Gemini 3.6 Flash control kept the completed ordinary-topic
+essay at zero cards in both versions. The revised overall impression grounded
+its portrait in the grocery list, pencil, tomatoes and unlisted tea rather than
+only repeating the closing lesson. The next 3.6 request returned 503, and a 3.5
+run returned the same service error on its first request, so no broader model
+claim is justified yet. A new `portrait-buried-by-explanation` fixture records
+the key pending test: preserve a specific person, flag the generic explanatory
+ending, and recommend compression instead of another scene.

@@ -114,6 +114,16 @@ portrait does not require one trait, one story, one moral, or a transformation.
 It does require selection: the parts must accumulate into a person rather than
 merely prove that several good qualities are present.
 
+Run a **reader-residue check**, not a prediction of fame or admission. Set the
+stated lesson aside and identify two or three draft-specific handles — a choice,
+observation, relationship, contradiction, or detail whose meaning belongs to
+this person. A number, proper noun or unusual event is not a handle by itself;
+what the writer does with it is. If those handles converge on a particular
+person, the essay does not need a more dramatic scene. If only the thesis or a
+set of admirable labels survives, name that limited ceiling as a replaceable
+portrait. Do not compare the draft with an imagined elite applicant pool or ask
+whether another high-achieving student could have written its topic.
+
 "Afterimage" is an internal test, not language for the student. In the report,
 say naturally what person is visible or what remains indistinct; do not announce
 that "the reader is left with an afterimage."
@@ -201,6 +211,13 @@ Work in this order, and do not begin deciding until the first step is finished:
    student chose: a developing story, connected moments, a reflective argument,
    a playful exploration, or a direct answer. A through-line can be a tension
    or a relationship among facets, not only a chronological change.
+
+   Then set the essay's own thesis aside and name the two or three textual
+   handles that would let a reader reconstruct this particular person. This is
+   evidence for the portrait, not a speculative "two-hour memory" score. When
+   the handles already carry the person, preserve them. When the lesson is
+   clear but the person disappears without the lesson sentence, that is the
+   ceiling constraint; do not disguise it as a request for prettier detail.
 
    This is the finding that matters most, and it belongs to no single
    paragraph, which is why it has to be made here or not at all. A read that
@@ -430,6 +447,11 @@ is the one who makes it.
 they are a floor rather than a ceiling. Locate actual costs: background that
 obscures the writer, repeated claims that crowd out a useful distinction,
 unsupported generalizations, or confusing shifts in time or reference.
+Clean prose is not over-polished by default. Flag polish only where a specific
+phrase replaces the writer's demonstrated observation with generic application
+language, or where repeated explanation leaves less room for the person already
+visible in the draft. A reflection can be earned by a choice, relationship,
+pattern or observed detail; it does not automatically owe a dramatized scene.
 Absence of failure, selflessness, public impact or a particular emotion is
 not a failure. A rhetorical question, an explicit lesson, several interests
 or an ordinary topic is not a defect in itself. A checklist never overrules
@@ -716,7 +738,9 @@ name.
    manufacturing a flattering portrait. Several episodes may build a coherent
    impression without sharing one moral; do not impose a single lesson or a
    cliffhanger ending. Use descriptive language, not praise words or the term
-   "afterimage".
+   "afterimage". Ground the portrait in two or three draft-specific handles. If
+   only the stated thesis survives that check, identify the replaceable portrait;
+   if the handles already distinguish the person, do not demand spectacle.
 2. **Checklist findings.** Only the named failures actually present, each with
    a quote and what it costs. Do not list what is not there.
 3. **Framework findings.** Which structural principles this draft violates or
@@ -809,9 +833,10 @@ Then the sections themselves:
 
 <<<SECTION:1>>>
 (Overall impression — describe the portrait or tension this draft develops,
-with the evidence that supports your reading. Say where understanding is lost
-only if it is lost. Do not force several facets into one virtue or summarize
-every episode. A familiar subject does not count against the author. Do not use
+grounded in two or three draft-specific handles rather than only its thesis.
+Say where understanding is lost only if it is lost. Do not force several facets
+into one virtue or summarize every episode. A familiar subject does not count
+against the author. Do not use
 "afterimage" or evaluative intensifiers such as exceptional, remarkable, rare,
 powerful, compelling, highly or deeply.)
 <<<SECTION:2>>>
