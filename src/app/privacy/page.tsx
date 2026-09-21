@@ -94,12 +94,19 @@ export default function PrivacyPage() {
             </p>
           </PrivacySection>
 
-          <PrivacySection title="The sample is local">
+          <PrivacySection title="The anonymous trial is not stored">
             <p>
-              The interactive sample on the home page uses a synthetic draft.
-              Anything you type into its demonstration answer box stays in your
-              browser and is never sent to Essence or an AI model. Only the fact
-              that the sample was completed is counted.
+              When you press Get one Essence question, the excerpt and optional
+              essay prompt are sent once to {policy.providerLabel}. Essence does
+              not save that text or the model&apos;s response in Supabase or in
+              product analytics. Anything you type after receiving the question
+              stays in your browser.
+            </p>
+            <p className="mt-4">
+              To enforce one trial per browser per day and protect the shared
+              model quota, Essence keeps keyed hashes of a random browser ID and
+              network address for up to seven days. The raw address is never
+              stored, and the hashes cannot be used to recover it.
             </p>
           </PrivacySection>
         </div>

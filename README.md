@@ -79,8 +79,10 @@ Create a project at [supabase.com](https://supabase.com), then:
   New projects get those columns from `schema.sql` already.
 - Existing deployments should run later files in `supabase/migrations` in
   numeric order. `008_growth_foundation.sql` adds the privacy-safe product
-  funnel; until it is applied, writing and feedback still work but growth
-  events are discarded.
+  funnel; `009_anonymous_trial.sql` adds the rate-limited real-text trial on the
+  landing page. Until 008 is applied, growth events are discarded. Until 009
+  is applied, the trial shows an unavailable message; signed-in writing and
+  feedback still work.
 - For Google sign-in: **Authentication → Providers → Google**, enable it, and add
   your OAuth client ID/secret. Set the redirect URL to
   `https://<your-domain>/auth/callback` (and `http://localhost:3000/auth/callback`
@@ -99,6 +101,7 @@ cp .env.example .env.local
 | `NEXT_PUBLIC_SUPABASE_URL` | Supabase → Project Settings → API |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase → Project Settings → API |
 | `GEMINI_API_KEY` | [aistudio.google.com/apikey](https://aistudio.google.com/apikey) |
+| `TRIAL_RATE_LIMIT_SECRET` | *(optional)* separate secret for anonymous-trial hashes; falls back to the Gemini key |
 | `GEMINI_MODEL_DIAGNOSTIC` | *(optional)* comma-separated model chain for the deep read |
 | `GEMINI_MODEL_CONVERSATION` | *(optional)* comma-separated model chain for chat turns |
 | `NEXT_PUBLIC_SITE_URL` | *(production only)* your deployed URL, for OAuth redirects |

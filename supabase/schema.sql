@@ -141,6 +141,18 @@ create table if not exists public.product_events (
     check (pg_column_size(properties) <= 2048)
 );
 
+-- Rate ledger for the one real read available before sign-in. Stores keyed
+-- hashes only — never raw network information or anything from the essay.
+create table if not exists public.anonymous_trial_usage (
+  id           uuid primary key default gen_random_uuid(),
+  visitor_hash text not null check (visitor_hash ~ '^[0-9a-f]{64}$'),
+  network_hash text not null check (network_hash ~ '^[0-9a-f]{64}$'),
+  status       text not null default 'claimed'
+                 check (status in ('claimed', 'completed')),
+  created_at   timestamptz not null default now(),
+  completed_at timestamptz
+);
+
 -- ---------------------------------------------------------------------------
 -- Indexes
 -- ---------------------------------------------------------------------------
@@ -155,6 +167,8 @@ create index if not exists usage_user_kind_time_idx  on public.ai_usage (user_id
 create index if not exists product_events_name_time_idx on public.product_events (event_name, created_at desc);
 create index if not exists product_events_anonymous_time_idx on public.product_events (anonymous_id, created_at desc);
 create index if not exists product_events_user_time_idx on public.product_events (user_id, created_at desc) where user_id is not null;
+create index if not exists trial_visitor_time_idx on public.anonymous_trial_usage (visitor_hash, created_at desc);
+create index if not exists trial_network_time_idx on public.anonymous_trial_usage (network_hash, created_at desc);
 
 -- ---------------------------------------------------------------------------
 -- updated_at trigger
@@ -190,6 +204,7 @@ alter table public.essay_reports         enable row level security;
 alter table public.essay_facts           enable row level security;
 alter table public.ai_usage              enable row level security;
 alter table public.product_events        enable row level security;
+alter table public.anonymous_trial_usage enable row level security;
 
 drop policy if exists "own essays" on public.essays;
 create policy "own essays" on public.essays
@@ -296,4 +311,88 @@ $$;
 
 revoke all on function public.record_product_event(text, uuid, jsonb) from public;
 grant execute on function public.record_product_event(text, uuid, jsonb)
+  to anon, authenticated;
+
+revoke all on table public.anonymous_trial_usage from anon, authenticated;
+
+create or replace function public.claim_anonymous_trial(
+  p_visitor_hash text,
+  p_network_hash text
+)
+returns uuid
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  claim_id uuid;
+begin
+  if p_visitor_hash !~ '^[0-9a-f]{64}$'
+     or p_network_hash !~ '^[0-9a-f]{64}$' then
+    raise exception 'invalid trial identity';
+  end if;
+
+  perform pg_advisory_xact_lock(hashtextextended(p_visitor_hash, 0));
+  delete from public.anonymous_trial_usage
+  where created_at < now() - interval '7 days';
+
+  if exists (
+    select 1 from public.anonymous_trial_usage
+    where visitor_hash = p_visitor_hash
+      and (
+        (status = 'completed' and completed_at >= now() - interval '24 hours')
+        or (status = 'claimed' and created_at >= now() - interval '10 minutes')
+      )
+  ) then
+    return null;
+  end if;
+
+  if (
+    select count(*) from public.anonymous_trial_usage
+    where network_hash = p_network_hash
+      and created_at >= now() - interval '24 hours'
+      and (
+        status = 'completed'
+        or (status = 'claimed' and created_at >= now() - interval '10 minutes')
+      )
+  ) >= 5 then
+    return null;
+  end if;
+
+  insert into public.anonymous_trial_usage (visitor_hash, network_hash)
+  values (p_visitor_hash, p_network_hash)
+  returning id into claim_id;
+  return claim_id;
+end;
+$$;
+
+create or replace function public.complete_anonymous_trial(p_claim_id uuid)
+returns void
+language sql
+security definer
+set search_path = public
+as $$
+  update public.anonymous_trial_usage
+  set status = 'completed', completed_at = now()
+  where id = p_claim_id and status = 'claimed';
+$$;
+
+create or replace function public.release_anonymous_trial(p_claim_id uuid)
+returns void
+language sql
+security definer
+set search_path = public
+as $$
+  delete from public.anonymous_trial_usage
+  where id = p_claim_id and status = 'claimed';
+$$;
+
+revoke all on function public.claim_anonymous_trial(text, text) from public;
+revoke all on function public.complete_anonymous_trial(uuid) from public;
+revoke all on function public.release_anonymous_trial(uuid) from public;
+grant execute on function public.claim_anonymous_trial(text, text)
+  to anon, authenticated;
+grant execute on function public.complete_anonymous_trial(uuid)
+  to anon, authenticated;
+grant execute on function public.release_anonymous_trial(uuid)
   to anon, authenticated;
