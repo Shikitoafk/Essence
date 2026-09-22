@@ -1,6 +1,10 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { geminiChain } from "./gemini";
+import { GEMINI_HTTP_OPTIONS, geminiChain } from "./gemini";
+
+test("the SDK cannot exhaust the function lifetime retrying one model", () => {
+  assert.equal(GEMINI_HTTP_OPTIONS.retryOptions.attempts, 1);
+});
 
 test("comparison does not inherit a diagnostic model override", () => {
   const diagnostic = process.env.GEMINI_MODEL_DIAGNOSTIC;

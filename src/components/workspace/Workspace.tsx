@@ -135,18 +135,41 @@ export default function Workspace({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ essayId: essay.id }),
       });
-      const payload = await response.json();
+      const payload = (await response.json().catch(() => null)) as {
+        error?: string;
+        spotCount?: number;
+        draftUnchanged?: boolean;
+        truncated?: boolean;
+        carriedOver?: number;
+        droppedCount?: number;
+      } | null;
 
       if (!response.ok) {
         setBanner({
           kind: "error",
-          text: payload.error ?? "The read didn't go through.",
+          text:
+            payload?.error ??
+            (response.status === 504
+              ? "The read took too long and the server stopped it. Try again — Essence will move to a fallback model sooner."
+              : `The feedback server returned an unreadable response (${response.status}). Try again in a moment.`),
         });
         return;
       }
 
+      if (!payload) {
+        setBanner({
+          kind: "error",
+          text: "The feedback server returned an unreadable response. Try again in a moment.",
+        });
+        return;
+      }
+
+      const spotCount = payload.spotCount ?? 0;
+      const carriedOver = payload.carriedOver ?? 0;
+      const droppedCount = payload.droppedCount ?? 0;
+
       trackProductEvent("feedback_completed", {
-        spot_count: Number(payload.spotCount ?? 0),
+        spot_count: spotCount,
         draft_unchanged: Boolean(payload.draftUnchanged),
         revision_round: rounds + (payload.draftUnchanged ? 0 : 1),
       });
@@ -162,7 +185,7 @@ export default function Workspace({
           kind: "info",
           text: "This draft hasn't changed since the last read, so the findings haven't either. Reading again won't move it — revising will.",
         });
-      } else if (payload.spotCount === 0) {
+      } else if (spotCount === 0) {
         // A barren re-read leaves the previous cards in place, so say that
         // rather than letting an empty result look like a clean essay.
         setBanner({
@@ -173,15 +196,15 @@ export default function Workspace({
               : "No spots flagged this time — read the full diagnostic on the Full read tab.",
         });
       } else {
-        const notes: string[] = [`${payload.spotCount} spots flagged.`];
-        if (payload.carriedOver > 0) {
+        const notes: string[] = [`${spotCount} spots flagged.`];
+        if (carriedOver > 0) {
           notes.push(
-            `${payload.carriedOver} you'd already settled stayed closed.`,
+            `${carriedOver} you'd already settled stayed closed.`,
           );
         }
-        if (payload.droppedCount > 0) {
+        if (droppedCount > 0) {
           notes.push(
-            `${payload.droppedCount} were dropped because their quote didn't match your draft exactly.`,
+            `${droppedCount} were dropped because their quote didn't match your draft exactly.`,
           );
         }
         if (notes.length > 1) {

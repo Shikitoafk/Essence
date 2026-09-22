@@ -13,6 +13,17 @@ import {
 let client: GoogleGenAI | null = null;
 
 /**
+ * The SDK retries a failed request up to five times by default. That is a poor
+ * fit for a fallback chain: an overloaded first model can hold a serverless
+ * request open until the platform kills it, while three healthy alternatives
+ * sit unused. Essence owns retry policy, so every model gets one HTTP attempt
+ * before the next model is tried.
+ */
+export const GEMINI_HTTP_OPTIONS = {
+  retryOptions: { attempts: 1 },
+} as const;
+
+/**
  * Gemini provider.
  *
  * Each tier is a fallback chain: when a model is out of quota or unavailable we
@@ -105,34 +116,29 @@ export async function generateWithGemini({
   let lastError = "";
 
   for (const model of chain) {
-    for (let attempt = 0; attempt < 2; attempt++) {
-      try {
-        const response = await ai.models.generateContent({
-          model,
-          contents: prompt,
-          config: {
-            systemInstruction: system,
-            temperature,
-            ...(maxOutputTokens ? { maxOutputTokens } : {}),
-            ...(json ? { responseMimeType: "application/json" } : {}),
-          },
-        });
+    try {
+      const response = await ai.models.generateContent({
+        model,
+        contents: prompt,
+        config: {
+          httpOptions: GEMINI_HTTP_OPTIONS,
+          systemInstruction: system,
+          temperature,
+          ...(maxOutputTokens ? { maxOutputTokens } : {}),
+          ...(json ? { responseMimeType: "application/json" } : {}),
+        },
+      });
 
-        const text = response.text?.trim();
-        if (!text) throw new Error("The model returned an empty response.");
+      const text = response.text?.trim();
+      if (!text) throw new Error("The model returned an empty response.");
 
-        return { text, model };
-      } catch (error) {
-        lastError = error instanceof Error ? error.message : String(error);
+      return { text, model };
+    } catch (error) {
+      lastError = error instanceof Error ? error.message : String(error);
 
-        if (isTransient(lastError) && attempt === 0) {
-          await new Promise((r) => setTimeout(r, 1200));
-          continue;
-        }
-        if (shouldFallOver(lastError) || isTransient(lastError)) break;
+      if (shouldFallOver(lastError) || isTransient(lastError)) continue;
 
-        throw new LlmCallError(lastError, false);
-      }
+      throw new LlmCallError(lastError, false);
     }
   }
 
