@@ -8,12 +8,12 @@
   --color-ink: #121518;
   --color-muted: #687078;
   --color-line: #dfe1e3;
-  --color-accent: #6254f5;
-  --color-accent-soft: #eeecff;
+  --color-accent: #3f6252;
+  --color-accent-soft: #e7eee9;
 
   /* Reserved for the writer's own words: it is a discovery mark, never an
      alarm colour or a generic AI gradient. */
-  --color-mark: #c6ff5e;
+  --color-mark: #b9c9a9;
 
   --color-flag-high: #dd5b3f;
   --color-flag-medium: #b7791f;
@@ -46,9 +46,7 @@ body {
 
 body {
   font-family: var(--font-sans);
-  background:
-    radial-gradient(circle at 15% -10%, rgba(98, 84, 245, 0.055), transparent 28rem),
-    var(--color-paper);
+  background: var(--color-paper);
 }
 
 /* Display type: the same face as the interface, a step heavier and pulled in a
@@ -440,9 +438,8 @@ body {
    2026 product surface
 
    The public site and the signed-in product share one hierarchy: an ink-black
-   reading room, warm working paper, electric violet for decisions, and acid
-   green only for discoveries. Green is therefore rare enough to mean
-   something whenever it appears.
+   reading room and warm working paper. The palette stays deliberately quiet:
+   ink, paper, and one muted green used for editorial decisions.
    --------------------------------------------------------------------------- */
 
 .landing-stage {
@@ -450,9 +447,9 @@ body {
   isolation: isolate;
   overflow: hidden;
   background:
-    linear-gradient(rgba(255, 255, 255, 0.027) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.027) 1px, transparent 1px),
-    #0d1012;
+    linear-gradient(rgba(18, 21, 24, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(18, 21, 24, 0.025) 1px, transparent 1px),
+    #f3f0e8;
   background-size: 72px 72px, 72px 72px, auto;
 }
 
@@ -461,32 +458,8 @@ body {
   position: absolute;
   inset: 0;
   z-index: -1;
-  background: linear-gradient(to bottom, transparent 55%, rgba(0, 0, 0, 0.32));
+  background: linear-gradient(to bottom, transparent 62%, rgba(63, 98, 82, 0.035));
   pointer-events: none;
-}
-
-.landing-orb {
-  position: absolute;
-  z-index: -2;
-  border-radius: 999px;
-  filter: blur(1px);
-  pointer-events: none;
-}
-
-.landing-orb-one {
-  right: -12rem;
-  top: -16rem;
-  width: 43rem;
-  height: 43rem;
-  background: radial-gradient(circle, rgba(98, 84, 245, 0.38), transparent 67%);
-}
-
-.landing-orb-two {
-  left: 28%;
-  bottom: -28rem;
-  width: 46rem;
-  height: 46rem;
-  background: radial-gradient(circle, rgba(198, 255, 94, 0.105), transparent 68%);
 }
 
 .hero-product-frame {
@@ -494,21 +467,13 @@ body {
 }
 
 .hero-product-frame::before {
-  content: "";
-  position: absolute;
-  inset: 10% -6% -8% 9%;
-  z-index: -1;
-  border-radius: 3rem;
-  background: rgba(98, 84, 245, 0.24);
-  filter: blur(70px);
+  content: none;
 }
 
 .question-path {
   position: relative;
   isolation: isolate;
-  background: rgba(19, 22, 27, 0.92);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
+  background: #fbfaf6;
 }
 
 .question-path::before {
@@ -516,15 +481,13 @@ body {
   position: absolute;
   inset: 0;
   z-index: -1;
-  background:
-    radial-gradient(circle at 84% 22%, rgba(98, 84, 245, 0.17), transparent 25rem),
-    radial-gradient(circle at 5% 96%, rgba(198, 255, 94, 0.07), transparent 21rem);
+  background: none;
   pointer-events: none;
 }
 
 .preview-highlight {
-  color: rgba(255, 255, 255, 0.94);
-  background: linear-gradient(transparent 58%, rgba(198, 255, 94, 0.26) 58%);
+  color: var(--color-ink);
+  background: linear-gradient(transparent 58%, rgba(185, 201, 169, 0.55) 58%);
   box-decoration-break: clone;
   -webkit-box-decoration-break: clone;
 }
@@ -542,28 +505,27 @@ body {
   gap: 3rem;
   padding: 1.7rem;
   border: 1px solid color-mix(in srgb, var(--color-ink) 10%, transparent);
-  border-radius: 1.6rem;
-  background: rgba(255, 255, 255, 0.78);
-  transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
+  border-radius: 1.1rem;
+  background: rgba(255, 255, 255, 0.58);
+  transition: border-color 180ms ease, background 180ms ease;
 }
 
 .intelligence-card:hover {
-  transform: translateY(-4px);
-  border-color: color-mix(in srgb, var(--color-accent) 34%, transparent);
-  box-shadow: 0 30px 70px -50px rgba(18, 21, 24, 0.65);
+  border-color: color-mix(in srgb, var(--color-accent) 38%, transparent);
+  background: rgba(255, 255, 255, 0.8);
 }
 
 .intelligence-card-featured {
-  background: linear-gradient(145deg, #f0eeff, #ffffff 70%);
+  background: #edf0e9;
 }
 
 .intelligence-card-dark {
-  background: #15191d;
-  color: white;
+  background: #e8e5dd;
+  color: var(--color-ink);
 }
 
 .intelligence-card-mark {
-  background: var(--color-mark);
+  background: #f5f2e9;
 }
 
 .intelligence-number {
@@ -582,7 +544,7 @@ body {
   color: var(--color-accent);
 }
 
-.intelligence-card-dark .intelligence-label { color: var(--color-mark); }
+.intelligence-card-dark .intelligence-label { color: var(--color-accent); }
 .intelligence-card-mark .intelligence-label { color: rgba(18, 21, 24, 0.58); }
 
 .intelligence-card h3 {
@@ -602,13 +564,11 @@ body {
   color: var(--color-muted);
 }
 
-.intelligence-card-dark p:last-child { color: rgba(255, 255, 255, 0.48); }
+.intelligence-card-dark p:last-child { color: var(--color-muted); }
 .intelligence-card-mark p:last-child { color: rgba(18, 21, 24, 0.62); }
 
 .trial-stage {
-  background:
-    radial-gradient(circle at 90% 0%, rgba(98, 84, 245, 0.09), transparent 34rem),
-    #f0f0eb;
+  background: #eeece5;
 }
 
 .trial-stage > div > div > div:last-child {
@@ -619,31 +579,21 @@ body {
 .final-stage {
   position: relative;
   isolation: isolate;
-  background:
-    radial-gradient(circle at 12% 10%, rgba(98, 84, 245, 0.28), transparent 28rem),
-    #0d1012;
+  background: #1e2923;
 }
 
 .manifesto-panel::after,
 .final-stage::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background-image: radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px);
-  background-size: 22px 22px;
-  mask-image: linear-gradient(120deg, black, transparent 66%);
+  content: none;
 }
 
 .manifesto-side {
-  background: rgba(255, 255, 255, 0.035);
+  background: rgba(255, 255, 255, 0.025);
 }
 
 .final-stage {
-  background:
-    radial-gradient(circle at 50% 120%, rgba(198, 255, 94, 0.18), transparent 32rem),
-    radial-gradient(circle at 85% 0%, rgba(98, 84, 245, 0.32), transparent 34rem),
-    #0d1012;
+  border: 1px solid color-mix(in srgb, var(--color-ink) 10%, transparent);
+  background: #e8ede7;
 }
 
 .app-header {
@@ -657,20 +607,11 @@ body {
   isolation: isolate;
   overflow: hidden;
   color: white;
-  background:
-    radial-gradient(circle at 82% 18%, rgba(98, 84, 245, 0.5), transparent 30rem),
-    radial-gradient(circle at 18% 120%, rgba(198, 255, 94, 0.12), transparent 23rem),
-    #111417;
+  background: #1e2923;
 }
 
 .dashboard-hero::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background-image: radial-gradient(rgba(255, 255, 255, 0.095) 1px, transparent 1px);
-  background-size: 24px 24px;
-  mask-image: linear-gradient(to left, black, transparent 68%);
+  content: none;
 }
 
 .essay-index-card {

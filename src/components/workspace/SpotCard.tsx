@@ -241,7 +241,7 @@ export default function SpotCard({
                   e.stopPropagation();
                   onAnswer();
                 }}
-                className="mt-3 rounded-full bg-accent px-3 py-1 text-xs font-medium text-white transition hover:bg-[#4849c8]"
+                className="mt-3 rounded-full bg-accent px-3 py-1 text-xs font-medium text-white transition hover:bg-ink"
               >
                 {awaitingRevision ? "Back to the conversation" : "Think it through"}
               </button>

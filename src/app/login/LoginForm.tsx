@@ -168,7 +168,7 @@ export default function LoginForm() {
         <button
           type="submit"
           disabled={busy}
-          className="w-full rounded-xl bg-accent px-4 py-3 text-sm font-semibold text-white shadow-[0_12px_24px_-16px_rgba(91,92,226,0.8)] transition hover:bg-[#4849c8] disabled:opacity-50"
+          className="w-full rounded-xl bg-accent px-4 py-3 text-sm font-semibold text-white transition hover:bg-ink disabled:opacity-50"
         >
           {busy
             ? "Working…"

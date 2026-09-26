@@ -116,14 +116,14 @@ export default function SampleReadDemo() {
             disabled={Boolean(read)}
             rows={11}
             placeholder="Paste one passage you are unsure about…"
-            className="mt-2 w-full resize-y rounded-2xl border border-ink/10 bg-[#f8f8f5] px-4 py-4 font-serif text-[1.02rem] leading-7 text-ink outline-none transition focus:border-accent focus:bg-white focus:shadow-[0_0_0_4px_rgba(98,84,245,0.08)]"
+            className="mt-2 w-full resize-y rounded-2xl border border-ink/10 bg-[#f8f8f5] px-4 py-4 font-serif text-[1.02rem] leading-7 text-ink outline-none transition focus:border-accent focus:bg-white focus:shadow-[0_0_0_4px_rgba(63,98,82,0.08)]"
           />
           <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-xs">
             <button
               type="button"
               onClick={() => updateDraft(SYNTHETIC_SAMPLE)}
               disabled={Boolean(read)}
-              className="font-medium text-accent transition hover:text-[#4849c8] disabled:cursor-not-allowed disabled:opacity-40"
+              className="font-medium text-accent transition hover:text-ink disabled:cursor-not-allowed disabled:opacity-40"
             >
               Use a synthetic example
             </button>
@@ -158,7 +158,7 @@ export default function SampleReadDemo() {
               checked={acceptedPolicy}
               onChange={(event) => setAcceptedPolicy(event.target.checked)}
               disabled={Boolean(read)}
-              className="mt-1 h-4 w-4 accent-[#5b5ce2]"
+              className="mt-1 h-4 w-4 accent-[#3f6252]"
             />
             <span className="text-xs leading-5 text-muted">
               I understand this excerpt is sent to Gemini&apos;s unpaid tier,
@@ -189,7 +189,7 @@ export default function SampleReadDemo() {
         </section>
 
         <section
-          className="bg-[#111417] p-6 text-white sm:p-8 lg:p-12"
+          className="bg-[#1e2923] p-6 text-white sm:p-8 lg:p-12"
           aria-live="polite"
         >
           {!read ? (
@@ -244,7 +244,7 @@ export default function SampleReadDemo() {
                   type="button"
                   disabled={!answer.trim()}
                   onClick={() => setMaterialShown(true)}
-                  className="mt-3 rounded-full bg-mark px-5 py-2.5 text-sm font-semibold text-[#11140f] transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-40"
+                  className="mt-3 rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-[#1e2923] transition hover:bg-mark disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   Keep this material
                 </button>
@@ -277,7 +277,7 @@ export default function SampleReadDemo() {
               <TrackedAuthLink
                 href="/login"
                 source="real_trial_completed"
-                className="mt-6 inline-flex rounded-full bg-mark px-5 py-3 text-sm font-semibold text-[#11140f] transition hover:bg-white"
+                className="mt-6 inline-flex rounded-full bg-white px-5 py-3 text-sm font-semibold text-[#1e2923] transition hover:bg-mark"
               >
                 Read my complete essay
               </TrackedAuthLink>
@@ -301,7 +301,7 @@ export default function SampleReadDemo() {
                 <TrackedAuthLink
                   href="/login"
                   source="real_trial_completed"
-                  className="mt-6 inline-flex rounded-full bg-mark px-5 py-3 text-sm font-semibold text-[#11140f] transition hover:bg-white"
+                  className="mt-6 inline-flex rounded-full bg-white px-5 py-3 text-sm font-semibold text-[#1e2923] transition hover:bg-mark"
                 >
                   Read my complete essay
                 </TrackedAuthLink>

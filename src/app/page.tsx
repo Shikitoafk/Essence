@@ -64,49 +64,46 @@ export default async function Home() {
     <main className="landing-shell min-h-screen overflow-hidden">
       <Suspense fallback={null}><ReferralCapture /></Suspense>
 
-      <section className="landing-stage text-white">
+      <section className="landing-stage">
         <header className="relative z-20 mx-auto flex max-w-[90rem] items-center justify-between px-5 py-5 sm:px-8 lg:px-10">
-          <Logo tone="inverse" />
-          <nav className="hidden items-center gap-8 text-sm text-white/56 md:flex" aria-label="Main navigation">
-            <a href="#intelligence" className="transition hover:text-white">How it reads</a>
-            <a href="#try" className="transition hover:text-white">Live trial</a>
-            <a href="#faq" className="transition hover:text-white">Questions</a>
+          <Logo />
+          <nav className="hidden items-center gap-8 text-sm text-muted md:flex" aria-label="Main navigation">
+            <a href="#intelligence" className="transition hover:text-ink">How it reads</a>
+            <a href="#try" className="transition hover:text-ink">Live trial</a>
+            <a href="#faq" className="transition hover:text-ink">Questions</a>
           </nav>
-          <Link href={appHref} className="inline-flex items-center gap-2 rounded-full border border-white/14 bg-white px-4 py-2.5 text-sm font-semibold text-[#101214] transition hover:-translate-y-0.5 hover:bg-mark">
+          <Link href={appHref} className="inline-flex items-center gap-2 rounded-full border border-ink bg-ink px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-accent">
             {signedIn ? "Open workspace" : "Start free"}<Arrow />
           </Link>
         </header>
 
-        <div className="landing-orb landing-orb-one" />
-        <div className="landing-orb landing-orb-two" />
-
-        <div className="relative z-10 mx-auto grid max-w-[90rem] items-center gap-14 px-5 pb-20 pt-12 sm:px-8 sm:pt-20 lg:grid-cols-[0.82fr_1.18fr] lg:px-10 lg:pb-28 lg:pt-24">
+        <div className="relative z-10 mx-auto grid max-w-[90rem] items-start gap-14 px-5 pb-20 pt-12 sm:px-8 sm:pt-16 lg:grid-cols-[0.82fr_1.18fr] lg:px-10 lg:pb-24 lg:pt-14">
           <div className="rise max-w-[44rem]">
-            <div className="inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/[0.055] px-3 py-1.5 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-white/62 backdrop-blur">
-              <span className="h-1.5 w-1.5 rounded-full bg-mark shadow-[0_0_18px_rgba(198,255,94,0.9)]" />
-              A reader for the person, not the rubric
+            <div className="inline-flex items-center gap-2 border-b border-ink/20 pb-1.5 text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted">
+              <span className="h-1.5 w-1.5 rounded-full bg-accent" />
+              A close reader for application essays
             </div>
-            <h1 className="mt-8 max-w-[12ch] font-display text-[3.8rem] font-medium leading-[0.92] tracking-[-0.072em] text-white sm:text-[5.25rem] lg:text-[6.2rem]">
-              Find the person inside the draft.
+            <h1 className="mt-6 max-w-[13ch] font-serif text-[3.35rem] font-medium leading-[0.96] tracking-[-0.045em] text-ink sm:text-[4.15rem] lg:text-[4.7rem]">
+              See what your essay reveals—and what it still hides.
             </h1>
-            <p className="mt-7 max-w-xl text-lg leading-8 text-white/58 sm:text-xl">
-              Essence reads what you notice, avoid, build, and cannot leave alone—then asks the smallest question that unlocks material only you can write.
+            <p className="mt-5 max-w-xl text-lg leading-8 text-muted sm:text-xl">
+              Essence reads for the person behind the prose, points to the exact place a reader loses them, and asks one useful question at a time.
             </p>
-            <div className="mt-9 flex flex-wrap items-center gap-3">
-              <Link href={signedIn ? appHref : "#try"} className="inline-flex items-center gap-2 rounded-full bg-mark px-6 py-3.5 text-sm font-semibold text-[#11140f] shadow-[0_18px_50px_-20px_rgba(198,255,94,0.85)] transition hover:-translate-y-0.5 hover:bg-white">
+            <div className="mt-7 flex flex-wrap items-center gap-3">
+              <Link href={signedIn ? appHref : "#try"} className="inline-flex items-center gap-2 rounded-full bg-ink px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-accent">
                 {signedIn ? "Continue my essays" : "Try it on my writing"}<Arrow />
               </Link>
-              <a href="#intelligence" className="inline-flex items-center gap-2 rounded-full border border-white/14 bg-white/[0.035] px-5 py-3.5 text-sm font-medium text-white/78 transition hover:border-white/30 hover:bg-white/[0.07] hover:text-white">
-                See how it thinks
+              <a href="#intelligence" className="inline-flex items-center gap-2 rounded-full border border-ink/20 px-5 py-3.5 text-sm font-medium text-ink transition hover:border-ink">
+                See how it reads
               </a>
             </div>
-            <div className="mt-8 flex flex-wrap gap-x-6 gap-y-3 text-xs text-white/42">
+            <div className="mt-8 flex flex-wrap gap-x-6 gap-y-3 text-xs text-muted">
               {[
                 "Never writes for you",
                 "Every finding anchored",
                 "Knows when to stop",
               ].map((item) => (
-                <span key={item} className="inline-flex items-center gap-2"><span className="text-mark"><Check /></span>{item}</span>
+                <span key={item} className="inline-flex items-center gap-2"><span className="text-accent"><Check /></span>{item}</span>
               ))}
             </div>
           </div>
@@ -116,16 +113,16 @@ export default async function Home() {
           </div>
         </div>
 
-        <div className="relative z-10 mx-auto grid max-w-[90rem] border-t border-white/8 px-5 sm:grid-cols-3 sm:px-8 lg:px-10">
+        <div className="relative z-10 mx-auto grid max-w-[90rem] border-t border-ink/12 px-5 sm:grid-cols-3 sm:px-8 lg:px-10">
           {[
             ["01", "Whole-draft first", "Essence understands the person before diagnosing a line."],
             ["02", "Smallest useful question", "No automatic demand for another scene, feeling, or detail."],
             ["03", "A real stopping point", "When further editing would flatten the voice, Essence says stop."],
           ].map(([number, title, copy]) => (
-            <div key={number} className="border-b border-white/8 py-6 sm:border-b-0 sm:border-r sm:px-7 sm:first:pl-0 sm:last:border-r-0 sm:last:pr-0">
-              <p className="font-mono text-[0.6rem] tracking-[0.18em] text-mark">{number}</p>
-              <p className="mt-3 text-sm font-medium text-white">{title}</p>
-              <p className="mt-1.5 max-w-sm text-sm leading-6 text-white/42">{copy}</p>
+            <div key={number} className="border-b border-ink/10 py-6 sm:border-b-0 sm:border-r sm:px-7 sm:first:pl-0 sm:last:border-r-0 sm:last:pr-0">
+              <p className="font-mono text-[0.6rem] tracking-[0.18em] text-accent">{number}</p>
+              <p className="mt-3 text-sm font-medium text-ink">{title}</p>
+              <p className="mt-1.5 max-w-sm text-sm leading-6 text-muted">{copy}</p>
             </div>
           ))}
         </div>
@@ -135,12 +132,12 @@ export default async function Home() {
         <Reveal>
           <div className="grid gap-8 lg:grid-cols-[0.72fr_1.28fr] lg:gap-16">
             <div className="lg:sticky lg:top-10 lg:self-start">
-              <p className="section-eyebrow">A different kind of intelligence</p>
+              <p className="section-eyebrow">What the reading looks for</p>
               <h2 className="mt-5 max-w-md font-display text-5xl font-medium leading-[0.98] tracking-[-0.06em] text-ink sm:text-6xl">
-                Most feedback edits the page. Essence reads the mind behind it.
+                Read the draft without losing sight of the writer.
               </h2>
               <p className="mt-6 max-w-md text-base leading-7 text-muted">
-                A topic can be unusual and reveal almost nothing. A familiar story can carry a person no one else could have produced. Essence is built to tell the difference.
+                An unusual topic can reveal very little. A familiar story can feel unmistakably personal. The difference is usually in what the writer notices, chooses, and leaves unresolved.
               </p>
             </div>
 
@@ -187,9 +184,9 @@ export default async function Home() {
           <Reveal>
             <div className="mb-12 grid gap-5 lg:grid-cols-[1fr_0.65fr] lg:items-end">
               <div>
-                <p className="section-eyebrow">Use your own words</p>
+                <p className="section-eyebrow">Read a real passage</p>
                 <h2 className="mt-5 max-w-3xl font-display text-5xl font-medium leading-[0.96] tracking-[-0.06em] text-ink sm:text-7xl">
-                  Don&apos;t trust the pitch. Test the reader.
+                  Bring the passage you&apos;re stuck on.
                 </h2>
               </div>
               <p className="max-w-lg text-base leading-7 text-muted lg:justify-self-end">
@@ -203,12 +200,12 @@ export default async function Home() {
 
       <section className="mx-auto max-w-[90rem] px-5 py-24 sm:px-8 lg:px-10 lg:py-36">
         <Reveal>
-          <div className="manifesto-panel overflow-hidden rounded-[2rem]">
+          <div className="manifesto-panel overflow-hidden rounded-[1.25rem]">
             <div className="grid lg:grid-cols-[1.12fr_0.88fr]">
               <div className="p-8 sm:p-12 lg:p-16">
-                <p className="font-mono text-[0.62rem] uppercase tracking-[0.2em] text-mark">The ownership rule</p>
+                <p className="font-mono text-[0.62rem] uppercase tracking-[0.2em] text-[#b9c9b5]">The ownership rule</p>
                 <blockquote className="mt-8 max-w-3xl font-serif text-4xl leading-[1.08] tracking-[-0.025em] text-white sm:text-5xl lg:text-[4rem]">
-                  “The strongest sentence Essence can give you is a question you could not have asked yourself.”
+                  “The next sentence still has to come from you.”
                 </blockquote>
                 <p className="mt-8 max-w-xl leading-7 text-white/48">
                   Your memories, judgments, contradictions, jokes, and language stay yours. The product makes the reading sharper without taking authorship away.
@@ -225,11 +222,11 @@ export default async function Home() {
                       "The passages revision should leave alone",
                       "A clear signal when the essay is ready",
                     ].map((item) => (
-                      <li key={item} className="flex gap-3 text-sm leading-6 text-white/78"><span className="mt-1 text-mark"><Check /></span>{item}</li>
+                      <li key={item} className="flex gap-3 text-sm leading-6 text-white/78"><span className="mt-1 text-[#b9c9b5]"><Check /></span>{item}</li>
                     ))}
                   </ul>
                 </div>
-                <Link href={appHref} className="mt-12 inline-flex items-center justify-between rounded-full border border-white/15 px-5 py-3 text-sm font-medium text-white transition hover:border-mark hover:text-mark">
+                <Link href={appHref} className="mt-12 inline-flex items-center justify-between rounded-full border border-white/20 px-5 py-3 text-sm font-medium text-white transition hover:border-white/45">
                   {signedIn ? "Return to my workspace" : "Build my essay workspace"}<Arrow diagonal />
                 </Link>
               </div>
@@ -256,11 +253,11 @@ export default async function Home() {
       </section>
 
       <section className="px-4 pb-4 sm:px-6 sm:pb-6">
-        <div className="final-stage mx-auto max-w-[96rem] overflow-hidden rounded-[2rem] px-6 py-16 text-center sm:px-12 sm:py-24">
-          <p className="font-mono text-[0.62rem] uppercase tracking-[0.2em] text-mark">The draft is already yours</p>
-          <h2 className="mx-auto mt-6 max-w-4xl font-display text-5xl font-medium leading-[0.94] tracking-[-0.065em] text-white sm:text-7xl lg:text-[5.5rem]">Now give it a reader worthy of it.</h2>
-          <p className="mx-auto mt-6 max-w-xl leading-7 text-white/48">Start with one excerpt. Keep every sentence unmistakably your own.</p>
-          <Link href={signedIn ? appHref : "#try"} className="mt-9 inline-flex items-center gap-2 rounded-full bg-mark px-6 py-3.5 text-sm font-semibold text-[#11140f] transition hover:-translate-y-0.5 hover:bg-white">
+        <div className="final-stage mx-auto max-w-[96rem] overflow-hidden rounded-[1.25rem] px-6 py-16 text-center sm:px-12 sm:py-24">
+          <p className="font-mono text-[0.62rem] uppercase tracking-[0.2em] text-accent">The draft is already yours</p>
+          <h2 className="mx-auto mt-6 max-w-4xl font-display text-5xl font-medium leading-[0.94] tracking-[-0.065em] text-ink sm:text-7xl lg:text-[5.5rem]">Give it a careful reader.</h2>
+          <p className="mx-auto mt-6 max-w-xl leading-7 text-muted">Start with one excerpt. Keep every sentence unmistakably your own.</p>
+          <Link href={signedIn ? appHref : "#try"} className="mt-9 inline-flex items-center gap-2 rounded-full bg-ink px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-accent">
             {signedIn ? "Open workspace" : "Try Essence free"}<Arrow />
           </Link>
         </div>
