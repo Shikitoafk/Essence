@@ -62,6 +62,20 @@ export default async function EssayPage({
 
   const report = reportResult.data ?? null;
   const allSpots = (spotsResult.data ?? []) as FlaggedSpot[];
+  let feedbackDraft: string | null = null;
+
+  // A report describes an exact snapshot, not whatever happens to be in the
+  // editor today. Loading that snapshot lets the workspace retire stale
+  // verdicts instead of presenting them as a judgement of revised text.
+  if (report?.version_id) {
+    const { data: readVersion } = await supabase
+      .from("essay_versions")
+      .select("draft_text")
+      .eq("id", report.version_id)
+      .eq("essay_id", essay.id)
+      .maybeSingle<{ draft_text: string }>();
+    feedbackDraft = readVersion?.draft_text ?? null;
+  }
 
   // Older runs stay in the database — the history page counts them per version,
   // and deleting them would cascade away the student's conversation.
@@ -79,6 +93,7 @@ export default async function EssayPage({
         initialSpots={currentSpots}
         initialMessages={(messagesResult.data ?? []) as ConversationMessage[]}
         report={report}
+        feedbackDraft={feedbackDraft}
         paidTier={dataPolicy().safeForPersonalContent}
       />
     </div>

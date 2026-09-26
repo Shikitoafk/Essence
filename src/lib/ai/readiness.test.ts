@@ -4,6 +4,7 @@ import { parseModeAReport } from "./parseReport";
 import {
   deriveReadiness,
   isAtRest,
+  isFeedbackStale,
   isReadyToSubmit,
   type FlaggedSpot,
   type Impact,
@@ -124,4 +125,12 @@ test("an essay that has never been read is not at rest", () => {
   assert.equal(isAtRest("needs_work", true), false);
   assert.equal(isAtRest("strong", true), false);
   assert.equal(isAtRest(null, true), false);
+});
+
+test("feedback becomes stale only when the read snapshot and live draft differ", () => {
+  assert.equal(isFeedbackStale("same draft", "same draft", true), false);
+  assert.equal(isFeedbackStale(" same draft\n", "same draft", true), false);
+  assert.equal(isFeedbackStale("revised draft", "old draft", true), true);
+  assert.equal(isFeedbackStale("revised draft", null, true), false);
+  assert.equal(isFeedbackStale("revised draft", "old draft", false), false);
 });

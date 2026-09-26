@@ -12,12 +12,12 @@ import type { WorkingWell } from "@/lib/types";
  */
 export default function KeepCard({ item }: { item: WorkingWell }) {
   return (
-    <article className="rounded-lg border border-line bg-accent-soft/30 p-4">
-      <p className="text-xs uppercase tracking-widest text-muted">
-        Working — leave it alone
+    <article className="rounded-[1.15rem] border border-flag-low/20 bg-[#edf8f0] p-5">
+      <p className="font-mono text-[0.58rem] uppercase tracking-[0.17em] text-flag-low">
+        Protect this passage
       </p>
 
-      <blockquote className="mt-2 border-l-2 border-muted/30 pl-3 font-serif text-sm leading-relaxed">
+      <blockquote className="mt-3 border-l-2 border-flag-low/30 pl-4 font-serif text-[0.98rem] leading-relaxed">
         {item.quote}
       </blockquote>
 

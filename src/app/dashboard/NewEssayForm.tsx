@@ -11,7 +11,7 @@ function SubmitButton() {
     <button
       type="submit"
       disabled={pending}
-      className="w-full rounded-xl bg-accent px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#4849c8] disabled:opacity-50"
+      className="w-full rounded-xl bg-ink px-4 py-3 text-sm font-semibold text-white transition hover:bg-accent disabled:opacity-50"
     >
       {pending ? "Creating…" : "Create essay"}
     </button>
@@ -32,15 +32,15 @@ export default function NewEssayForm() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="w-full rounded-2xl border border-dashed border-line bg-white px-5 py-4 text-sm text-muted transition hover:border-accent hover:bg-accent-soft/30 hover:text-ink"
+        className="group flex w-full items-center justify-between rounded-[1.25rem] border border-dashed border-ink/15 bg-white/70 px-5 py-4 text-sm text-muted transition hover:border-accent hover:bg-white hover:text-ink"
       >
-        + New essay
+        <span>+ New essay workspace</span><span className="transition group-hover:translate-x-1">Create →</span>
       </button>
     );
   }
 
   return (
-    <section className="rounded-2xl border border-line bg-white p-5 shadow-[0_16px_30px_-30px_rgba(23,32,51,0.55)]">
+    <section className="rounded-[1.5rem] border border-ink/10 bg-white p-6 shadow-[0_24px_60px_-50px_rgba(18,21,24,0.8)] sm:p-7">
       <div className="flex items-start justify-between gap-4">
         <div>
           <h2 className="font-display text-xl font-medium tracking-[-0.03em]">New essay</h2>

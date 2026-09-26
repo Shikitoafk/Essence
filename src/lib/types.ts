@@ -1,10 +1,22 @@
 export const NUDGE_PATTERNS = [
   "Replaceable portrait",
-  "Underdeveloped change",
-  "Strong detail, no aftermath",
-  "Procedural narration",
-  "Reflection gap",
-  "Generic closing claim",
+  "Topic without subject",
+  "Perception missing",
+  "Trait sections with visible seams",
+  "Explanation debt",
+  "Procedure without judgment",
+  "Thinking named rather than performed",
+  "Productive contradiction flattened",
+  "Change claimed but not supported",
+  "False before-and-after",
+  "Other people without agency",
+  "Activity paragraph replacing person",
+  "Mechanical motif",
+  "Decorative detail",
+  "Generic or overearned ending",
+  "Borrowed voice",
+  "Reader trust",
+  "Prompt mismatch",
 ] as const;
 
 export type NudgePattern = (typeof NUDGE_PATTERNS)[number];
@@ -78,6 +90,19 @@ export function isAtRest(
   hasBeenRead: boolean,
 ): boolean {
   return hasBeenRead && isReadyToSubmit(readiness);
+}
+
+/** A report is valid only for the exact snapshot the model read. */
+export function isFeedbackStale(
+  currentDraft: string,
+  feedbackDraft: string | null,
+  hasBeenRead: boolean,
+): boolean {
+  return (
+    hasBeenRead &&
+    feedbackDraft !== null &&
+    currentDraft.trim() !== feedbackDraft.trim()
+  );
 }
 
 /**

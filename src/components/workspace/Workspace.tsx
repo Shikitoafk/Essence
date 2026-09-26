@@ -18,6 +18,7 @@ import {
   countWords,
   deriveReadiness,
   isAtRest,
+  isFeedbackStale,
   DIMINISHING_RETURNS_ROUND,
   SUPPRESS_POLISH_FROM_ROUND,
   minimumWordsForEssay,
@@ -34,6 +35,8 @@ interface Props {
   initialSpots: FlaggedSpot[];
   initialMessages: ConversationMessage[];
   report: EssayReport | null;
+  /** Exact snapshot the latest report describes. */
+  feedbackDraft: string | null;
   /** False when the active provider's terms permit training on submitted text. */
   paidTier: boolean;
 }
@@ -45,6 +48,7 @@ export default function Workspace({
   initialSpots,
   initialMessages,
   report: initialReport,
+  feedbackDraft,
   paidTier,
 }: Props) {
   const router = useRouter();
@@ -101,7 +105,12 @@ export default function Workspace({
     }
     openNoteRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   }, [tab]);
-  const atRest = isAtRest(readiness, Boolean(essay.last_feedback_at));
+  const feedbackStale = isFeedbackStale(
+    draft,
+    feedbackDraft,
+    Boolean(essay.last_feedback_at),
+  );
+  const atRest = !feedbackStale && isAtRest(readiness, Boolean(essay.last_feedback_at));
   const rounds = essay.revision_count ?? 0;
   const openCount = spots.filter((s) => s.status === "open").length;
   const resolvedCount = spots.filter((s) => s.status === "resolved").length;
@@ -307,21 +316,23 @@ export default function Workspace({
   const startHereId = primarySpots.find((s) => s.status === "open")?.id ?? null;
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
+    <div className="workspace-shell flex min-h-0 flex-1 flex-col">
       {/* Sticky: a session here runs for an hour and the draft scrolls a long
           way, so "Get feedback" and the word count have to stay reachable
           without a trip back to the top. */}
-      <div className="nav-blur sticky top-0 z-30 border-b border-line">
-        <div className="mx-auto flex max-w-[68rem] flex-wrap items-center justify-between gap-3 px-6 py-3 min-[1500px]:max-w-[82rem]">
+      <div className="workspace-toolbar sticky top-0 z-30 border-b border-ink/8">
+        <div className="mx-auto flex max-w-[90rem] flex-wrap items-center justify-between gap-3 px-5 py-3.5 sm:px-7 lg:px-10">
           <div className="min-w-0">
-            <h1 className="display truncate text-xl">{essay.title}</h1>
-            <p className="text-xs uppercase tracking-widest text-muted">
+            <h1 className="display truncate text-xl tracking-[-0.035em]">{essay.title}</h1>
+            <p className="mt-0.5 font-mono text-[0.58rem] uppercase tracking-[0.16em] text-muted">
               {essay.essay_kind === "supplemental"
                 ? "Supplemental"
                 : "Personal statement"}
               {essay.school ? ` · ${essay.school}` : ""}
-              {essay.last_feedback_at
-                ? ` · ${openCount} open, ${resolvedCount} resolved`
+              {feedbackStale
+                ? " · edited since last read"
+                : essay.last_feedback_at
+                  ? ` · ${openCount} open, ${resolvedCount} resolved`
                 : " · not read yet"}
             </p>
           </div>
@@ -329,14 +340,14 @@ export default function Workspace({
           <div className="flex flex-wrap items-center gap-2">
             <Link
               href={`/essays/${essay.id}/history`}
-              className="rounded-full border border-line px-4 py-2 text-sm hover:border-accent"
+              className="rounded-full border border-ink/10 bg-white/70 px-4 py-2 text-sm transition hover:border-accent hover:text-accent"
             >
               History
             </Link>
             <button
               type="button"
               onClick={handleSaveVersion}
-              className="rounded-full border border-line px-4 py-2 text-sm hover:border-accent"
+              className="rounded-full border border-ink/10 bg-white/70 px-4 py-2 text-sm transition hover:border-accent hover:text-accent"
             >
               Save version
             </button>
@@ -355,8 +366,8 @@ export default function Workspace({
               }
               className={`rounded-full px-5 py-2 text-sm transition disabled:opacity-40 ${
                 atRest
-                  ? "border border-line text-muted hover:border-accent hover:text-ink"
-                  : "bg-accent text-paper hover:opacity-90"
+                  ? "border border-ink/10 bg-white/70 text-muted hover:border-accent hover:text-ink"
+                  : "bg-ink text-white shadow-[0_12px_28px_-16px_rgba(18,21,24,0.75)] hover:-translate-y-0.5 hover:bg-accent"
               }`}
             >
               {analysing
@@ -364,7 +375,9 @@ export default function Workspace({
                 : atRest
                   ? "Read again anyway"
                   : essay.last_feedback_at
-                    ? "Read again"
+                    ? feedbackStale
+                      ? "Read this draft"
+                      : "Read again"
                     : "Get feedback"}
             </button>
           </div>
@@ -405,6 +418,13 @@ export default function Workspace({
           </p>
         )}
 
+        {feedbackStale && (
+          <p className="stale-feedback border-t px-6 py-2.5 text-xs">
+            This feedback belongs to an earlier draft. Your edits are safe; run
+            a new read when you want Essence to judge the text now on screen.
+          </p>
+        )}
+
         {banner && (
           <p
             className={`border-t border-line px-6 py-2 text-xs ${
@@ -434,7 +454,7 @@ export default function Workspace({
         other word, and the two columns stop looking marooned in the middle
         of the screen — without moving the text itself.
       */}
-      <div className="mx-auto grid w-full max-w-[68rem] gap-8 px-6 py-8 min-[1180px]:grid-cols-[minmax(0,40rem)_23rem] min-[1500px]:max-w-[82rem] min-[1500px]:gap-12 min-[1500px]:grid-cols-[minmax(0,44rem)_28rem]">
+      <div className="mx-auto grid w-full max-w-[90rem] gap-7 px-5 py-8 sm:px-7 lg:px-10 min-[1180px]:grid-cols-[minmax(0,48rem)_minmax(20rem,30rem)] min-[1180px]:gap-10">
         <div className="flex flex-col gap-4">
           {/*
             The switcher moved here from the margin, because its content did.
@@ -446,7 +466,7 @@ export default function Workspace({
             assuming the framework and strengths had gone missing. The labels
             name their contents.
           */}
-          <div className="nav-blur sticky top-[4.5rem] z-20 flex gap-1 rounded-full border border-line p-1 text-sm">
+          <div className="workspace-tabs sticky top-[4.7rem] z-20 flex gap-1 rounded-full border border-ink/8 p-1 text-sm backdrop-blur-xl">
             {(
               [
                 [
@@ -484,7 +504,7 @@ export default function Workspace({
               </button>
             ))}
           </div>
-          <div className="rounded-lg border border-line bg-white px-6 py-4 sm:px-8 sm:py-6">
+          <div className="workspace-paper px-5 py-4 sm:px-8 sm:py-7">
             <DraftEditor
               value={draft}
               onChange={setDraft}
@@ -541,7 +561,7 @@ export default function Workspace({
           ) : tab === "report" ? (
             <div ref={openNoteRef}>
               {report ? (
-                <div className="space-y-5 rounded-lg border border-line bg-white p-5">
+                <div className="workspace-paper space-y-7 p-6 sm:p-8">
                   <ReportSection
                     title="Overall impression"
                     body={report.overall_impression}
@@ -560,7 +580,7 @@ export default function Workspace({
                   />
                 </div>
               ) : (
-                <p className="rounded-lg border border-dashed border-line bg-white p-6 text-sm text-muted">
+                <p className="rounded-[1.25rem] border border-dashed border-line bg-white/75 p-6 text-sm text-muted">
                   The full structural read appears here after your first
                   feedback run.
                 </p>
@@ -610,15 +630,22 @@ export default function Workspace({
 
             Sticky, with its own scroll, so the notes stay put while a long
             draft moves past them. */}
-        <div className="flex flex-col gap-4 min-[1180px]:sticky min-[1180px]:top-[5.5rem] min-[1180px]:max-h-[calc(100vh-7rem)] min-[1180px]:overflow-y-auto min-[1180px]:pr-1">
+        <div className="flex flex-col gap-4 min-[1180px]:sticky min-[1180px]:top-[5.7rem] min-[1180px]:max-h-[calc(100vh-7rem)] min-[1180px]:overflow-y-auto min-[1180px]:pr-1">
 
 
           <div className="space-y-3">
-              {essay.last_feedback_at && (
+              {essay.last_feedback_at && !feedbackStale && (
                 <ReadinessCard readiness={readiness} report={report} />
               )}
 
-              {essay.last_feedback_at && <GrowthPanel spotCount={spots.length} />}
+              {essay.last_feedback_at && !feedbackStale && <GrowthPanel spotCount={spots.length} />}
+
+              {feedbackStale && (
+                <div className="stale-feedback rounded-[1.2rem] p-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.13em]">Earlier read</p>
+                  <p className="mt-2 text-sm leading-6">The cards below describe the snapshot Essence read before your latest edits. Use them as history, not a verdict on this draft.</p>
+                </div>
+              )}
 
               {/* Rounds are never blocked — the cost is just made visible. */}
               {rounds >= DIMINISHING_RETURNS_ROUND && (
@@ -630,7 +657,7 @@ export default function Workspace({
               )}
 
               {spots.length === 0 ? (
-                  <p className="rounded-lg border border-dashed border-line bg-white p-6 text-sm text-muted">
+                  <p className="rounded-[1.25rem] border border-dashed border-line bg-white/75 p-6 text-sm text-muted">
                     No flagged spots yet. Paste your draft and press{" "}
                     <span className="text-ink">Get feedback</span> — Essence
                     reads the whole essay in one pass, then works through what
@@ -746,8 +773,9 @@ function ReadinessCard({
   const ready = readiness === "ready_to_submit";
 
   return (
-    <section className={`rounded-lg border p-4 ${copy.tone}`}>
-      <h2 className={ready ? "display text-xl" : "display text-base"}>
+    <section className={`rounded-[1.2rem] border p-5 ${copy.tone}`}>
+      <p className="font-mono text-[0.56rem] uppercase tracking-[0.17em] opacity-65">Draft status</p>
+      <h2 className={ready ? "display mt-2 text-2xl" : "display mt-2 text-xl"}>
         {copy.label}
       </h2>
       <p className="mt-0.5 text-xs opacity-90">{copy.blurb}</p>

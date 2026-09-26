@@ -69,14 +69,14 @@ export default function SpotCard({
      * note is what makes it live.
      */
     <article
-      className={`rounded-lg border bg-white transition ${
-        active ? "p-4" : "px-3 py-2.5"
+      className={`rounded-[1.15rem] border bg-white/88 transition ${
+        active ? "p-5 shadow-[0_22px_55px_-46px_rgba(18,21,24,0.85)]" : "px-3.5 py-3"
       } ${
         awaitingRevision
           ? "border-flag-medium/60 shadow-sm"
           : active
-            ? "border-accent shadow-sm"
-            : "border-line hover:border-accent/50"
+            ? "border-accent/45"
+            : "border-ink/8 hover:border-accent/40 hover:bg-white"
       } ${dimmed ? "opacity-60" : ""}`}
     >
       <button
@@ -108,7 +108,7 @@ export default function SpotCard({
           </span>
         )}
         {active ? (
-          <span className="min-w-0 flex-1 border-l-2 border-accent/40 pl-3 font-serif text-base leading-relaxed text-ink">
+          <span className="min-w-0 flex-1 border-l-2 border-accent/45 pl-4 font-serif text-[1.03rem] leading-relaxed text-ink">
             {spot.quoted_text}
           </span>
         ) : (

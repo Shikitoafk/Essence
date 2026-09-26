@@ -17,6 +17,8 @@ interface LogoProps {
   size?: "sm" | "md" | "lg" | "xl";
   /** The "ADMISSIONS ESSAYS" line under the wordmark. */
   tagline?: boolean;
+  /** Light ink for dark navigation and hero surfaces. */
+  tone?: "default" | "inverse";
   className?: string;
 }
 
@@ -35,18 +37,22 @@ const SIZES: Record<
 export default function Logo({
   size = "sm",
   tagline = false,
+  tone = "default",
   className = "",
 }: LogoProps) {
   const scale = SIZES[size];
+  const ink = tone === "inverse" ? "text-white" : "text-ink";
+  const highlightInk = tone === "inverse" ? "text-[#11140f]" : ink;
+  const muted = tone === "inverse" ? "text-white/45" : "text-muted";
 
   return (
     <span className={`inline-flex flex-col items-start gap-1.5 ${className}`}>
       <span
-        className={`font-wordmark leading-[0.9] tracking-tight text-ink ${scale.text}`}
+        className={`font-wordmark leading-[0.9] tracking-tight ${ink} ${scale.text}`}
       >
         Es
         <span
-          className="text-ink"
+          className={highlightInk}
           style={{
             background: "var(--color-mark)",
             boxShadow: `var(--color-mark) ${scale.bleed}`,
@@ -59,7 +65,7 @@ export default function Logo({
 
       {tagline && (
         <span
-          className={`pl-[3px] font-mono uppercase tracking-[0.26em] text-muted ${scale.tag}`}
+          className={`pl-[3px] font-mono uppercase tracking-[0.26em] ${muted} ${scale.tag}`}
         >
           Admissions essays
         </span>

@@ -22,6 +22,44 @@ test("a generic closing claim tests deletion before asking for proof", () => {
   );
 });
 
+test("the new ending label receives the same deletion test", () => {
+  assert.equal(
+    applyQuestionPolicy(
+      "Generic or overearned ending",
+      "What later experience proves this lesson?",
+    ),
+    "If you removed this broad closing claim, what meaning—if any—would the essay actually lose?",
+  );
+});
+
+test("explanation debt asks whether the explanation earns its space", () => {
+  assert.equal(
+    applyQuestionPolicy("Explanation debt", "Can you make this more vivid?"),
+    "If you removed this explanation, what understanding—if any—would the preceding material no longer carry on its own?",
+  );
+});
+
+test("visible seams force selection before collecting more stories", () => {
+  assert.equal(
+    applyQuestionPolicy(
+      "Trait sections with visible seams",
+      "What specific moment could connect all four activities?",
+    ),
+    "Which existing part of the draft carries the person you most want the reader to meet, and what would actually be lost by cutting the rest?",
+  );
+});
+
+test("motifs and decorative details are tested by deletion", () => {
+  assert.match(
+    applyQuestionPolicy("Mechanical motif", "What does the image symbolize?"),
+    /callback disappeared/,
+  );
+  assert.match(
+    applyQuestionPolicy("Decorative detail", "How did this make you feel?"),
+    /removed this detail/,
+  );
+});
+
 test("other diagnoses retain their draft-specific question", () => {
   assert.equal(
     applyQuestionPolicy("Reader trust", "  Which number can you verify?  "),

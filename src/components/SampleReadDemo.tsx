@@ -88,14 +88,14 @@ export default function SampleReadDemo() {
   }
 
   return (
-    <div className="overflow-hidden rounded-[2rem] border border-line bg-white shadow-[0_28px_70px_-52px_rgba(23,32,51,0.55)]">
+    <div className="overflow-hidden rounded-[1.75rem] border border-ink/10 bg-white shadow-[0_35px_90px_-65px_rgba(18,21,24,0.9)]">
       <div className="grid lg:grid-cols-[1.03fr_0.97fr]">
-        <section className="border-b border-line p-6 sm:p-8 lg:border-b-0 lg:border-r lg:p-10">
+        <section className="border-b border-line p-6 sm:p-8 lg:border-b-0 lg:border-r lg:p-12">
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="section-eyebrow">One real read · No account</p>
-              <h3 className="mt-3 font-display text-3xl font-medium tracking-[-0.04em]">
-                Paste your own excerpt
+              <h3 className="mt-3 font-display text-4xl font-medium tracking-[-0.05em]">
+                Give us the difficult part.
               </h3>
             </div>
             <span className="shrink-0 rounded-full border border-line px-3 py-1 font-mono text-[0.6rem] uppercase tracking-[0.14em] text-muted">
@@ -116,7 +116,7 @@ export default function SampleReadDemo() {
             disabled={Boolean(read)}
             rows={11}
             placeholder="Paste one passage you are unsure about…"
-            className="mt-2 w-full resize-y rounded-2xl border border-line bg-[#fbfbfd] px-4 py-4 font-serif text-[1.02rem] leading-7 text-ink outline-none transition focus:border-accent focus:bg-white"
+            className="mt-2 w-full resize-y rounded-2xl border border-ink/10 bg-[#f8f8f5] px-4 py-4 font-serif text-[1.02rem] leading-7 text-ink outline-none transition focus:border-accent focus:bg-white focus:shadow-[0_0_0_4px_rgba(98,84,245,0.08)]"
           />
           <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-xs">
             <button
@@ -152,7 +152,7 @@ export default function SampleReadDemo() {
             className="mt-2 w-full rounded-xl border border-line bg-white px-4 py-3 text-sm text-ink outline-none transition focus:border-accent"
           />
 
-          <label className="mt-6 flex cursor-pointer items-start gap-3 rounded-2xl border border-line bg-[#f8f9fc] p-4">
+          <label className="mt-6 flex cursor-pointer items-start gap-3 rounded-2xl border border-line bg-[#f6f6f2] p-4">
             <input
               type="checkbox"
               checked={acceptedPolicy}
@@ -178,7 +178,7 @@ export default function SampleReadDemo() {
             type="button"
             disabled={!validLength || !acceptedPolicy || loading || Boolean(read)}
             onClick={runTrial}
-            className="mt-6 inline-flex rounded-full bg-accent px-5 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-[#4849c8] disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:translate-y-0"
+            className="mt-6 inline-flex rounded-full bg-ink px-5 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-accent disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:translate-y-0"
           >
             {loading
               ? "Reading the whole excerpt…"
@@ -189,19 +189,19 @@ export default function SampleReadDemo() {
         </section>
 
         <section
-          className="bg-[#f8f9fc] p-6 sm:p-8 lg:p-10"
+          className="bg-[#111417] p-6 text-white sm:p-8 lg:p-12"
           aria-live="polite"
         >
           {!read ? (
             <div className="flex min-h-[34rem] items-center justify-center text-center">
               <div className="max-w-xs">
-                <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-accent-soft text-xl text-accent">
+                <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full border border-white/10 bg-white/[0.055] text-xl text-mark">
                   ?
                 </span>
-                <p className="mt-5 font-display text-2xl font-medium tracking-[-0.035em]">
+                <p className="mt-5 font-display text-3xl font-medium tracking-[-0.045em] text-white">
                   One finding. One question.
                 </p>
-                <p className="mt-3 text-sm leading-6 text-muted">
+                <p className="mt-3 text-sm leading-6 text-white/45">
                   Essence reads the whole excerpt, finds the highest-leverage
                   gap, and asks for material only you can supply. If the passage
                   is already doing its job, it will leave it alone.
@@ -213,18 +213,18 @@ export default function SampleReadDemo() {
               <p className="font-mono text-[0.62rem] uppercase tracking-[0.16em] text-accent">
                 Still unexplored
               </p>
-              <blockquote className="mt-4 border-l-2 border-accent/40 pl-4 font-serif text-lg leading-7 text-ink">
+              <blockquote className="mt-4 border-l-2 border-mark/50 pl-4 font-serif text-lg leading-7 text-white/88">
                 “{read.quote}”
               </blockquote>
-              <p className="mt-4 text-sm leading-6 text-muted">
+              <p className="mt-4 text-sm leading-6 text-white/48">
                 {read.diagnosis}
               </p>
 
-              <div className="mt-6 rounded-2xl border border-accent/25 bg-white p-5">
+              <div className="mt-6 rounded-2xl border border-mark/20 bg-white/[0.055] p-5">
                 <p className="text-xs font-medium uppercase tracking-[0.13em] text-accent">
                   Answer this
                 </p>
-                <p className="mt-3 font-serif text-xl leading-7 text-ink">
+                <p className="mt-3 font-serif text-xl leading-7 text-white">
                   {read.question}
                 </p>
                 <textarea
@@ -235,27 +235,27 @@ export default function SampleReadDemo() {
                   }}
                   rows={4}
                   placeholder="Follow the question in your own words…"
-                  className="mt-5 w-full resize-none rounded-xl border border-line bg-white px-3 py-3 text-sm leading-6 outline-none focus:border-accent"
+                  className="mt-5 w-full resize-none rounded-xl border border-white/12 bg-black/20 px-3 py-3 text-sm leading-6 text-white outline-none placeholder:text-white/25 focus:border-mark/50"
                 />
-                <p className="mt-2 text-xs leading-5 text-muted">
+                <p className="mt-2 text-xs leading-5 text-white/35">
                   This answer stays in your browser. It is not sent anywhere.
                 </p>
                 <button
                   type="button"
                   disabled={!answer.trim()}
                   onClick={() => setMaterialShown(true)}
-                  className="mt-3 rounded-full bg-ink px-5 py-2.5 text-sm font-medium text-white transition hover:bg-accent disabled:cursor-not-allowed disabled:opacity-40"
+                  className="mt-3 rounded-full bg-mark px-5 py-2.5 text-sm font-semibold text-[#11140f] transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   Keep this material
                 </button>
 
                 {materialShown && (
-                  <div className="mt-5 rounded-xl bg-accent-soft/60 p-4">
-                    <p className="text-xs font-medium uppercase tracking-[0.12em] text-accent">
+                  <div className="mt-5 rounded-xl border border-white/8 bg-black/20 p-4">
+                    <p className="text-xs font-medium uppercase tracking-[0.12em] text-mark">
                       Material found
                     </p>
-                    <p className="mt-2 text-sm leading-6 text-ink">{answer}</p>
-                    <p className="mt-3 text-xs leading-5 text-muted">
+                    <p className="mt-2 text-sm leading-6 text-white/82">{answer}</p>
+                    <p className="mt-3 text-xs leading-5 text-white/38">
                       Essence stops here. You decide whether and how this belongs
                       in the draft.
                     </p>
@@ -264,11 +264,11 @@ export default function SampleReadDemo() {
               </div>
 
               {read.whatLands && (
-                <div className="mt-5 border-t border-line pt-5">
-                  <p className="text-xs font-medium uppercase tracking-[0.12em] text-muted">
+                <div className="mt-5 border-t border-white/10 pt-5">
+                  <p className="text-xs font-medium uppercase tracking-[0.12em] text-white/32">
                     What already lands
                   </p>
-                  <p className="mt-2 text-sm leading-6 text-muted">
+                  <p className="mt-2 text-sm leading-6 text-white/45">
                     {read.whatLands}
                   </p>
                 </div>
@@ -277,7 +277,7 @@ export default function SampleReadDemo() {
               <TrackedAuthLink
                 href="/login"
                 source="real_trial_completed"
-                className="mt-6 inline-flex rounded-full bg-accent px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#4849c8]"
+                className="mt-6 inline-flex rounded-full bg-mark px-5 py-3 text-sm font-semibold text-[#11140f] transition hover:bg-white"
               >
                 Read my complete essay
               </TrackedAuthLink>
@@ -285,23 +285,23 @@ export default function SampleReadDemo() {
           ) : (
             <div className="flex min-h-[34rem] items-center justify-center">
               <div className="max-w-sm text-center">
-                <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[#ddf5e8] text-xl text-[#24764b]">
+                <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-mark/15 text-xl text-mark">
                   ✓
                 </span>
-                <p className="mt-5 font-display text-2xl font-medium tracking-[-0.035em]">
+                <p className="mt-5 font-display text-2xl font-medium tracking-[-0.035em] text-white">
                   No meaningful gap in this excerpt.
                 </p>
-                <p className="mt-3 text-sm leading-6 text-muted">
+                <p className="mt-3 text-sm leading-6 text-white/45">
                   Essence would leave this passage alone rather than manufacture
                   a problem.
                 </p>
-                <p className="mt-5 rounded-2xl border border-line bg-white p-4 text-left text-sm leading-6 text-ink">
+                <p className="mt-5 rounded-2xl border border-white/10 bg-white/[0.055] p-4 text-left text-sm leading-6 text-white/75">
                   {read.whatLands || read.diagnosis}
                 </p>
                 <TrackedAuthLink
                   href="/login"
                   source="real_trial_completed"
-                  className="mt-6 inline-flex rounded-full bg-accent px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#4849c8]"
+                  className="mt-6 inline-flex rounded-full bg-mark px-5 py-3 text-sm font-semibold text-[#11140f] transition hover:bg-white"
                 >
                   Read my complete essay
                 </TrackedAuthLink>
