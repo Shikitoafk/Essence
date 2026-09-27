@@ -188,9 +188,9 @@ Do not ask what the writer felt when the father handed the notebook back, or at 
 
 The draft sits ten words under its limit, so any card asking for new material has to say what it displaces.
 
-The strengths section is under test here as well: one paragraph of prose, no headings, no superlatives, every sentence naming an effect and what produces it.
+The anchored KEEP passages are under test here as well: each must quote a real load-bearing passage and name the effect it produces. Empty praise, headings, and unanchored strengths are failures.
 
-Rationale: length, not subject. Cases 13 to 16 already cover interior material, a draft over its limit, scattered episodes and an ending that needs nothing added — but every draft in this file runs 35 to 174 words, and a personal statement runs 650. Three defects measured on real drafts do not appear on short excerpts at all: questions asking for a feeling rather than an event (11% against 0%), questions offering the writer both answers to choose between (4% against 0%), and a strengths section that breaks into "For a 10-year-old / For a 17-year-old applicant / For a Writing PhD" headings, seen on five full-draft reads and on none of the cases. On sixty words there is too little for the read to spread out over. This case is the one that gives it room.
+Rationale: length, not subject. Cases 13 to 16 already cover interior material, a draft over its limit, scattered episodes and an ending that needs nothing added — but every draft in this file runs 35 to 174 words, and a personal statement runs 650. Three defects measured on real drafts do not appear on short excerpts at all: questions asking for a feeling rather than an event (11% against 0%), questions offering the writer both answers to choose between (4% against 0%), and unanchored praise that used to break into "For a 10-year-old / For a 17-year-old applicant / For a Writing PhD" headings, seen on five full-draft reads and on none of the cases. On sixty words there is too little for the read to spread out over. This case is the one that gives it room.
 
 ## 18. A full draft, fluent and hollow, over its limit
 
@@ -216,7 +216,7 @@ Required, and the reason this case exists: the draft is sixty-three words over i
 
 Do not ask what the writer felt at the returns desk, at the competition, or with her grandmother — the draft states the feeling in all three places; ask what happened. Do not offer two motives inside one question. Do not treat the dementia diagnosis as material to be made more vivid. Do not accept "I realized that", "It was then that I understood" or "That experience changed how I approached everything else" as reflection: each is a claim of reflection standing where reflection would go.
 
-The strengths section is under test. On a draft this hollow the honest answer is short and may be very short. Three tiers of praise, superlatives, or a list assembled to fill the section are failures of this case, not of the draft.
+The anchored KEEP passages are under test. On a draft this hollow the honest answer may be no protected passage at all. Protecting decorative material, emitting superlatives, or inventing praise to fill space are failures of this case, not of the draft.
 
 Rationale: case 17 is full length and well made, and returns almost nothing — a full-length control. This is its opposite and the stress case the file did not have: fluent, correct, competent at sentence level, and empty, which is the draft most likely to arrive from a student who has already been edited by a machine.
 

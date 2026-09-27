@@ -144,6 +144,35 @@ test("survives a model that skips the markers entirely", () => {
   assert.equal(report.overall_impression, "");
 });
 
+test("keeps populated sections when a model repeats section markers as closers", () => {
+  const drifted = `<<<SECTION:1>>>
+A clear portrait survives.
+<<<SECTION:1>>>
+<<<SECTION:4>>>
+<<<CARD>>>
+pattern: Decorative detail
+repair: cut
+confidence: high
+impact: substantive
+quote: The work taught me patience.
+clear: The line states the lesson.
+unexplored: The sentence repeats what the scene already shows.
+matters: It spends words translating an effect the reader already received.
+question: What would the essay lose if this line were removed?
+<<<CARD>>>
+<<<SECTION:4>>>
+<<<SECTION:7>>>
+1. [1] What would the essay lose if this line were removed?
+<<<SECTION:7>>>
+<<<END>>>`;
+
+  const report = parseModeAReport(drifted);
+  assert.equal(report.overall_impression, "A clear portrait survives.");
+  assert.equal(report.spots.length, 1);
+  assert.equal(report.spots[0].repair, "cut");
+  assert.deepEqual(report.queue, [0]);
+});
+
 test("strips quotation marks the model adds around a quote", () => {
   const quoted = REPORT.replace(
     "quote: The work taught me patience",

@@ -30,6 +30,7 @@ import { GoogleGenAI } from "@google/genai";
 import { MODE_A_SYSTEM } from "../src/lib/ai/systemPrompt";
 import { buildModeAPrompt, type SeasonContext } from "../src/lib/ai/modeAPrompt";
 import { parseModeAReport } from "../src/lib/ai/parseReport";
+import { applyQuestionPolicy } from "../src/lib/ai/questionPolicy";
 import type { Essay, EssayKind } from "../src/lib/types";
 
 function arg(name: string, fallback: string): string {
@@ -215,6 +216,22 @@ async function main() {
           ``,
           `## Raw read`,
           raw,
+          ``,
+          `## Questions delivered by the application`,
+          ...(report.spots.length
+            ? report.spots.flatMap((spot, index) => {
+                const delivered = applyQuestionPolicy(
+                  spot.pattern_name,
+                  spot.question,
+                  spot.repair,
+                );
+                return [
+                  `${index + 1}. ${spot.pattern_name} · repair: ${spot.repair ?? "missing"}`,
+                  `   - model: ${spot.question}`,
+                  `   - delivered: ${delivered}`,
+                ];
+              })
+            : ["No questions."]),
         ].join("\n"),
         "utf8",
       );
@@ -223,8 +240,15 @@ async function main() {
         `case ${String(c.number).padStart(2)} "${c.title}" run ${run}: scan ${report.scan.candidates.length}/-${report.scan.dropped.length}, ${report.spots.length} card(s)`,
       );
       for (const s of report.spots) {
-        console.log(`      [${s.impact}] ${s.pattern_name} — "${s.quoted_text.slice(0, 55)}"`);
-        console.log(`      Q: ${s.question.slice(0, 100)}`);
+        const delivered = applyQuestionPolicy(
+          s.pattern_name,
+          s.question,
+          s.repair,
+        );
+        console.log(
+          `      [${s.impact}/${s.repair ?? "no-repair"}] ${s.pattern_name} — "${s.quoted_text.slice(0, 55)}"`,
+        );
+        console.log(`      Q: ${delivered.slice(0, 120)}`);
       }
     }
   }

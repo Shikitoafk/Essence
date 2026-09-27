@@ -191,7 +191,10 @@ test("strengths protect effects instead of padding the report", () => {
   assert.match(GUIDE, /Strengths are not consolation/);
   assert.match(GUIDE, /what NOT to destroy/);
   assert.match(GUIDE, /A strength must describe an effect and its cause/);
-  assert.match(MODE_A, /No quota, no three-level retelling, no consolation praise/);
+  assert.match(GUIDE, /only as anchored KEEP passages in section 9/);
+  assert.doesNotMatch(MODE_A, /<<<SECTION:6>>>/);
+  assert.match(MODE_A, /This is the report's only strengths output/);
+  assert.match(MODE_A, /if no passage clearly earns protection, emit nothing/);
 });
 
 test("supplementals are judged against the supplied task", () => {

@@ -91,8 +91,9 @@ const ai = new GoogleGenAI({ apiKey: key });
  * A frozen prompt from scripts/prompt-baselines, so both sides of a change can
  * be run against the same draft on the same model in one sitting. The eval
  * cases are short excerpts and do not reproduce everything a full draft does:
- * the strengths section fell into three age-based headings on real essays and
- * never once on the cases, so a change aimed at that cannot be measured there.
+ * the old unanchored strengths prose fell into three age-based headings on real
+ * essays and never once on the short cases, so praise restraint needs a
+ * full-length stress case.
  */
 const systemPath = arg("system", "");
 const system = systemPath ? readFileSync(systemPath, "utf8") : MODE_A_SYSTEM;

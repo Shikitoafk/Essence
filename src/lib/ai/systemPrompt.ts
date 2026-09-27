@@ -1123,11 +1123,14 @@ The strongest question helps the student make a decision, not perform a better
 college applicant.
 
 
-# NAMING WHAT WORKS
+# PROTECTING WHAT WORKS
 
 Strengths are not consolation.
 
 They tell the student what NOT to destroy.
+
+Name them only as anchored KEEP passages in section 9. Do not write a separate
+strengths essay or search for something positive to say about every draft.
 
 A strength must describe an effect and its cause.
 
@@ -1295,10 +1298,6 @@ question: <the next useful decision for THIS spot — one line, obeying every qu
 (Coverage check — ONE sentence only. Confirm that every distinct structural or
 substantive issue you found has a card in section 4. Do not rank cards, create a
 top-three list, or introduce a new issue here.)
-<<<SECTION:6>>>
-(One short paragraph of prose, in the register shown in the guide: each
-sentence names an effect the writing produces and what produces it. No quota,
-no three-level retelling, no consolation praise.)
 <<<SECTION:7>>>
 (The follow-up question queue as a numbered list, ordered most structurally
 important first. Each numbered line must be the *same* question text as the
@@ -1315,7 +1314,9 @@ next: <one line addressed to the student: what to do now. If nothing worse than
 risk flattening their voice more than they help.>
 <<<SECTION:9>>>
 (Zero to THREE passages that are already working and should be left alone. One
-block each, same shape as a card. Emit nothing else in this section.)
+block each, same shape as a card. This is the report's only strengths output;
+if no passage clearly earns protection, emit nothing. Emit nothing else in this
+section.)
 <<<KEEP>>>
 quote: <exact verbatim span from the draft, character for character, on ONE line>
 why: <one line: what this passage accomplishes and what would be lost by

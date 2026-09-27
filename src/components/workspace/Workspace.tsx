@@ -474,7 +474,7 @@ export default function Workspace({
                   `Spots${spots.length ? ` (${spots.length})` : ""}`,
                   "Specific lines to work on",
                 ],
-                ["report", "Full read", "Structure and strengths"],
+                ["report", "Full read", "Structure and diagnosis"],
                 [
                   "followup",
                   `Follow-up${openCount ? ` (${openCount})` : ""}`,
@@ -573,10 +573,6 @@ export default function Workspace({
                   <ReportSection
                     title="Framework findings"
                     body={report.framework_findings}
-                  />
-                  <ReportSection
-                    title="Why this essay works"
-                    body={report.strengths}
                   />
                 </div>
               ) : (

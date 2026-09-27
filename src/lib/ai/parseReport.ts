@@ -17,7 +17,8 @@ import {
  */
 
 const SECTION_RE = /<<<SECTION:(\d)>>>/g;
-const CARD_RE = /<<<CARD>>>([\s\S]*?)<<<ENDCARD>>>/g;
+const CARD_RE =
+  /<<<CARD>>>([\s\S]*?)(?:<<<ENDCARD>>>|(?=<<<CARD>>>|<<<SECTION:\d>>>|<<<END>>>))/g;
 const KEEP_RE = /<<<KEEP>>>([\s\S]*?)<<<ENDKEEP>>>/g;
 const SCAN_RE = /<<<SCAN>>>([\s\S]*?)<<<ENDSCAN>>>/;
 
@@ -64,7 +65,11 @@ function splitSections(raw: string): Record<string, string> {
 
   marks.forEach((mark, i) => {
     const stop = i + 1 < marks.length ? marks[i + 1].start : text.length;
-    sections[mark.n] = text.slice(mark.end, stop).trim();
+    const body = text.slice(mark.end, stop).trim();
+    // Some models repeat `<<<SECTION:n>>>` where a closing marker would go.
+    // The repeated marker produces an empty second body; never let it erase
+    // the populated section that preceded it.
+    if (body && !sections[mark.n]) sections[mark.n] = body;
   });
 
   return sections;
@@ -242,7 +247,10 @@ export function parseModeAReport(raw: string): ParsedReport {
   const scan = parseCoverageScan(raw);
   const prose = parseReadinessProse(sections["8"] ?? "");
 
-  const spots = parseSpotCards(sections["4"] ?? raw);
+  const sectionSpots = parseSpotCards(sections["4"] ?? "");
+  // If section splitting drifted but card markers survived, recover directly
+  // from the full response rather than silently returning an empty report.
+  const spots = sectionSpots.length > 0 ? sectionSpots : parseSpotCards(raw);
 
   return {
     overall_impression: sections["1"] ?? "",
