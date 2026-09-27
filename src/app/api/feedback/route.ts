@@ -257,7 +257,11 @@ export async function POST(request: Request) {
         what_is_clear: spot.what_is_clear,
         what_is_unexplored: spot.what_is_unexplored,
         why_it_matters: spot.why_it_matters,
-        question: applyQuestionPolicy(spot.pattern_name, spot.question),
+        question: applyQuestionPolicy(
+          spot.pattern_name,
+          spot.question,
+          spot.repair,
+        ),
         queue_position: 0,
         status: settledStatus.get(key) ?? ("open" as SpotStatus),
       };

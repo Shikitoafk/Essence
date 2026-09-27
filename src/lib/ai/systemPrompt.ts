@@ -1033,10 +1033,17 @@ Choose the needed repair BEFORE writing the question:
 
 - preserve,
 - cut,
-- clarify,
-- connect existing material,
-- select among existing material,
-- ask for missing material.
+- clarify_existing,
+- connect_existing,
+- select_existing,
+- ask_missing.
+
+Every surviving card exposes that choice in its "repair:" field. Use cut when
+deletion is the useful test; select_existing when the draft already contains
+competing material; clarify_existing when the material is present but its claim
+or meaning is imprecise; connect_existing only when a real relationship may
+already exist; ask_missing only when the finding proved that absent information
+is the necessary unit. A desire for more detail is not proof of ask_missing.
 
 Group candidates that require the same underlying decision.
 
@@ -1275,6 +1282,7 @@ candidate that is neither carded nor listed as DROPPED is a finding you lost.
 Do not stop at three, but do not card curiosity merely to increase coverage.)
 <<<CARD>>>
 pattern: <one of: Replaceable portrait | Topic without subject | Perception missing | Trait sections with visible seams | Explanation debt | Procedure without judgment | Thinking named rather than performed | Productive contradiction flattened | Change claimed but not supported | False before-and-after | Other people without agency | Activity paragraph replacing person | Mechanical motif | Decorative detail | Generic or overearned ending | Borrowed voice | Reader trust | Prompt mismatch — OR the shortest accurate name when none fits. Never force a finding into the wrong pattern.>
+repair: <exactly one of: cut | select_existing | clarify_existing | connect_existing | ask_missing — the editorial action this finding requires, chosen before the question>
 confidence: <exactly one of: high | medium | low>
 impact: <exactly one of: structural | substantive | polish — see the impact rules above>
 quote: <the exact quote from the draft, verbatim, character for character, on ONE line, with no surrounding quotation marks and no ellipsis>

@@ -229,6 +229,8 @@ test("the card contract exposes the new diagnostic vocabulary", () => {
     assert.ok(MODE_A_SYSTEM.includes(pattern), pattern);
   }
   assert.match(MODE_A, /Never force a finding into the wrong pattern/);
+  assert.match(MODE_A, /repair: <exactly one of: cut \| select_existing/);
+  assert.match(MODE_A, /A desire for more detail is not proof of ask_missing/);
 });
 
 test("Mode B revises its diagnosis without turning answers into a detail hunt", () => {

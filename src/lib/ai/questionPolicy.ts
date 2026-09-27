@@ -2,6 +2,7 @@ import {
   cleanQuestionWording,
   questionShapeIssues,
 } from "./questionShape";
+import type { EditorialRepair } from "@/lib/types";
 
 const EDITORIAL_DECISION_QUESTIONS: Record<string, string> = {
   "replaceable portrait":
@@ -44,12 +45,22 @@ const EDITORIAL_DECISION_QUESTIONS: Record<string, string> = {
  * A deterministic guard for diagnoses where generative models repeatedly
  * turn an editorial decision into a request for more biography.
  */
-export function applyQuestionPolicy(pattern: string, question: string): string {
+export function applyQuestionPolicy(
+  pattern: string,
+  question: string,
+  repair: EditorialRepair | null = null,
+): string {
   const key = pattern.trim().toLowerCase();
   const editorialDecision = EDITORIAL_DECISION_QUESTIONS[key];
   if (editorialDecision) return editorialDecision;
 
   const cleaned = cleanQuestionWording(question);
+  if (repair === "cut") {
+    return "What would the essay lose if this passage were removed?";
+  }
+  if (repair === "select_existing") {
+    return "Which existing passage carries the meaning this section is trying to create?";
+  }
   if (questionShapeIssues(cleaned).length === 0) return cleaned;
 
   // These questions are about the editorial decision already diagnosed. They
@@ -73,5 +84,13 @@ export function applyQuestionPolicy(pattern: string, question: string): string {
       "Which part of the prompt is this passage answering?",
   };
 
-  return safeFallbacks[key] ?? cleaned;
+  const repairFallbacks: Partial<Record<EditorialRepair, string>> = {
+    clarify_existing:
+      "What is the narrowest claim this passage can honestly support?",
+    connect_existing:
+      "What relationship—if any—actually exists between these passages?",
+    ask_missing: "What is the one missing piece the reader needs here?",
+  };
+
+  return safeFallbacks[key] ?? (repair ? repairFallbacks[repair] : null) ?? cleaned;
 }

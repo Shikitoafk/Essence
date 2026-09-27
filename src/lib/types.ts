@@ -226,8 +226,17 @@ export interface EssayFact {
 }
 
 /** A spot card as parsed out of the model's Mode A report, before it gets an id. */
+export type EditorialRepair =
+  | "cut"
+  | "select_existing"
+  | "clarify_existing"
+  | "connect_existing"
+  | "ask_missing";
+
 export interface ParsedSpot {
   pattern_name: string;
+  /** The edit the diagnosis calls for, made explicit before a question is asked. */
+  repair: EditorialRepair | null;
   confidence: Confidence;
   impact: Impact;
   quoted_text: string;

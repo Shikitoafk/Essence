@@ -13,6 +13,7 @@ import {
   cleanQuestionWording,
   questionShapeIssues,
 } from "../src/lib/ai/questionShape";
+import type { EditorialRepair } from "../src/lib/types";
 
 const inputs = process.argv.slice(2);
 if (inputs.length === 0) {
@@ -23,18 +24,37 @@ if (inputs.length === 0) {
 interface Question {
   file: string;
   pattern: string;
+  repair: EditorialRepair | null;
   raw: string;
   policy: string;
 }
 
 interface StoredSpot {
   pattern_name?: unknown;
+  repair?: unknown;
   question?: unknown;
 }
 
 const questions: Question[] = [];
 
-function addQuestion(file: string, pattern: string, raw: string) {
+function asRepair(value: unknown): EditorialRepair | null {
+  return [
+    "cut",
+    "select_existing",
+    "clarify_existing",
+    "connect_existing",
+    "ask_missing",
+  ].includes(String(value))
+    ? (value as EditorialRepair)
+    : null;
+}
+
+function addQuestion(
+  file: string,
+  pattern: string,
+  raw: string,
+  repair: EditorialRepair | null = null,
+) {
   const cleaned = cleanQuestionWording(raw);
   // Prompt snapshots contain the output contract itself. It looks like a card
   // to a line parser but is not a model response.
@@ -44,13 +64,15 @@ function addQuestion(file: string, pattern: string, raw: string) {
   questions.push({
     file,
     pattern: pattern.trim() || "(missing pattern)",
+    repair,
     raw: raw.trim(),
-    policy: applyQuestionPolicy(pattern, raw),
+    policy: applyQuestionPolicy(pattern, raw, repair),
   });
 }
 
 function readRaw(file: string, raw: string) {
   let pattern = "";
+  let repair: EditorialRepair | null = null;
   let insideCard = false;
 
   for (const line of raw.split(/\r?\n/)) {
@@ -58,11 +80,13 @@ function readRaw(file: string, raw: string) {
     if (trimmed === "<<<CARD>>>") {
       insideCard = true;
       pattern = "";
+      repair = null;
       continue;
     }
     if (trimmed === "<<<ENDCARD>>>") {
       insideCard = false;
       pattern = "";
+      repair = null;
       continue;
     }
     if (!insideCard) continue;
@@ -73,8 +97,14 @@ function readRaw(file: string, raw: string) {
       continue;
     }
 
+    const repairMatch = /^repair:\s*(.+)$/i.exec(trimmed);
+    if (repairMatch) {
+      repair = asRepair(repairMatch[1]);
+      continue;
+    }
+
     const questionMatch = /^question:\s*(.+)$/i.exec(trimmed);
-    if (questionMatch) addQuestion(file, pattern, questionMatch[1]);
+    if (questionMatch) addQuestion(file, pattern, questionMatch[1], repair);
   }
 }
 
@@ -91,7 +121,12 @@ function readJson(file: string, source: string): boolean {
           typeof value.pattern_name === "string" &&
           typeof value.question === "string"
         ) {
-          addQuestion(file, value.pattern_name, value.question);
+          addQuestion(
+            file,
+            value.pattern_name,
+            value.question,
+            asRepair(value.repair),
+          );
         }
       }
       return true;

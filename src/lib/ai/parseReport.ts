@@ -1,5 +1,6 @@
 import {
   type Confidence,
+  type EditorialRepair,
   type Impact,
   type ParsedReport,
   type ParsedSpot,
@@ -89,6 +90,21 @@ function normaliseConfidence(value: string): Confidence {
   return "medium";
 }
 
+function normaliseRepair(value: string): EditorialRepair | null {
+  const cleaned = value.trim().toLowerCase().replace(/[\s-]+/g, "_");
+  if (!cleaned) return null;
+  if (cleaned.includes("select")) return "select_existing";
+  if (cleaned.includes("clarif")) return "clarify_existing";
+  if (cleaned.includes("connect")) return "connect_existing";
+  if (cleaned.includes("missing") || cleaned.includes("ask")) {
+    return "ask_missing";
+  }
+  if (cleaned.includes("cut") || cleaned.includes("delet") || cleaned.includes("remove")) {
+    return "cut";
+  }
+  return null;
+}
+
 /** Strips wrapping quotes/blockquote markers the model may add despite the contract. */
 function cleanQuote(value: string): string {
   let q = value.trim().replace(/^>\s*/, "");
@@ -113,7 +129,7 @@ function parseCard(body: string): ParsedSpot | null {
 
   for (const line of body.split(/\r?\n/)) {
     const match = line.match(
-      /^\s*(pattern|confidence|impact|quote|clear|unexplored|matters|question)\s*:\s*(.*)$/i,
+      /^\s*(pattern|repair|confidence|impact|quote|clear|unexplored|matters|question)\s*:\s*(.*)$/i,
     );
     if (match) {
       currentKey = match[1].toLowerCase();
@@ -131,6 +147,7 @@ function parseCard(body: string): ParsedSpot | null {
 
   return {
     pattern_name: normalisePattern(fields.pattern ?? ""),
+    repair: normaliseRepair(fields.repair ?? ""),
     confidence: normaliseConfidence(fields.confidence ?? ""),
     impact: normaliseImpact(fields.impact ?? ""),
     quoted_text: quote,

@@ -23,6 +23,7 @@ question: What led to choice ${index}?
   assert.equal(report.spots.length, 7);
   assert.deepEqual(report.queue, [6, 0, 1, 2, 3, 4, 5]);
   assert.equal(new Set(report.spots.map((spot) => spot.question)).size, 7);
+  assert.ok(report.spots.every((spot) => spot.repair === null));
 });
 
 const REPORT = `<<<SECTION:1>>>
@@ -40,6 +41,7 @@ problem lands mid-essay, which works here because the garage is established firs
 <<<SECTION:4>>>
 <<<CARD>>>
 pattern: Underdeveloped change
+repair: ask_missing
 confidence: high
 quote: The work taught me patience, and I became someone who finishes what he starts.
 clear: You stayed with a long, repetitive task for a whole summer.
@@ -49,6 +51,7 @@ question: What was the next thing you nearly quit and didn't? That week, that au
 <<<ENDCARD>>>
 <<<CARD>>>
 pattern: Generic closing claim
+repair: cut
 confidence: medium
 quote: What I learned is that persistence matters more than talent.
 clear: You want to end on a lesson.
@@ -94,8 +97,10 @@ test("parses both spot cards with all fields", () => {
 
   assert.equal(spots.length, 2);
   assert.equal(spots[0].pattern_name, "Underdeveloped change");
+  assert.equal(spots[0].repair, "ask_missing");
   assert.equal(spots[0].confidence, "high");
   assert.equal(spots[1].pattern_name, "Generic closing claim");
+  assert.equal(spots[1].repair, "cut");
   assert.equal(spots[1].confidence, "medium");
   assert.match(spots[0].what_is_clear, /repetitive task/);
   assert.match(spots[0].question, /nearly quit/);

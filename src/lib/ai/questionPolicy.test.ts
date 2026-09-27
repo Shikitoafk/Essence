@@ -156,6 +156,44 @@ test("leaves an unknown pattern intact rather than applying a generic fallback",
   );
 });
 
+test("an explicit repair protects custom pattern names", () => {
+  assert.equal(
+    applyQuestionPolicy(
+      "A custom name the model invented",
+      "What new experience could prove this claim?",
+      "cut",
+    ),
+    "What would the essay lose if this passage were removed?",
+  );
+  assert.equal(
+    applyQuestionPolicy(
+      "Another custom name",
+      "Which club, class, or competition should become a new scene?",
+      "select_existing",
+    ),
+    "Which existing passage carries the meaning this section is trying to create?",
+  );
+});
+
+test("ask-missing keeps a clean custom question and repairs a shaped one", () => {
+  assert.equal(
+    applyQuestionPolicy(
+      "Unusual missing unit",
+      "What did your teammate decide at that point?",
+      "ask_missing",
+    ),
+    "What did your teammate decide at that point?",
+  );
+  assert.equal(
+    applyQuestionPolicy(
+      "Unusual missing unit",
+      "Was it fear, pressure, or embarrassment, and what did you do?",
+      "ask_missing",
+    ),
+    "What is the one missing piece the reader needs here?",
+  );
+});
+
 test("every protected diagnosis produces one unseeded question", () => {
   const protectedPatterns = [
     "Replaceable portrait",

@@ -55,3 +55,19 @@ debt, motifs and decorative detail. Other canonical diagnoses receive a safe
 fallback only when the generated question has a measurable bad shape. This
 keeps draft-specific questions where they are useful while preventing the
 engine from treating every weakness as a request for more content.
+
+## Repair intent is now explicit
+
+Pattern names are allowed to be custom when the canonical vocabulary does not
+fit. That flexibility previously created a hole: a custom label could bypass a
+pattern-specific question policy even when the model had correctly decided
+that the passage should be cut or selected against another passage.
+
+Each new card therefore serializes the editorial action chosen before its
+question: `cut`, `select_existing`, `clarify_existing`, `connect_existing`, or
+`ask_missing`. The parser keeps the field optional for old saved reads. Known
+diagnoses still take precedence; for custom names, a cut or selection decision
+now produces the corresponding deletion or selection test. Clean questions for
+genuinely missing material remain draft-specific. A malformed missing-material
+question falls back to one open question rather than a menu supplied by the
+engine.
