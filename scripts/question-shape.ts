@@ -1,101 +1,198 @@
 /**
- * Counts the shape defects in the questions a read emits.
+ * Measures question-shape defects before and after the production policy.
  *
- * A card's question is the only part of a read a student is asked to do
- * something with, and the defects it acquires are invisible in a card count
- * and in a pattern name. Measured over 33 saved reads: 23 of 38 questions
- * padded themselves with the word "specific", and half offered the student a
- * menu of places to look in — "from those club meetings, competitions, or the
- * online course" — which narrows the answer before the student has given one,
- * and rules out the material whenever it lived somewhere the list left out.
+ * The input may contain raw Mode A reads (`.md`/`.txt`) or harness JSON files.
+ * Directories are walked recursively. No model call is made.
  *
- * None of this needs a model to judge it, so unlike card quality it can be a
- * number. What it cannot see is whether a short question is a good one: a
- * question can score clean here and still be empty. Read a sample.
- *
- *   npx tsx scripts/question-shape.ts <dir-of-saved-reads> [more dirs...]
+ *   npx tsx scripts/question-shape.ts <saved-read-dir> [more paths...]
  */
 import { readdirSync, readFileSync, statSync } from "node:fs";
-import { join } from "node:path";
+import { extname, join } from "node:path";
+import { applyQuestionPolicy } from "../src/lib/ai/questionPolicy";
+import {
+  cleanQuestionWording,
+  questionShapeIssues,
+} from "../src/lib/ai/questionShape";
 
-const dirs = process.argv.slice(2);
-if (dirs.length === 0) {
-  console.error("usage: question-shape.ts <dir-of-saved-reads> [more dirs...]");
+const inputs = process.argv.slice(2);
+if (inputs.length === 0) {
+  console.error("usage: question-shape.ts <saved-read-dir-or-file> [more paths...]");
   process.exit(1);
 }
 
-/**
- * A menu is a comma-separated list the question offers as candidate answers.
- * Plain "do or say" is one act described two ways and is not a menu, so the
- * comma is required: "rehearsal, the competition, or home" is caught and
- * "what someone did or said" is not.
- */
-const MENU = /,[^,?]*\bor\b/;
-const HEDGE = /\b(specific|concrete)\b/i;
-/** Two questions joined into one; the student answers whichever is easier. */
-const COMPOUND = /,\s*and\s+(what|how|why|who|when)\b|\band\s+(what|how)\s+did\b/;
-/**
- * "How did A shape B", "How does A protect you from C" — the link is the
- * engine's, and the student is left confirming it. A question they cannot
- * answer "it didn't" without arguing with its grammar is not a question.
- */
-const PRESUPPOSED = /\bhow (did|does|has)\b[^?]*\b(shape|shaped|connect|connects|connected|protect|protects|inform|informs|change|changed|lead|led|prepare|prepares)\b/i;
-/** Asks for an interior state where the prompt asks for an event. */
-const INTERIOR = /what (was|were) (the|that|your) (thought|thoughts|feeling|feelings|emotion)|what did it feel like|how did (it|that|you) feel/i;
-/** Supplies the candidate answers inside the question: "was it X, or Y". */
-const SUPPLIED = /\bwas it (that )?[^?]*\bor\b[^?]*\?/i;
-
 interface Question {
   file: string;
-  text: string;
-  words: number;
+  pattern: string;
+  raw: string;
+  policy: string;
+}
+
+interface StoredSpot {
+  pattern_name?: unknown;
+  question?: unknown;
 }
 
 const questions: Question[] = [];
 
-for (const dir of dirs) {
-  for (const name of readdirSync(dir)) {
-    const path = join(dir, name);
-    if (!statSync(path).isFile()) continue;
+function addQuestion(file: string, pattern: string, raw: string) {
+  const cleaned = cleanQuestionWording(raw);
+  // Prompt snapshots contain the output contract itself. It looks like a card
+  // to a line parser but is not a model response.
+  if (cleaned.length < 10 || cleaned.startsWith("<") || pattern.startsWith("<")) {
+    return;
+  }
+  questions.push({
+    file,
+    pattern: pattern.trim() || "(missing pattern)",
+    raw: raw.trim(),
+    policy: applyQuestionPolicy(pattern, raw),
+  });
+}
 
-    for (const line of readFileSync(path, "utf8").split(/\r?\n/)) {
-      const match = /^question:\s*(.+)$/.exec(line.trim());
-      if (!match) continue;
-      const text = match[1].trim();
-      if (text.length < 10) continue;
-      questions.push({ file: name, text, words: text.split(/\s+/).length });
+function readRaw(file: string, raw: string) {
+  let pattern = "";
+  let insideCard = false;
+
+  for (const line of raw.split(/\r?\n/)) {
+    const trimmed = line.trim();
+    if (trimmed === "<<<CARD>>>") {
+      insideCard = true;
+      pattern = "";
+      continue;
     }
+    if (trimmed === "<<<ENDCARD>>>") {
+      insideCard = false;
+      pattern = "";
+      continue;
+    }
+    if (!insideCard) continue;
+
+    const patternMatch = /^pattern:\s*(.+)$/i.exec(trimmed);
+    if (patternMatch) {
+      pattern = patternMatch[1];
+      continue;
+    }
+
+    const questionMatch = /^question:\s*(.+)$/i.exec(trimmed);
+    if (questionMatch) addQuestion(file, pattern, questionMatch[1]);
   }
 }
 
+function readJson(file: string, source: string): boolean {
+  try {
+    const parsed = JSON.parse(source) as {
+      raw?: unknown;
+      report?: { spots?: unknown };
+    };
+    const spots = parsed.report?.spots;
+    if (Array.isArray(spots)) {
+      for (const value of spots as StoredSpot[]) {
+        if (
+          typeof value.pattern_name === "string" &&
+          typeof value.question === "string"
+        ) {
+          addQuestion(file, value.pattern_name, value.question);
+        }
+      }
+      return true;
+    }
+    if (typeof parsed.raw === "string") {
+      readRaw(file, parsed.raw);
+      return true;
+    }
+  } catch {
+    // Some harness outputs use a .json suffix while a run is incomplete.
+  }
+  return false;
+}
+
+function readFile(path: string) {
+  const extension = extname(path).toLowerCase();
+  if (![".json", ".md", ".txt"].includes(extension)) return;
+  const source = readFileSync(path, "utf8");
+  if (extension === ".json" && readJson(path, source)) return;
+  readRaw(path, source);
+}
+
+function walk(path: string) {
+  const stat = statSync(path);
+  if (stat.isFile()) {
+    readFile(path);
+    return;
+  }
+  for (const name of readdirSync(path)) walk(join(path, name));
+}
+
+for (const input of inputs) walk(input);
+
 if (questions.length === 0) {
-  console.error("no `question:` lines found — is this a directory of raw reads?");
+  console.error("no Mode A card questions found");
   process.exit(1);
 }
 
-const lengths = questions.map((q) => q.words).sort((a, b) => a - b);
-const median = lengths[Math.floor(lengths.length / 2)];
-const rate = (n: number) => `${n}/${questions.length} (${Math.round((n / questions.length) * 100)}%)`;
+const HEDGE = /\b(specific|concrete)\b/i;
+const rate = (n: number) =>
+  `${n}/${questions.length} (${Math.round((n / questions.length) * 100)}%)`;
 
-const menu = questions.filter((q) => MENU.test(q.text));
-const hedge = questions.filter((q) => HEDGE.test(q.text));
-const compound = questions.filter((q) => COMPOUND.test(q.text));
+function summary(label: string, select: (question: Question) => string) {
+  const issueCount = new Map<string, number>();
+  const lengths: number[] = [];
+  let hedges = 0;
+  let clean = 0;
+
+  for (const question of questions) {
+    const value = select(question);
+    lengths.push(value.split(/\s+/).length);
+    if (HEDGE.test(value)) hedges += 1;
+    const issues = questionShapeIssues(value);
+    if (issues.length === 0 && !HEDGE.test(value)) clean += 1;
+    for (const issue of issues) {
+      issueCount.set(issue, (issueCount.get(issue) ?? 0) + 1);
+    }
+  }
+
+  lengths.sort((a, b) => a - b);
+  console.log(`\n${label}`);
+  console.log(
+    `words: median ${lengths[Math.floor(lengths.length / 2)]}, range ${lengths[0]}-${lengths[lengths.length - 1]}`,
+  );
+  console.log(`clean shape:          ${rate(clean)}`);
+  console.log(`menu of options:      ${rate(issueCount.get("menu") ?? 0)}`);
+  console.log(`two prompts in one:   ${rate(issueCount.get("compound") ?? 0)}`);
+  console.log(`presupposes the link: ${rate(issueCount.get("presupposedLink") ?? 0)}`);
+  console.log(`supplies the answer:  ${rate(issueCount.get("suppliedAnswer") ?? 0)}`);
+  console.log(`multiple questions:   ${rate(issueCount.get("multipleQuestions") ?? 0)}`);
+  console.log(`specific/concrete:    ${rate(hedges)}`);
+}
 
 console.log(`questions: ${questions.length}`);
-console.log(`words: median ${median}, range ${lengths[0]}–${lengths[lengths.length - 1]}`);
-console.log(`menu of options:  ${rate(menu.length)}`);
-console.log(`"specific"/"concrete": ${rate(hedge.length)}`);
-console.log(`two questions in one:  ${rate(compound.length)}`);
-console.log(`presupposes the link:  ${rate(questions.filter((q) => PRESUPPOSED.test(q.text)).length)}`);
-console.log(`asks for a feeling:    ${rate(questions.filter((q) => INTERIOR.test(q.text)).length)}`);
-console.log(`supplies the answers:  ${rate(questions.filter((q) => SUPPLIED.test(q.text)).length)}`);
+summary("raw model output", (question) => question.raw);
+summary("after production policy", (question) => question.policy);
 
-console.log(`\nlongest, worst first:`);
-for (const q of [...questions].sort((a, b) => b.words - a.words).slice(0, 8)) {
-  const flags = [
-    MENU.test(q.text) ? "menu" : "",
-    HEDGE.test(q.text) ? "hedge" : "",
-    COMPOUND.test(q.text) ? "compound" : "",
-  ].filter(Boolean).join(",");
-  console.log(`  ${q.words}w ${flags ? `[${flags}] ` : ""}${q.text}`);
+const changed = questions.filter((question) => question.raw !== question.policy);
+console.log(`\nchanged by policy: ${rate(changed.length)}`);
+for (const question of changed.slice(0, 12)) {
+  console.log(`\n[${question.pattern}] ${question.file}`);
+  console.log(`- ${question.raw}`);
+  console.log(`+ ${question.policy}`);
+}
+
+const unresolved = questions.filter(
+  (question) =>
+    questionShapeIssues(question.policy).length > 0 || HEDGE.test(question.policy),
+);
+if (unresolved.length > 0) {
+  console.log(`\nunresolved after policy: ${unresolved.length}`);
+  const counts = new Map<string, number>();
+  for (const question of unresolved) {
+    counts.set(question.pattern, (counts.get(question.pattern) ?? 0) + 1);
+  }
+  for (const [pattern, count] of [...counts.entries()].sort(
+    (a, b) => b[1] - a[1],
+  )) {
+    console.log(`  ${count} ${pattern}`);
+  }
+  for (const question of unresolved.slice(0, 12)) {
+    console.log(`\n[${question.pattern}] ${question.policy}`);
+  }
 }
