@@ -1,9 +1,29 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { GEMINI_HTTP_OPTIONS, geminiChain } from "./gemini";
+import {
+  GEMINI_HTTP_OPTIONS,
+  geminiChain,
+  geminiRequestTimeout,
+} from "./gemini";
 
 test("the SDK cannot exhaust the function lifetime retrying one model", () => {
   assert.equal(GEMINI_HTTP_OPTIONS.retryOptions.attempts, 1);
+});
+
+test("fallback timeouts fit inside each route lifetime", () => {
+  const diagnosticBudget = geminiChain("diagnostic").reduce(
+    (total, model, index) =>
+      total + geminiRequestTimeout("diagnostic", model, index),
+    0,
+  );
+  const conversationBudget = geminiChain("conversation").reduce(
+    (total, model, index) =>
+      total + geminiRequestTimeout("conversation", model, index),
+    0,
+  );
+
+  assert.ok(diagnosticBudget <= 105_000);
+  assert.ok(conversationBudget <= 55_000);
 });
 
 test("comparison does not inherit a diagnostic model override", () => {

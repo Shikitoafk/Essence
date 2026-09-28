@@ -24,6 +24,22 @@ export const GEMINI_HTTP_OPTIONS = {
 } as const;
 
 /**
+ * Leave enough time for the preferred diagnostic model to produce a careful
+ * read, but never let unavailable models consume the whole serverless request.
+ * The remaining budgets keep the complete fallback chain inside the route's
+ * lifetime, including a short recovery pass when a read loses a card.
+ */
+export function geminiRequestTimeout(
+  tier: ModelTier,
+  model: string,
+  index: number,
+): number {
+  if (tier === "conversation") return index === 0 ? 25_000 : 10_000;
+  if (index === 0) return 45_000;
+  return model.includes("lite") ? 25_000 : 15_000;
+}
+
+/**
  * Gemini provider.
  *
  * Each tier is a fallback chain: when a model is out of quota or unavailable we
@@ -115,13 +131,16 @@ export async function generateWithGemini({
   const chain = geminiChain(tier);
   let lastError = "";
 
-  for (const model of chain) {
+  for (const [index, model] of chain.entries()) {
     try {
       const response = await ai.models.generateContent({
         model,
         contents: prompt,
         config: {
-          httpOptions: GEMINI_HTTP_OPTIONS,
+          httpOptions: {
+            ...GEMINI_HTTP_OPTIONS,
+            timeout: geminiRequestTimeout(tier, model, index),
+          },
           systemInstruction: system,
           temperature,
           ...(maxOutputTokens ? { maxOutputTokens } : {}),
