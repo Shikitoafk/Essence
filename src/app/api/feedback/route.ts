@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { MODE_A_SYSTEM } from "@/lib/ai/systemPrompt";
+import { normaliseReportMarkers } from "@/lib/ai/reportMarkers";
 import { generate, userFacingError } from "@/lib/ai/llm";
 import {
   locateQuote,
@@ -8,6 +9,9 @@ import {
   parseSpotCards,
 } from "@/lib/ai/parseReport";
 import { applyQuestionPolicy } from "@/lib/ai/questionPolicy";
+import {
+  anchorReaderAssessment, formatReaderAssessment, canReuseReaderAssessment,
+} from "@/lib/ai/readerAssessment";
 import {
   findProseOnlyDiagnoses,
   findUncardedCandidates,
@@ -122,7 +126,7 @@ export async function POST(request: Request) {
       prompt: buildModeAPrompt(essay, draft, context),
       temperature: 0.6,
     });
-    raw = result.text;
+    raw = normaliseReportMarkers(result.text);
     // Which model answered is operator information, not student information.
     console.info(`[essence] feedback read served by ${result.model}`);
   } catch (error) {
@@ -171,7 +175,7 @@ export async function POST(request: Request) {
     report.spots.map((spot) => spot.quoted_text),
   );
 
-  if (uncarded.length > 0) {
+  if (!truncated && uncarded.length > 0) {
     console.warn(
       `[essence] ${uncarded.length} candidate(s) on essay ${essay.id} were scanned, never dropped and never carded — recovering.`,
     );
@@ -198,6 +202,17 @@ export async function POST(request: Request) {
       );
     }
   }
+
+  const reading = anchorReaderAssessment(report.reader_assessment, draft, report.spots);
+  if (truncated || !reading) {
+    // Preserve the previous read and cards. Missing evidence is a failed read,
+    // never evidence that the student's essay has no problems.
+    return NextResponse.json({
+      error: "Essence couldn't complete its reading of the person, idea and voice. Your draft and previous feedback are saved. Please try again.",
+      code: "incomplete_read",
+    }, { status: 502 });
+  }
+  report.overall_impression = formatReaderAssessment(reading);
 
   // Snapshot the draft this report describes, so spots stay anchored to the
   // exact text they were found in even after the student edits.
@@ -454,7 +469,6 @@ async function buildSeasonContext(
     essaysResult,
     resolvedResult,
     historyResult,
-    lastVersionResult,
     priorSpotsResult,
   ] = await Promise.all([
     supabase
@@ -478,23 +492,23 @@ async function buildSeasonContext(
       .limit(30),
     supabase
       .from("essay_reports")
-      .select("readiness", { count: "exact" })
+      .select("readiness, overall_impression, version_id", { count: "exact" })
       .eq("essay_id", essay.id)
       .order("created_at", { ascending: false })
       .limit(1),
-    // Every read snapshots the draft it read, so the newest snapshot is what
-    // the previous verdict was passed on.
-    supabase
-      .from("essay_versions")
-      .select("draft_text")
-      .eq("essay_id", essay.id)
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle<{ draft_text: string }>(),
     supabase.from("flagged_spots").select("*").eq("essay_id", essay.id),
   ]);
 
-  const lastRead = lastVersionResult.data?.draft_text ?? null;
+  // A manual save can be newer than the feedback snapshot. Reuse only the
+  // exact version the latest report describes, never the latest saved draft.
+  const previousReport = historyResult.data?.[0];
+  let lastRead: string | null = null;
+  if (previousReport?.version_id) {
+    const { data } = await supabase.from("essay_versions")
+      .select("draft_text").eq("id", previousReport.version_id)
+      .eq("essay_id", essay.id).maybeSingle<{ draft_text: string }>();
+    lastRead = data?.draft_text ?? null;
+  }
 
   return {
     facts: (factsResult.data ?? []).map((r) => r.fact as string),
@@ -511,7 +525,9 @@ async function buildSeasonContext(
     round: (historyResult.count ?? 0) + 1,
     previousReadiness:
       (historyResult.data?.[0]?.readiness as string | null) ?? null,
-    draftUnchanged: lastRead !== null && lastRead.trim() === draft.trim(),
+    draftUnchanged: canReuseReaderAssessment(
+      draft, lastRead, previousReport?.overall_impression ?? "",
+    ),
     previousSpotKeys: selectCurrentSpots(
       (priorSpotsResult.data ?? []) as FlaggedSpot[],
     ).map((s) => spotKey(s.pattern_name, s.quoted_text)),

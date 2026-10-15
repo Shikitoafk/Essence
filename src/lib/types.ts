@@ -247,6 +247,7 @@ export interface ParsedSpot {
 }
 
 export interface ParsedReport {
+  reader_assessment: import("./ai/readerAssessment").ReaderAssessment | null;
   overall_impression: string;
   checklist_findings: string;
   framework_findings: string;

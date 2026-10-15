@@ -11,6 +11,19 @@ By August the drawers were full, and I had stopped counting.
 
 What I learned is that persistence matters more than talent.`;
 
+test("explicit no-gap scan rows never become recovery requests", () => {
+  for (const description of ["none", "no issue", "No gap found.", "working well", "clear enough", "not a finding"]) {
+    assert.deepEqual(findUncardedCandidates(DRAFT,[`I spent that summer cataloguing beetles — ${description}`],[],[]),[]);
+  }
+});
+
+test("a no-gap row does not suppress a real concern about the same paragraph", () => {
+  const candidates=["I spent that summer cataloguing beetles — none","I spent that summer cataloguing beetles — no motive for cataloguing is understandable"];
+  const gaps=findUncardedCandidates(DRAFT,candidates,[],[]);
+  assert.equal(gaps.length,1);
+  assert.equal(gaps[0].line,candidates[1]);
+});
+
 test("a passage criticised in prose with no card is reported", () => {
   const gaps = findProseOnlyDiagnoses(
     DRAFT,

@@ -1263,13 +1263,36 @@ cards. A draft with one real loss gets one card.)
 Then the sections themselves:
 
 <<<SECTION:1>>>
-(Overall impression — describe the portrait or tension this draft develops,
-grounded in two or three draft-specific handles rather than only its thesis.
-Say where understanding is lost only if it is lost. Do not force several facets
-into one virtue or summarize every episode. A familiar subject does not count
-against the author. Do not use
-"afterimage" or evaluative intensifiers such as exceptional, remarkable, rare,
-powerful, compelling, highly or deeply.)
+(The reader's assessment is REQUIRED even when no corrections are needed.
+Do not leave the reading of idea and voice internal or replace it with a plot
+summary. A tidy structure does not settle either judgment. State the specific
+interpretation, show its textual evidence, and explain the evidence's effect.
+Read the person in THIS text; do not certify the student's authentic personality
+from one draft. No score, admission prediction, or exceptional/rare label.
+For a short supplemental, judge the idea within its actual task and space, not
+against a full personal statement. Plain language and a familiar topic are
+allowed. Humor, a motif, growth, trauma and novelty are not requirements.
+An earned ordinary ending is not generic merely because its words are familiar.
+Before making revision the priority, test the strongest evidence AGAINST that
+criticism, including the passages quoted for idea and voice. A proposed cut must
+account for what understanding would disappear with it. If either version
+preserves the same particular portrait and interpretation, the choice may be
+polish: keep is allowed. Do not turn an optional alternative into a substantive
+loss just to populate the report. Naming a minor phrasing concern is not an
+assessment of the essay's idea or its potential.
+Use this exact block; every value occupies one line.)
+<<<READING>>>
+person: <the particular way this writer notices, chooses, relates or interprets, supported by this draft; if only desirable traits remain, say that plainly rather than inventing a more interesting person>
+idea: <what understanding or question the essay explores, and whether its development yields a particular perspective or remains a familiar assertion; assess the interpretation, not how unusual the activity is>
+idea_quote: <an exact verbatim span supporting that assessment, no wrapping quotes or ellipsis>
+idea_effect: <what the quoted choice reveals or fails to reveal about the writer; explain why this interpretation is earned, emerging or thin, without merely praising reflection or coherence>
+voice: <describe the writer's way of perceiving and the language carrying it; say where it remains interchangeable if it does; distinguish lively wording from a particular mind>
+voice_quote: <an exact verbatim span supporting that assessment, no wrapping quotes or ellipsis>
+voice_effect: <what this wording lets the reader see through this narrator, or why it could belong to almost any applicant; do not equate sophistication, sensory detail or informal slang with voice>
+priority_action: <keep | revise; keep when no meaningful repair remains, including when a working essay could be different as a matter of taste>
+priority: <the ONE editorial decision that matters most and what it changes about the reader's understanding; when the idea is undeveloped or the person remains replaceable, sentence polishing cannot be the main task; when keep, state the effect that revision should protect>
+priority_quote: <if revise, the exact span anchoring the primary loss, which MUST also anchor or overlap a structural/substantive card in section 4; if keep, leave this field empty>
+<<<ENDREADING>>>
 <<<SECTION:2>>>
 (Checklist findings — markdown list, per section 2 above. Write "No checklist
 points matched." if none genuinely apply.)

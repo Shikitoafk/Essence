@@ -174,6 +174,12 @@ export function findUncardedCandidates(
   const claimed: Span[] = [];
 
   for (const line of candidates) {
+    // Some reads write a row for each paragraph despite the scan contract.
+    // A row explicitly saying there is no gap is not a lost criticism.
+    // Keep the whitelist narrow: "no scene, so the motive is unclear" is
+    // still a candidate, and positive wording with a caveat is rechecked.
+    const description = line.split(/[—\-]{1,2}\s/).slice(1).join(" — ").trim();
+    if (/^(?:none|no (?:gap|issue|loss|finding)(?: (?:here|identified|found))?|not a (?:gap|finding)|works(?: well| as written)?|working well|clear enough|strength)[.!]?$/i.test(description)) continue;
     const para = paragraphOf(draft, line);
     if (!para) continue;
 

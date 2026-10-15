@@ -13,6 +13,7 @@ import GrowthPanel from "./GrowthPanel";
 import Markdown from "@/components/Markdown";
 import { saveDraft, saveVersion, setSpotStatus } from "@/app/actions";
 import { locateQuote } from "@/lib/ai/parseReport";
+import { hasReaderAssessment } from "@/lib/ai/readerAssessment";
 import { trackProductEvent } from "@/lib/productAnalytics";
 import {
   countWords,
@@ -60,7 +61,9 @@ export default function Workspace({
   const [activeSpotId, setActiveSpotId] = useState<string | null>(
     initialSpots.find((s) => s.status === "open")?.id ?? null,
   );
-  const [tab, setTab] = useState<Tab>("spots");
+  const [tab, setTab] = useState<Tab>(
+    hasReaderAssessment(initialReport?.overall_impression ?? "") ? "report" : "spots",
+  );
   const [showMinor, setShowMinor] = useState(false);
   const [saving, setSaving] = useState<"idle" | "saving" | "saved" | "error">(
     "idle",
@@ -223,6 +226,7 @@ export default function Workspace({
 
       // The server wrote spots, the report and the opening question — pull the
       // authoritative state rather than reconstructing it here.
+      if (!payload.draftUnchanged && !payload.truncated) setTab("report");
       router.refresh();
     } catch {
       setBanner({ kind: "error", text: "Couldn't reach the server." });
@@ -563,7 +567,7 @@ export default function Workspace({
               {report ? (
                 <div className="workspace-paper space-y-7 p-6 sm:p-8">
                   <ReportSection
-                    title="Overall impression"
+                    title="Person, idea and voice"
                     body={report.overall_impression}
                   />
                   <ReportSection
@@ -571,13 +575,13 @@ export default function Workspace({
                     body={report.checklist_findings}
                   />
                   <ReportSection
-                    title="Framework findings"
+                    title="What needs attention"
                     body={report.framework_findings}
                   />
                 </div>
               ) : (
                 <p className="rounded-[1.25rem] border border-dashed border-line bg-white/75 p-6 text-sm text-muted">
-                  The full structural read appears here after your first
+                  The reading of your idea and voice appears here after your first
                   feedback run.
                 </p>
               )}
